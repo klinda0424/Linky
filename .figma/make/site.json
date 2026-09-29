@@ -1,0 +1,10 @@
+{
+  "description": "AI-powered daily journal app for young women that seamlessly links expenses with emotions, schedules, health, and shopping for personalized insights.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
