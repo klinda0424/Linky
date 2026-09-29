@@ -4105,6 +4105,47 @@ input.recognition-value {
   font-size: 11px;
 }
 
+.consent-payment {
+  margin-top: 14px;
+  padding: 11px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+}
+
+.consent-payment span {
+  color: var(--sub);
+  font-size: 11px;
+}
+
+.consent-payment strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.consent-note {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--sub);
+  font-size: 11px;
+}
+
+.consent-icon.neutral {
+  background: var(--surface);
+}
+
+.consent-declined {
+  padding-bottom: 36px;
+}
+
+.consent-declined .sheet-sub {
+  line-height: 1.5;
+}
+
 .health-archive-content {
   padding: 24px 20px;
 }
