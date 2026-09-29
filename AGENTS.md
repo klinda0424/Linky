@@ -1,3 +1,14 @@
+# ⚠️ 작업 전 반드시 읽을 것 (모든 AI 도구 공통: Claude Code, Codex 등)
+
+이 repo는 팀 협업 프로젝트다. 코드를 수정하기 전에 아래 두 파일을 **직접 열어서 끝까지 읽고** 따른다.
+- `CLAUDE.md` — 프로젝트 맥락, 디자인 시스템, UX 원칙, 시연 시나리오, 화면 ID ↔ 파일 매핑
+- `HANDOFF.md` — 브랜치·커밋·PR 절차, 금지 사항, 담당 파일
+
+(CLAUDE.md를 자동으로 읽지 않는 도구는 위 파일을 직접 열어 읽어야 한다.)
+아래 본문은 Figma Make 환경 기준 문서다. "dev 서버가 이미 실행 중"이라는 내용은 로컬에서는 해당 없으며, `pnpm dev`로 직접 실행한다.
+
+---
+
 # figma-make-app
 
 React + Vite + Tailwind CSS project running inside Figma Make.
