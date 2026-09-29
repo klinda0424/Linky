@@ -222,7 +222,13 @@ const recognizedSchedule: ScheduleDraft = {
 }
 const tripMembers = ["나", "수현", "민지"]
 
-export function RecognitionSheet({ confirm }: { confirm: () => void }) {
+export function RecognitionSheet({
+  confirm,
+  sources,
+}: {
+  confirm: () => void
+  sources?: { capture: boolean; link: boolean }
+}) {
   const [editing, setEditing] = useState(false)
   const [edited, setEdited] = useState(false)
   const [draft, setDraft] = useState<ScheduleDraft>(recognizedSchedule)
@@ -237,6 +243,7 @@ export function RecognitionSheet({ confirm }: { confirm: () => void }) {
   )
   const groups: Array<{
     title: string
+    source?: string
     rows: Array<{
       key: Exclude<keyof ScheduleDraft, "people">
       label: string
@@ -245,6 +252,7 @@ export function RecognitionSheet({ confirm }: { confirm: () => void }) {
   }> = [
     {
       title: "시험기간",
+      source: sources?.link ? "학사일정 링크에서" : undefined,
       rows: [
         {
           key: "examName",
@@ -260,6 +268,7 @@ export function RecognitionSheet({ confirm }: { confirm: () => void }) {
     },
     {
       title: "여행",
+      source: sources?.capture ? "단톡 캡처에서" : undefined,
       rows: [
         {
           key: "tripPlace",
@@ -308,7 +317,10 @@ export function RecognitionSheet({ confirm }: { confirm: () => void }) {
         <div className="recognition-groups">
           {groups.map((group) => (
             <div className="recognition-group" key={group.title}>
-              <p className="recognition-group-title">{group.title}</p>
+              <p className="recognition-group-title">
+                {group.title}
+                {group.source && <span>{group.source}</span>}
+              </p>
               <div className="recognition-rows">
                 {group.rows.map((row) => (
                   <div
@@ -407,6 +419,8 @@ export function RecognitionSheet({ confirm }: { confirm: () => void }) {
     </div>
   )
 }
+const scheduleLink = "학교 학사일정 · 2024-2학기"
+
 export function CaptureUpload({
   back,
   confirm,
@@ -417,59 +431,108 @@ export function CaptureUpload({
   const [state, setState] = useState<"idle" | "recognizing" | "recognized">(
     "idle",
   )
+  const [captured, setCaptured] = useState(false)
+  const [link, setLink] = useState("")
+  const hasLink = Boolean(link.trim())
   useEffect(() => {
     if (state !== "recognizing") return
     const timer = window.setTimeout(() => setState("recognized"), 1500)
     return () => window.clearTimeout(timer)
   }, [state])
+  const recognizing = state !== "idle"
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="캡처 업로드" />
       <div className="capture-content">
         <PageTitle
-          sub="카카오톡 대화방, 문자, 메모 어디서든 괜찮아요"
-          title={"약속을 캡처해서\n올려주세요"}
+          sub="날짜·장소·인원은 린이가 찾아둘게요"
+          title={"약속 캡처와 일정 링크를\n올려주세요"}
         />
-        <Action
-          className={cx("capture-zone", state !== "idle" && "recognizing")}
-          onClick={() => state === "idle" && setState("recognizing")}
-        >
-          <span className="capture-icon">
-            {state === "idle" ? (
-              <Upload size={24} strokeWidth={1.5} />
-            ) : (
-              <Camera size={24} strokeWidth={1.5} />
-            )}
-          </span>
-          <strong>
-            {state === "idle"
-              ? "사진을 올려주세요"
-              : "날짜·장소·인원을 찾는 중"}
-          </strong>
-          {state === "idle" ? (
-            <span>탭해서 갤러리에서 선택</span>
-          ) : (
+        {recognizing ? (
+          <div className="capture-zone recognizing">
+            <span className="capture-icon">
+              <ScanLine size={24} strokeWidth={1.5} />
+            </span>
+            <strong>날짜·장소·인원을 찾는 중</strong>
             <span className="loading-dots">
               <i />
               <i />
               <i />
             </span>
-          )}
-        </Action>
-        <div className="upload-example">
-          <p>이런 이미지를 올려주세요</p>
-          <div>
-            {["카카오톡 약속 대화", "문자 예시", "메모장 캡처"].map((item) => (
-              <span key={item}>{item}</span>
-            ))}
           </div>
-        </div>
-        <Action className="calendar-import">
-          <CalendarDays size={15} strokeWidth={1.5} />
-          또는 캘린더에서 가져오기
-        </Action>
+        ) : (
+          <>
+            <Action
+              className={cx("capture-zone", captured && "attached")}
+              onClick={() => setCaptured(true)}
+            >
+              <span className="capture-icon">
+                {captured ? (
+                  <Check size={24} strokeWidth={2} />
+                ) : (
+                  <Upload size={24} strokeWidth={1.5} />
+                )}
+              </span>
+              <strong>
+                {captured ? "카카오톡 캡처 1장" : "단톡 캡처를 올려주세요"}
+              </strong>
+              <span>
+                {captured
+                  ? "여행 약속 대화를 올렸어요"
+                  : "탭해서 갤러리에서 선택"}
+              </span>
+            </Action>
+            <div className={cx("capture-link", hasLink && "attached")}>
+              <div className="capture-link-field">
+                <Link2 size={16} strokeWidth={1.6} />
+                <input
+                  aria-label="일정 링크"
+                  onChange={(event) => setLink(event.target.value)}
+                  placeholder="학사일정·공지 링크 (선택)"
+                  value={link}
+                />
+              </div>
+              {!hasLink && (
+                <Action
+                  className="suggestion-chip"
+                  onClick={() => setLink(scheduleLink)}
+                >
+                  복사한 링크 붙여넣기
+                </Action>
+              )}
+            </div>
+            {!captured && (
+              <div className="upload-example">
+                <p>이런 이미지를 올려주세요</p>
+                <div>
+                  {["카카오톡 약속 대화", "문자 예시", "메모장 캡처"].map(
+                    (item) => (
+                      <span key={item}>{item}</span>
+                    ),
+                  )}
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
-      {state === "recognized" && <RecognitionSheet confirm={confirm} />}
+      {!recognizing && (
+        <div className="main-footer">
+          <Action
+            className="primary-button"
+            disabled={!captured && !hasLink}
+            onClick={() => setState("recognizing")}
+          >
+            날짜·장소·인원 찾기
+          </Action>
+        </div>
+      )}
+      {state === "recognized" && (
+        <RecognitionSheet
+          confirm={confirm}
+          sources={{ capture: captured, link: hasLink }}
+        />
+      )}
     </div>
   )
 }
