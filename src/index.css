@@ -4279,6 +4279,28 @@ input.recognition-value {
   outline: none;
 }
 
+.health-card.editing {
+  align-items: flex-start;
+}
+
+.health-options {
+  margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.health-options .suggestion-chip {
+  font-size: 11px;
+}
+
+.health-edit-actions {
+  margin-top: 6px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
 .health-edit {
   width: 47px;
   flex-grow: 0;
