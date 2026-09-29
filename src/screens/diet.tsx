@@ -1,11 +1,6 @@
 import { UtensilsCrossed } from "lucide-react"
-import { useState } from "react"
-import {
-  Action,
-  Badge,
-  EditableLine,
-  cx,
-} from "@/components/common"
+import { useEffect, useState } from "react"
+import { Action, Badge, cx } from "@/components/common"
 import { MainHeader } from "@/components/layout"
 
 export function FridgePage({
@@ -49,6 +44,13 @@ export function FridgePage({
     </div>
   )
 }
+const recognizedFood = "닭가슴살 샐러드"
+const foodNutrition: Record<string, [number, number, number]> = {
+  [recognizedFood]: [320, 32, 18],
+  "콥 샐러드": [450, 24, 14],
+  "닭가슴살 포케": [480, 30, 52],
+}
+
 export function FoodRecognition({
   back,
   saved,
@@ -56,8 +58,15 @@ export function FoodRecognition({
   back: () => void
   saved: () => void
 }) {
+  const [recognizing, setRecognizing] = useState(true)
   const [editing, setEditing] = useState(false)
-  const [food, setFood] = useState("닭가슴살 샐러드")
+  const [food, setFood] = useState(recognizedFood)
+  useEffect(() => {
+    const timer = window.setTimeout(() => setRecognizing(false), 1200)
+    return () => window.clearTimeout(timer)
+  }, [])
+  const name = food.trim()
+  const nutrition = foodNutrition[name]
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="식단 사진 인식" />
@@ -66,59 +75,110 @@ export function FoodRecognition({
           <span>
             <UtensilsCrossed size={44} strokeWidth={1.2} />
           </span>
-          <Badge>사진 분석 완료</Badge>
+          <Badge>{recognizing ? "사진 분석 중" : "사진 분석 완료"}</Badge>
         </div>
         <div className="food-result">
           <span className="rini-avatar">L</span>
-          {editing ? (
-            <EditableLine
-              placeholder="음식 이름을 입력해주세요"
-              setValue={setFood}
-              value={food}
-            />
+          {recognizing ? (
+            <div className="food-recognizing">
+              <p>음식을 알아보는 중이에요</p>
+              <span className="loading-dots">
+                <i />
+                <i />
+                <i />
+              </span>
+            </div>
           ) : (
-            <p>닭가슴살 샐러드 맞나요?</p>
+            <p>
+              {editing
+                ? "비슷한 음식 중에서 골라주세요"
+                : `${recognizedFood} 맞나요?`}
+            </p>
           )}
           {editing && (
             <div className="food-suggestions">
-              {["닭가슴살 샐러드", "콥 샐러드", "닭가슴살 포케"].map((item) => (
+              {Object.keys(foodNutrition).map((item) => (
                 <Action
-                  className={cx("suggestion-chip", food === item && "selected")}
+                  className={cx("suggestion-chip", name === item && "selected")}
                   key={item}
                   onClick={() => setFood(item)}
                 >
                   {item}
                 </Action>
               ))}
+              <input
+                aria-label="음식 이름"
+                className="food-input"
+                onChange={(event) => setFood(event.target.value)}
+                placeholder="목록에 없으면 직접 입력"
+                value={food}
+              />
             </div>
           )}
         </div>
-        <div className="nutrition-card">
-          <div>
-            <span>칼로리</span>
-            <strong>320kcal</strong>
-          </div>
-          <div>
-            <span>단백질</span>
-            <strong>32g</strong>
-          </div>
-          <div>
-            <span>탄수화물</span>
-            <strong>18g</strong>
-          </div>
+        {!recognizing &&
+          (nutrition ? (
+            <>
+              <div className="nutrition-card">
+                <div>
+                  <span>칼로리</span>
+                  <strong>{nutrition[0]}kcal</strong>
+                </div>
+                <div>
+                  <span>단백질</span>
+                  <strong>{nutrition[1]}g</strong>
+                </div>
+                <div>
+                  <span>탄수화물</span>
+                  <strong>{nutrition[2]}g</strong>
+                </div>
+              </div>
+              <p className="nutrition-caption">
+                식품의약품안전처 식품영양성분 DB 기준
+              </p>
+            </>
+          ) : (
+            <p className="nutrition-caption">
+              직접 입력한 음식은 영양 정보 없이 저장돼요
+            </p>
+          ))}
+      </div>
+      {!recognizing && (
+        <div className="ai-bottom">
+          {editing ? (
+            <>
+              <Action
+                className="secondary-button"
+                onClick={() => {
+                  setFood(recognizedFood)
+                  setEditing(false)
+                }}
+              >
+                취소
+              </Action>
+              <Action
+                className="primary-button"
+                disabled={!name}
+                onClick={saved}
+              >
+                저장
+              </Action>
+            </>
+          ) : (
+            <>
+              <Action
+                className="secondary-button"
+                onClick={() => setEditing(true)}
+              >
+                아니에요
+              </Action>
+              <Action className="primary-button" onClick={saved}>
+                맞아요
+              </Action>
+            </>
+          )}
         </div>
-        <p className="nutrition-caption">
-          식품의약품안전처 식품영양성분 DB 기준
-        </p>
-      </div>
-      <div className="ai-bottom">
-        <Action className="secondary-button" onClick={() => setEditing(true)}>
-          수정
-        </Action>
-        <Action className="primary-button" onClick={saved}>
-          맞아요
-        </Action>
-      </div>
+      )}
     </div>
   )
 }
