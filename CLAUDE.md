@@ -4,6 +4,7 @@
 > KHUX 산학 팀프로젝트. Figma Make에서 시작해 GitHub + Vercel + Claude Code로 팀 협업 중.
 
 @AGENTS.md
+@HANDOFF.md
 > ⚠️ AGENTS.md는 Figma Make 환경 기준 문서다. "dev 서버가 이미 실행 중"이라는 내용은 **로컬에서는 해당 없음** → `pnpm dev`로 직접 실행한다. 스택·스타일 규칙(Tailwind v4, default export 등)만 참고.
 
 ## 실행
