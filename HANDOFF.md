@@ -89,26 +89,17 @@ AI는 아래 순서를 지킨다.
 
 ---
 
-## 6. 담당 파일 한눈에
+## 6. 역할별 담당 (3명)
 
-| 파일 | 내용 |
-|---|---|
-| `screens/onboarding.tsx` | 온보딩, 톤 선택, AI 코치 소개 |
-| `screens/home.tsx` | 홈 (캘린더·지출 카드·리포트 미리보기·그룹 지출 제안) |
-| `screens/record.tsx` | + 기록 입력, 캡처 업로드, 일정 인식 |
-| `screens/report.tsx` | 원탭 기분 입력, 하루 리포트 |
-| `screens/shopping.tsx` | 지출 상세, 쇼핑 보관함, 옷장 |
-| `screens/diet.tsx` | 냉장고, 식단 사진 인식 |
-| `screens/health.tsx` | 건강 동의 모달, 건강 카드, 건강 보관함 |
-| `screens/settlement.tsx` | 인원 분할, 그룹 지출, 정산 대기함~정산 결과 |
-| `screens/travel.tsx` | 여행 이야기 카드, 여행 비용 리포트 |
-| `screens/coach.tsx` | AI 코치 허브·대화, 목표 달성 관리 |
-| `screens/archive.tsx` | 보관함, 비정형 검색·결과 |
-| `screens/profile.tsx` | 프로필, 목표 모드 설정, 리포트 톤 설정 |
+| 역할 | 담당 파일 | 담당 화면 (docs/user-flows.md의 ID) | ★ 핵심 시연 |
+|---|---|---|---|
+| **A. 입력·인식** | `screens/record.tsx` `shopping.tsx` `diet.tsx` `health.tsx` | U0 일정 인식·캡처 업로드, U3 구매항목 복원·옷장, U4-1 냉장고·U4-3 식단 사진 인식, U6 건강 동의·카드 | U0-2, U3-1, U4-3, U6-1 |
+| **B. 돈·정산·회고** | `screens/settlement.tsx` `report.tsx` `travel.tsx` `coach.tsx` `archive.tsx` | U5 기분 입력·하루 리포트, U7-2/3 인원 분할·지출 상세, U8~U9 정산, U10 여행 이야기·비용 리포트·목표 달성, U4-2 코치 대화, U11 비정형 검색 | U5-2, U9-4, U10-1A, U11-1 |
+| **C. 홈·설정·통합** | `screens/home.tsx` `onboarding.tsx` `profile.tsx` + 공용 (`components/` `MainApp.tsx` `types.ts` `index.css`의 `:root`) | 홈, 온보딩, 목표 모드·톤 설정, U7-1 그룹 지출 알림, 화면 연결·통합 점검, PR 머지 | U1-1, U7-1 |
 
-공용: `components/common.tsx`(버튼·토글 등), `components/layout.tsx`(헤더·탭바), `MainApp.tsx`(화면 연결)
-
----
+- 공용 파일(`components/`, `MainApp.tsx`, `types.ts`, `:root` 토큰)은 **C 담당**. A·B가 수정이 필요하면 직접 고치지 말고 C에게 요청.
+- 다른 역할 파일이 export한 컴포넌트의 props 형태를 바꿀 때는 사전 공유 (예: `home.tsx`가 `health.tsx`의 `HealthCard`를 사용, `profile.tsx`가 `onboarding.tsx`의 `ToneOptions`를 사용).
+- 화면 동작의 기준은 `docs/user-flows.md`. 담당 ID의 "사용자 액션 / 시스템 반응 / 분기"가 실제로 동작해야 한다.
 
 ## 7. 막혔을 때
 
