@@ -117,6 +117,7 @@ export function WeekCalendar({
   )
 }
 export function SpendingCard({
+  flightPersonal,
   openExpense,
   travelMode,
   prepareMode,
@@ -124,6 +125,7 @@ export function SpendingCard({
   monthLaterMode,
   openSettlement,
 }: {
+  flightPersonal: boolean
   openExpense: () => void
   travelMode: boolean
   prepareMode: boolean
@@ -207,9 +209,9 @@ export function SpendingCard({
             {
               icon: <Plane size={17} strokeWidth={1.5} />,
               name: "항공권",
-              merchant: "제주 여행 · 3명",
+              merchant: flightPersonal ? "개인 지출" : "제주 여행 · 3명",
               amount: "360,000원",
-              status: true,
+              status: !flightPersonal,
             },
             ...standardRows,
           ]
@@ -416,6 +418,8 @@ export function HomePage({
   selectPrepare,
   selectTravel,
   afterMode,
+  flightPersonal,
+  nudgeOn,
   selectAfter,
   monthLaterMode,
   selectMonthLater,
@@ -441,12 +445,13 @@ export function HomePage({
   selectPrepare: () => void
   selectTravel: () => void
   afterMode: boolean
+  flightPersonal: boolean
+  nudgeOn: boolean
   selectAfter: () => void
   monthLaterMode: boolean
   selectMonthLater: () => void
 }) {
   const [observation, setObservation] = useState(true)
-  const [prepareSuggestion, setPrepareSuggestion] = useState(true)
   // 뱃지는 사용자가 켠 목표 모드가 있을 때만 노출 (다이어트 우선)
   const activeGoal = dietMode ? "다이어트 모드" : savingMode ? "절약 모드" : ""
   return (
@@ -509,22 +514,15 @@ export function HomePage({
         )}
         {dietMode && <DietSummaryCard />}
         {monthLaterMode && <GoalAchievementSummary />}
-        {!travelMode &&
-          !afterMode &&
-          !monthLaterMode &&
-          (prepareMode ? prepareSuggestion : groupSuggestion) && (
-            <GroupSuggestion
-              accept={acceptGroup}
-              reject={() => {
-                if (prepareMode) setPrepareSuggestion(false)
-                else rejectGroup()
-              }}
-            />
-          )}
-        {!travelMode && !prepareMode && observation && (
+        {/* U7-1은 여행 준비 단계의 알림 */}
+        {prepareMode && groupSuggestion && (
+          <GroupSuggestion accept={acceptGroup} reject={rejectGroup} />
+        )}
+        {/* U2-1은 넛지가 켜진 경우에만 표시 */}
+        {nudgeOn && !travelMode && !prepareMode && observation && (
           <div className="observation-card">
             <span className="rini-avatar">L</span>
-            <p>시험기간이랑 다이어트가 겹쳐요.지친 날엔 무리하지 말아요.</p>
+            <p>시험기간이랑 다이어트가 겹쳐요. 지친 날엔 무리하지 말아요.</p>
             <Action
               onClick={() => setObservation(false)}
               label="관찰 카드 닫기"
@@ -541,6 +539,7 @@ export function HomePage({
         />
         <SpendingCard
           afterMode={afterMode}
+          flightPersonal={flightPersonal}
           monthLaterMode={monthLaterMode}
           openExpense={openExpense}
           openSettlement={openSettlement}

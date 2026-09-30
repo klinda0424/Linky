@@ -105,7 +105,12 @@ export default function App() {
     )
   else
     content = (
-      <MainApp goals={goals} setTone={setTone} tone={tone ?? "narrative"} />
+      <MainApp
+        goals={goals}
+        nudge={nudge}
+        setTone={setTone}
+        tone={tone ?? "narrative"}
+      />
     )
 
   return (

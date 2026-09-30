@@ -42,10 +42,12 @@ export function MainApp({
   tone,
   setTone,
   goals,
+  nudge,
 }: {
   tone: Tone
   setTone: (tone: Tone) => void
   goals: string[]
+  nudge: boolean
 }) {
   const [tab, setTab] = useState<MainTab>("home")
   const [view, setView] = useState<MainView>("tabs")
@@ -60,6 +62,10 @@ export function MainApp({
     "coachHub",
   )
   const [groupSuggestion, setGroupSuggestion] = useState(true)
+  // U7-1에서 "아니요"를 고르면 항공권은 그룹이 아닌 개인 지출로 남음
+  const [flightPersonal, setFlightPersonal] = useState(false)
+  // 온보딩에서 켠 넛지 + 하루 리포트 옵트인("네")으로 켜지는 넛지
+  const [nudgeOn, setNudgeOn] = useState(nudge)
   const [travelMode, setTravelMode] = useState(false)
   const [prepareMode, setPrepareMode] = useState(false)
   const [afterMode, setAfterMode] = useState(false)
@@ -134,7 +140,9 @@ export function MainApp({
       <DailyReport
         back={() => setView("tabs")}
         notify={() => {
+          setNudgeOn(true)
           setToast("필요할 때만 조용히 알려드릴게요")
+          window.setTimeout(() => setView("tabs"), 900)
           window.setTimeout(() => setToast(""), 2200)
         }}
         tone={tone}
@@ -308,6 +316,8 @@ export function MainApp({
               setSplitSheet(true)
             }}
             afterMode={afterMode}
+            flightPersonal={flightPersonal}
+            nudgeOn={nudgeOn}
             dietMode={goalModes.diet}
             groupSuggestion={groupSuggestion}
             healthDeclined={healthDeclined}
@@ -322,7 +332,10 @@ export function MainApp({
             profile={() => setView("profile")}
             savingMode={goalModes.saving}
             prepareMode={prepareMode}
-            rejectGroup={() => setGroupSuggestion(false)}
+            rejectGroup={() => {
+              setGroupSuggestion(false)
+              setFlightPersonal(true)
+            }}
             selectExam={() => {
               setMonthLaterMode(false)
               setAfterMode(false)
@@ -334,14 +347,12 @@ export function MainApp({
               setAfterMode(false)
               setPrepareMode(true)
               setTravelMode(false)
-              setGroupSuggestion(true)
             }}
             selectTravel={() => {
               setMonthLaterMode(false)
               setAfterMode(false)
               setPrepareMode(false)
               setTravelMode(true)
-              setGroupSuggestion(false)
             }}
             selectAfter={() => {
               setMonthLaterMode(false)
