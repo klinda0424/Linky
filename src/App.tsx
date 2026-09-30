@@ -18,19 +18,21 @@ export default function App() {
   const [job, setJob] = useState("")
   const [goals, setGoals] = useState<string[]>([])
   const [domains, setDomains] = useState<Record<DomainKey, boolean>>({
+    // 지출은 잠금(기본) 항목이라 ON 고정, 나머지 수집 동의는 모두 OFF로 시작
     spend: true,
-    emotion: true,
+    emotion: false,
     schedule: false,
-    health: true,
+    health: false,
     shopping: false,
   })
   const [healthToast, setHealthToast] = useState(true)
   const [permissions, setPermissions] =
     useState<Record<PermissionKey, boolean>>({
+      // 카드·계좌는 필수(잠금) 항목이라 ON 고정, 나머지 연동은 모두 OFF로 시작
       payment: true,
       calendar: false,
-      location: true,
-      photos: true,
+      location: false,
+      photos: false,
       health: false,
     })
   const [tone, setTone] = useState<Tone>()
