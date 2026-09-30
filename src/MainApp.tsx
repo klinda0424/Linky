@@ -55,6 +55,10 @@ export function MainApp({
   const [healthAgreed, setHealthAgreed] = useState(false)
   const [healthDeclined, setHealthDeclined] = useState(false)
   const [toast, setToast] = useState("")
+  // 목표 달성 관리(U10-2)에서 뒤로 갈 곳: 코치 허브 또는 회고 흐름의 다음 단계(한 달 뒤 홈)
+  const [goalReturn, setGoalReturn] = useState<"coachHub" | "monthLater">(
+    "coachHub",
+  )
   const [groupSuggestion, setGroupSuggestion] = useState(true)
   const [travelMode, setTravelMode] = useState(false)
   const [prepareMode, setPrepareMode] = useState(false)
@@ -70,7 +74,21 @@ export function MainApp({
   const showMoodToast = () => {
     setSheet(false)
     setToast("오늘 결제 3건과 연결했어요")
+    // U5-1 → U5-2: 결제 연결 안내 후 하루 리포트로 이어짐
+    window.setTimeout(() => setView("dailyReport"), 700)
     window.setTimeout(() => setToast(""), 2200)
+  }
+  const openGoalAchievement = (from: "coachHub" | "monthLater") => {
+    setGoalReturn(from)
+    setView("goalAchievement")
+  }
+  const goMonthLaterHome = () => {
+    setMonthLaterMode(true)
+    setAfterMode(false)
+    setPrepareMode(false)
+    setTravelMode(false)
+    setTab("home")
+    setView("tabs")
   }
   const changeTab = (next: MainTab) => {
     setTab(next)
@@ -88,12 +106,18 @@ export function MainApp({
     page = (
       <CoachHub
         back={() => setView("tabs")}
-        goals={() => setView("goalAchievement")}
+        goals={() => openGoalAchievement("coachHub")}
         mood={() => setView("mood")}
       />
     )
   else if (view === "goalAchievement")
-    page = <GoalAchievement back={() => setView("coachHub")} />
+    page = (
+      <GoalAchievement
+        back={() =>
+          goalReturn === "coachHub" ? setView("coachHub") : goMonthLaterHome()
+        }
+      />
+    )
   else if (view === "mood")
     page = (
       <MoodPrompt
@@ -186,32 +210,18 @@ export function MainApp({
   else if (view === "settlementResult")
     page = (
       <SettlementResult
-        finish={() =>
-          setView(tone === "narrative" ? "travelStory" : "travelCost")
-        }
+        finish={() => setView("travelStory")}
       />
     )
   else if (view === "travelStory")
     page = (
-      <TravelStory
-        close={() => {
-          setTab("home")
-          setView("tabs")
-        }}
-      />
+      <TravelStory close={() => openGoalAchievement("monthLater")} />
     )
   else if (view === "travelCost")
     page = (
       <TravelCostReport
-        back={() => setView("settlementResult")}
-        goHome={() => {
-          setMonthLaterMode(false)
-          setAfterMode(false)
-          setPrepareMode(false)
-          setTravelMode(true)
-          setTab("home")
-          setView("tabs")
-        }}
+        back={() => setView("tabs")}
+        goHome={() => openGoalAchievement("monthLater")}
       />
     )
   else if (view === "shopping")
@@ -305,8 +315,10 @@ export function MainApp({
             monthLaterMode={monthLaterMode}
             openExpense={() => setView("expense")}
             openHealthConsent={() => setHealthConsent(true)}
+            openCost={() => setView("travelCost")}
             openMood={() => setView("coachHub")}
             openSettlement={() => setView("settlement")}
+            openStory={() => setView("travelStory")}
             profile={() => setView("profile")}
             savingMode={goalModes.saving}
             prepareMode={prepareMode}

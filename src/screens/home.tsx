@@ -365,9 +365,9 @@ export function GroupSuggestion({
     </div>
   )
 }
-export function TravelStoryPreview() {
+export function TravelStoryPreview({ open }: { open: () => void }) {
   return (
-    <div className="travel-story-preview">
+    <Action className="travel-story-preview" onClick={open}>
       <span>
         <Plane size={27} strokeWidth={1.4} />
       </span>
@@ -376,7 +376,22 @@ export function TravelStoryPreview() {
         <p>여행 이야기를 한 장씩 모아봤어요</p>
       </div>
       <ChevronRight size={17} strokeWidth={1.5} />
-    </div>
+    </Action>
+  )
+}
+// 🅑 수치형 톤: 여행 비용 리포트(U10-1B) 진입점
+export function TravelCostPreview({ open }: { open: () => void }) {
+  return (
+    <Action className="travel-story-preview" onClick={open}>
+      <span>
+        <CircleDollarSign size={27} strokeWidth={1.4} />
+      </span>
+      <div>
+        <strong>제주 여행 비용 리포트</strong>
+        <p>1인 실제 비용을 정리했어요</p>
+      </div>
+      <ChevronRight size={17} strokeWidth={1.5} />
+    </Action>
   )
 }
 export function HomePage({
@@ -390,6 +405,8 @@ export function HomePage({
   rejectGroup,
   acceptGroup,
   openSettlement,
+  openStory,
+  openCost,
   openMood,
   healthEnabled,
   healthDeclined,
@@ -413,6 +430,8 @@ export function HomePage({
   rejectGroup: () => void
   acceptGroup: () => void
   openSettlement: () => void
+  openStory: () => void
+  openCost: () => void
   openMood: () => void
   healthEnabled: boolean
   healthDeclined: boolean
@@ -528,7 +547,8 @@ export function HomePage({
           prepareMode={prepareMode}
           travelMode={travelMode}
         />
-        {afterMode && <TravelStoryPreview />}
+        {afterMode && <TravelStoryPreview open={openStory} />}
+        {afterMode && tone === "numeric" && <TravelCostPreview open={openCost} />}
         {!healthEnabled && healthDeclined && (
           <div className="health-detection">
             <span className="health-card-icon">
