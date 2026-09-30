@@ -60,7 +60,8 @@ export function MainApp({
   const [afterMode, setAfterMode] = useState(false)
   const [monthLaterMode, setMonthLaterMode] = useState(false)
   const [goalModes, setGoalModes] = useState<Record<GoalModeKey, boolean>>({
-    diet: goals.includes("다이어트"),
+    // U1-1 시연에서 사용자가 직접 켜는 흐름이라 온보딩 선택과 무관하게 OFF로 시작
+    diet: false,
     saving: goals.includes("절약하기"),
     exercise: false,
   })
@@ -275,6 +276,10 @@ export function MainApp({
     page = (
       <GoalModeSettings
         back={() => setView("profile")}
+        home={() => {
+          setTab("home")
+          setView("tabs")
+        }}
         toggle={toggleGoalMode}
         values={goalModes}
       />
@@ -299,7 +304,6 @@ export function MainApp({
             afterMode={afterMode}
             dietMode={goalModes.diet}
             groupSuggestion={groupSuggestion}
-            goals={goals}
             healthEnabled={healthAgreed}
             monthLaterMode={monthLaterMode}
             openExpense={() => setView("expense")}
@@ -307,6 +311,7 @@ export function MainApp({
             openMood={() => setView("coachHub")}
             openSettlement={() => setView("settlement")}
             profile={() => setView("profile")}
+            savingMode={goalModes.saving}
             prepareMode={prepareMode}
             rejectGroup={() => setGroupSuggestion(false)}
             selectExam={() => {

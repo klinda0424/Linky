@@ -381,8 +381,8 @@ export function TravelStoryPreview() {
 }
 export function HomePage({
   tone,
-  goals,
   dietMode,
+  savingMode,
   profile,
   openExpense,
   travelMode,
@@ -403,8 +403,8 @@ export function HomePage({
   selectMonthLater,
 }: {
   tone: Tone
-  goals: string[]
   dietMode: boolean
+  savingMode: boolean
   profile: () => void
   openExpense: () => void
   travelMode: boolean
@@ -426,7 +426,8 @@ export function HomePage({
 }) {
   const [observation, setObservation] = useState(true)
   const [prepareSuggestion, setPrepareSuggestion] = useState(true)
-  const activeGoal = dietMode ? "다이어트 모드" : goals[0]?.replace("하기", "")
+  // 뱃지는 사용자가 켠 목표 모드가 있을 때만 노출 (다이어트 우선)
+  const activeGoal = dietMode ? "다이어트 모드" : savingMode ? "절약 모드" : ""
   return (
     <>
       <div className="home-header">
@@ -479,12 +480,13 @@ export function HomePage({
         {travelMode && (
           <div className="travel-banner">✈️ 제주 여행 중 · 알림을 줄였어요</div>
         )}
-        {!travelMode && !prepareMode && !monthLaterMode && activeGoal && (
+        {activeGoal && (
           <span className="goal-mode">
             {dietMode ? "🥗" : <Sparkles size={11} strokeWidth={1.5} />}{" "}
             {activeGoal}
           </span>
         )}
+        {dietMode && <DietSummaryCard />}
         {monthLaterMode && <GoalAchievementSummary />}
         {!travelMode &&
           !afterMode &&
@@ -516,9 +518,6 @@ export function HomePage({
           prepareMode={prepareMode}
           travelMode={travelMode}
         />
-        {dietMode && !travelMode && !prepareMode && !monthLaterMode && (
-          <DietSummaryCard />
-        )}
         <SpendingCard
           afterMode={afterMode}
           monthLaterMode={monthLaterMode}

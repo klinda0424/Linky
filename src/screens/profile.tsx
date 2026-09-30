@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 import {
   Bell,
   ChevronRight,
@@ -59,12 +59,19 @@ export function GoalModeSettings({
   values,
   toggle,
   back,
+  home,
 }: {
   values: Record<GoalModeKey, boolean>
   toggle: (key: GoalModeKey) => void
   back: () => void
+  home: () => void
 }) {
   const [toast, setToast] = useState(false)
+  const timers = useRef<number[]>([])
+  useEffect(
+    () => () => timers.current.forEach((timer) => window.clearTimeout(timer)),
+    [],
+  )
   const modes: Array<{
     key: GoalModeKey
     emoji: string
@@ -94,7 +101,8 @@ export function GoalModeSettings({
     toggle(key)
     if (key === "diet" && !values.diet) {
       setToast(true)
-      window.setTimeout(() => setToast(false), 2000)
+      // U1-1 → U1-2: 토스트로 활성화를 알린 뒤 다이어트 뱃지가 붙은 홈으로 이동
+      timers.current.push(window.setTimeout(home, 1100))
     }
   }
   return (
