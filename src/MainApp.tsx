@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { Check } from "lucide-react"
 import { BottomTabs } from "@/components/layout"
 import {
@@ -53,6 +53,7 @@ export function MainApp({
   const [splitSheet, setSplitSheet] = useState(false)
   const [healthConsent, setHealthConsent] = useState(false)
   const [healthAgreed, setHealthAgreed] = useState(false)
+  const [healthDeclined, setHealthDeclined] = useState(false)
   const [toast, setToast] = useState("")
   const [groupSuggestion, setGroupSuggestion] = useState(true)
   const [travelMode, setTravelMode] = useState(false)
@@ -65,11 +66,6 @@ export function MainApp({
     saving: goals.includes("절약하기"),
     exercise: false,
   })
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => setHealthConsent(true), 600)
-    return () => window.clearTimeout(timer)
-  }, [])
 
   const showMoodToast = () => {
     setSheet(false)
@@ -304,6 +300,7 @@ export function MainApp({
             afterMode={afterMode}
             dietMode={goalModes.diet}
             groupSuggestion={groupSuggestion}
+            healthDeclined={healthDeclined}
             healthEnabled={healthAgreed}
             monthLaterMode={monthLaterMode}
             openExpense={() => setView("expense")}
@@ -395,7 +392,10 @@ export function MainApp({
             setHealthConsent(false)
             setView("health")
           }}
-          decline={() => setHealthConsent(false)}
+          decline={() => {
+            setHealthDeclined(true)
+            setHealthConsent(false)
+          }}
         />
       )}
       {toast && (

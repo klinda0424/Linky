@@ -392,6 +392,7 @@ export function HomePage({
   openSettlement,
   openMood,
   healthEnabled,
+  healthDeclined,
   openHealthConsent,
   prepareMode,
   selectExam,
@@ -414,6 +415,7 @@ export function HomePage({
   openSettlement: () => void
   openMood: () => void
   healthEnabled: boolean
+  healthDeclined: boolean
   openHealthConsent: () => void
   prepareMode: boolean
   selectExam: () => void
@@ -527,7 +529,18 @@ export function HomePage({
           travelMode={travelMode}
         />
         {afterMode && <TravelStoryPreview />}
-        {!healthEnabled && (
+        {!healthEnabled && healthDeclined && (
+          <div className="health-detection">
+            <span className="health-card-icon">
+              <Stethoscope size={19} strokeWidth={1.5} />
+            </span>
+            <div>
+              <strong>지출로만 기록했어요</strong>
+              <span>건강 기록은 만들지 않아요</span>
+            </div>
+          </div>
+        )}
+        {!healthEnabled && !healthDeclined && (
           <Action className="health-detection" onClick={openHealthConsent}>
             <span className="health-card-icon">
               <Stethoscope size={19} strokeWidth={1.5} />
