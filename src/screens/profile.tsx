@@ -37,9 +37,9 @@ export function ProfilePage({
     <div className="main-page sub-page">
       <MainHeader back={back} title="프로필" />
       <div className="profile-top">
-        <span>지</span>
+        <span>소</span>
         <div>
-          <strong>지은이</strong>
+          <strong>김소연</strong>
           <p>린이가 기록을 연결하고 있어요</p>
         </div>
       </div>
