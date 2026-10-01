@@ -215,6 +215,30 @@ export function SpendingCard({
       status: false,
     },
   ]
+  // 여행 후(D+5, 12월 27일): 여행에서 돌아온 뒤의 일상 결제
+  const afterRows = [
+    {
+      icon: <Car size={17} strokeWidth={1.5} />,
+      name: "공항버스",
+      merchant: "교통",
+      amount: "17,000원",
+      status: false,
+    },
+    {
+      icon: <UtensilsCrossed size={17} strokeWidth={1.5} />,
+      name: "해장국",
+      merchant: "식비",
+      amount: "9,000원",
+      status: false,
+    },
+    {
+      icon: <ShoppingBag size={17} strokeWidth={1.5} />,
+      name: "카페",
+      merchant: "스터디 카페",
+      amount: "5,500원",
+      status: false,
+    },
+  ]
   const rows: Array<{
     icon: ReactNode
     name: string
@@ -225,6 +249,8 @@ export function SpendingCard({
     status: boolean
   }> = confirmMode
     ? confirmRows
+    : afterMode
+    ? afterRows
     : monthLaterMode
     ? [
         {
@@ -297,6 +323,8 @@ export function SpendingCard({
             오늘{" "}
             {confirmMode
               ? "3건 · 12,000원"
+              : afterMode
+              ? "3건 · 31,500원"
               : monthLaterMode
               ? "3건 · 11,200원"
               : prepareMode
