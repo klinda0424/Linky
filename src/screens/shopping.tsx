@@ -24,6 +24,8 @@ export function ExpenseDetail({
 }) {
   const [editing, setEditing] = useState(false)
   const [linked, setLinked] = useState(false)
+  // U3-1 거절: 여행 태그 없이 일반 지출로 남김
+  const [skipped, setSkipped] = useState(false)
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="지출 상세" />
@@ -73,18 +75,22 @@ export function ExpenseDetail({
             <span>에이블리 앱</span>
           </div>
         </div>
-        <div className={cx("tag-suggestion", linked && "linked")}>
+        <div className={cx("tag-suggestion", (linked || skipped) && "linked")}>
           <span className="connect-icon">
             <Sparkles size={18} strokeWidth={1.5} />
           </span>
           <p>
             {linked
               ? "제주 여행 준비로 묶었어요"
-              : "제주 여행 준비로 묶을까요?"}
+              : skipped
+                ? "일반 지출로 남겼어요"
+                : "제주 여행 준비로 묶을까요?"}
           </p>
-          {!linked && (
+          {!linked && !skipped && (
             <div>
-              <Action className="mini-secondary">아니요</Action>
+              <Action className="mini-secondary" onClick={() => setSkipped(true)}>
+                아니요
+              </Action>
               <Action className="mini-primary" onClick={() => setLinked(true)}>
                 묶기
               </Action>
