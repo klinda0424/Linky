@@ -26,8 +26,11 @@ const itemCandidates = [
 // U3-1 분기(수락/거절)는 이 파일 안에서 옷장(U3-2)으로 넘어간다.
 export function ExpenseDetail({
   back,
+  onTag,
 }: {
   back: () => void
+  // 여행 태그 수락(true)/거절(false) 알림 (UT 성공 지점 기록용)
+  onTag?: (tagged: boolean) => void
 }) {
   const [editing, setEditing] = useState(false)
   const [edited, setEdited] = useState(false)
@@ -150,14 +153,20 @@ export function ExpenseDetail({
         <Action
           className="secondary-button"
           disabled={editing}
-          onClick={() => setTagged(false)}
+          onClick={() => {
+            onTag?.(false)
+            setTagged(false)
+          }}
         >
           아니요
         </Action>
         <Action
           className="primary-button"
           disabled={editing}
-          onClick={() => setTagged(true)}
+          onClick={() => {
+            onTag?.(true)
+            setTagged(true)
+          }}
         >
           여행으로 묶기
         </Action>

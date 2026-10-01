@@ -30,6 +30,8 @@ export function Action({
       aria-disabled={disabled}
       aria-label={label}
       className={cx("action", className, disabled && "disabled")}
+      // onClick이 없는 버튼은 UT 모드에서 '준비 중' 탭으로 집계
+      data-dead={!onClick && !disabled ? "true" : undefined}
       onClick={activate}
       onKeyDown={onKeyDown}
       role="button"
