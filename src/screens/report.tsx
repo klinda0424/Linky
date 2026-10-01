@@ -59,7 +59,7 @@ export function DailyReport({
   }
   return (
     <div className="main-page sub-page">
-      <MainHeader back={back} title="12월 15일 리포트" />
+      <MainHeader back={back} title="12월 12일 리포트" />
       <div className="daily-report-content">
         <div
           className="daily-report-card"

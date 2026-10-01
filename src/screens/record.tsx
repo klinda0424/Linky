@@ -351,7 +351,10 @@ export function CaptureUpload({
             ))}
           </div>
         </div>
-        <Action className="calendar-import">
+        <Action
+          className="calendar-import"
+          onClick={() => state === "idle" && setState("recognizing")}
+        >
           <CalendarDays size={15} strokeWidth={1.5} />
           또는 캘린더에서 가져오기
         </Action>
