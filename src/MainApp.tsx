@@ -64,10 +64,8 @@ export function MainApp({
   const [excluded, setExcluded] = useState<string[]>([])
   const [matched, setMatched] = useState(false)
   const settlement = summarize(excluded)
-  // 지출 상세(U3-1)를 연 곳: 홈에서 열면 "맞아요" 뒤 옷장(U3-2)으로 이어짐
-  const [dressTagged, setDressTagged] = useState(true)
+  // 지출 상세(U3-1)를 연 곳: 뒤로 갈 때 돌아갈 화면
   const [expenseFrom, setExpenseFrom] = useState<"home" | "search">("home")
-  const [closetFromExpense, setClosetFromExpense] = useState(false)
   // 목표 달성 관리(U10-2)에서 뒤로 갈 곳: 코치 허브 또는 회고 흐름의 다음 단계(한 달 뒤 홈)
   const [goalReturn, setGoalReturn] = useState<"coachHub" | "monthLater">(
     "coachHub",
@@ -181,13 +179,6 @@ export function MainApp({
     page = (
       <ExpenseDetail
         back={() => setView(expenseFrom === "home" ? "tabs" : "searchResults")}
-        confirm={(tagged) => {
-          if (tagged !== undefined) setDressTagged(tagged)
-          if (expenseFrom === "home") {
-            setClosetFromExpense(true)
-            setView("closet")
-          } else setView("tabs")
-        }}
       />
     )
   else if (view === "groupExpense")
@@ -281,15 +272,7 @@ export function MainApp({
     )
   else if (view === "closet")
     page = (
-      <ClosetPage
-        dressTagged={dressTagged}
-        back={() => {
-          if (closetFromExpense) {
-            setClosetFromExpense(false)
-            setView("tabs")
-          } else setView("shopping")
-        }}
-      />
+      <ClosetPage back={() => setView("shopping")} />
     )
   else if (view === "fridge")
     page = (

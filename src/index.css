@@ -1792,7 +1792,7 @@ p {
 }
 
 .restored-product > svg {
-  margin: 8px 0;
+  margin: 8px auto;
   color: var(--sub);
 }
 
@@ -1828,6 +1828,62 @@ p {
   border-radius: 7px;
   background: var(--surface);
   outline: none;
+}
+
+.restored-product > div > div > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.product-edit {
+  color: var(--primary-strong);
+  font-size: 10px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.restored-product > div.product-editor {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.restored-product > div.product-editor > .suggestion-chips {
+  margin-top: 0;
+  flex-direction: row;
+}
+
+.product-input {
+  width: 100%;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.product-input:focus {
+  border-color: var(--primary);
+}
+
+.restored-product > div.product-editor > .product-editor-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.tag-reason {
+  margin-top: 4px;
+  display: block;
+  color: var(--sub);
+  font-size: 11px;
 }
 
 .product-thumb {
@@ -1958,6 +2014,10 @@ p {
   background: var(--primary);
 }
 
+.ai-bottom .secondary-button.disabled {
+  color: var(--disabled);
+}
+
 .ai-bottom {
   position: absolute;
   right: 20px;
@@ -1999,6 +2059,19 @@ p {
   margin-top: 4px;
   color: var(--sub);
   font-size: 11px;
+}
+
+.closet-notice {
+  height: 38px;
+  margin-bottom: 14px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 10px;
+  background: var(--primary-light);
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .filter-chips {
@@ -2294,7 +2367,7 @@ p {
   color: var(--sub);
 }
 
-.food-photo > span {
+.food-photo > span:not(.badge) {
   width: 90px;
   height: 90px;
   display: flex;
@@ -2309,6 +2382,10 @@ p {
   position: absolute;
   right: 12px;
   bottom: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
   background: var(--primary);
   color: var(--text);
 }
@@ -2339,6 +2416,39 @@ p {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+
+.food-suggestions .suggestion-chip {
+  font-size: 12px;
+}
+
+.food-input {
+  width: 100%;
+  height: 38px;
+  margin-top: 2px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.food-input:focus {
+  border-color: var(--primary);
+}
+
+.food-recognizing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.food-recognizing > p {
+  color: var(--sub);
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .nutrition-card {
@@ -2650,6 +2760,49 @@ p {
 
 .recognition-value:focus {
   box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+input.recognition-value {
+  width: 100%;
+  border: 0;
+  color: var(--text);
+  font-family: inherit;
+}
+
+.recognition-question {
+  margin-top: 12px;
+  font-size: 18px;
+  line-height: 1.4;
+  font-weight: 700;
+  white-space: pre-line;
+}
+
+.recognition-groups {
+  max-height: 52vh;
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+}
+
+.recognition-group .recognition-rows {
+  margin-top: 6px;
+}
+
+.recognition-group-title {
+  color: var(--sub);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.recognition-people {
+  display: flex;
+  gap: 6px;
+}
+
+.recognition-people .suggestion-chip {
+  padding: 5px 10px;
 }
 
 .ai-confirm-buttons {
@@ -3958,6 +4111,47 @@ p {
   padding: 0 7px;
   text-align: center;
   font-size: 11px;
+}
+
+.consent-payment {
+  margin-top: 14px;
+  padding: 11px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+}
+
+.consent-payment span {
+  color: var(--sub);
+  font-size: 11px;
+}
+
+.consent-payment strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.consent-note {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--sub);
+  font-size: 11px;
+}
+
+.consent-icon.neutral {
+  background: var(--surface);
+}
+
+.consent-declined {
+  padding-bottom: 36px;
+}
+
+.consent-declined .sheet-sub {
+  line-height: 1.5;
 }
 
 .health-archive-content {

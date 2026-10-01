@@ -1,6 +1,7 @@
 import { useState } from "react"
 import {
   ArrowDown,
+  Check,
   ChevronRight,
   Map,
   Refrigerator,
@@ -15,18 +16,31 @@ import {
 } from "@/components/common"
 import { MainHeader } from "@/components/layout"
 
+const restoredItem = "원피스 (블랙 · M)"
+const itemCandidates = [
+  restoredItem,
+  "원피스 (아이보리 · M)",
+  "블라우스 (블랙 · M)",
+]
+
+// U3-1 분기(수락/거절)는 이 파일 안에서 옷장(U3-2)으로 넘어간다.
 export function ExpenseDetail({
   back,
-  confirm,
 }: {
   back: () => void
-  // 여행 태그 선택 결과: 묶기 true / 아니요 false / 선택 안 함 undefined
-  confirm: (tagged?: boolean) => void
 }) {
   const [editing, setEditing] = useState(false)
-  const [linked, setLinked] = useState(false)
-  // U3-1 거절: 여행 태그 없이 일반 지출로 남김
-  const [skipped, setSkipped] = useState(false)
+  const [edited, setEdited] = useState(false)
+  const [item, setItem] = useState(restoredItem)
+  const [draft, setDraft] = useState(restoredItem)
+  const [tagged, setTagged] = useState<boolean>()
+  if (tagged !== undefined)
+    return <ClosetPage added={{ name: item, tagged }} back={back} />
+  const finishEdit = () => {
+    setItem(draft.trim())
+    setEdited(true)
+    setEditing(false)
+  }
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="지출 상세" />
@@ -36,24 +50,70 @@ export function ExpenseDetail({
           <ArrowDown size={18} strokeWidth={1.5} />
           <div>
             <div>
-              {editing ? (
-                <div
-                  className="detail-editable"
-                  contentEditable
-                  role="textbox"
-                  suppressContentEditableWarning
-                >
-                  원피스 (블랙 · M)
-                </div>
-              ) : (
-                <strong>원피스 (블랙 · M)</strong>
-              )}
-              <span>구매 항목을 찾았어요</span>
+              <strong>{editing ? draft || " " : item}</strong>
+              <span>
+                {editing
+                  ? "맞는 항목을 골라주세요"
+                  : edited
+                    ? "고친 이름으로 바꿨어요"
+                    : "구매 항목을 찾았어요"}
+                {!editing && (
+                  <Action
+                    className="product-edit"
+                    onClick={() => {
+                      setDraft(item)
+                      setEditing(true)
+                    }}
+                  >
+                    수정
+                  </Action>
+                )}
+              </span>
             </div>
             <span className="product-thumb">
               <Shirt size={36} strokeWidth={1.3} />
             </span>
           </div>
+          {editing && (
+            <div className="product-editor">
+              <div className="suggestion-chips">
+                {itemCandidates.map((candidate) => (
+                  <Action
+                    className={cx(
+                      "suggestion-chip",
+                      draft === candidate && "selected",
+                    )}
+                    key={candidate}
+                    onClick={() => setDraft(candidate)}
+                  >
+                    {candidate}
+                  </Action>
+                ))}
+              </div>
+              <input
+                aria-label="구매 항목 이름"
+                className="product-input"
+                onChange={(event) => setDraft(event.target.value)}
+                placeholder="직접 입력"
+                value={draft}
+              />
+              <div className="product-editor-actions">
+                <Action
+                  className="mini-secondary"
+                  onClick={() => setEditing(false)}
+                >
+                  취소
+                </Action>
+                <Action
+                  className="mini-primary"
+                  disabled={!draft.trim()}
+                  onClick={finishEdit}
+                >
+                  완료
+                </Action>
+              </div>
+            </div>
+          )}
         </div>
         <div className="detail-info">
           {[
@@ -76,38 +136,30 @@ export function ExpenseDetail({
             <span>에이블리 앱</span>
           </div>
         </div>
-        <div className={cx("tag-suggestion", (linked || skipped) && "linked")}>
+        <div className="tag-suggestion">
           <span className="connect-icon">
             <Sparkles size={18} strokeWidth={1.5} />
           </span>
-          <p>
-            {linked
-              ? "제주 여행 준비로 묶었어요"
-              : skipped
-                ? "일반 지출로 남겼어요"
-                : "제주 여행 준비로 묶을까요?"}
-          </p>
-          {!linked && !skipped && (
-            <div>
-              <Action className="mini-secondary" onClick={() => setSkipped(true)}>
-                아니요
-              </Action>
-              <Action className="mini-primary" onClick={() => setLinked(true)}>
-                묶기
-              </Action>
-            </div>
-          )}
+          <p>제주 여행 준비로 묶어둘 수 있어요</p>
+          <span className="tag-reason">
+            12월 22일 제주 여행 열흘 전에 산 옷이에요
+          </span>
         </div>
       </div>
       <div className="ai-bottom">
-        <Action className="secondary-button" onClick={() => setEditing(true)}>
-          수정
+        <Action
+          className="secondary-button"
+          disabled={editing}
+          onClick={() => setTagged(false)}
+        >
+          아니요
         </Action>
         <Action
           className="primary-button"
-          onClick={() => confirm(linked ? true : skipped ? false : undefined)}
+          disabled={editing}
+          onClick={() => setTagged(true)}
         >
-          맞아요
+          여행으로 묶기
         </Action>
       </div>
     </div>
@@ -156,15 +208,19 @@ export function ShoppingStorage({
 }
 export function ClosetPage({
   back,
-  dressTagged = true,
+  added,
 }: {
   back: () => void
-  // U3-1에서 여행 태그를 수락했는지 (거절하면 일반 의류로만 보임)
-  dressTagged?: boolean
+  added?: { name: string; tagged: boolean }
 }) {
   const [filter, setFilter] = useState("전체")
   const items = [
-    ["원피스", "12월 12일 구매", dressTagged ? "제주 여행" : "", "dress"],
+    [
+      added?.name ?? "원피스",
+      "12월 12일 구매",
+      !added || added.tagged ? "제주 여행" : "",
+      "dress",
+    ],
     ["울 카디건", "12월 7일 구매", "", "cardigan"],
     ["니트 머플러", "11월 28일 구매", "시험기간", "scarf"],
     ["롱 코트", "11월 19일 구매", "", "coat"],
@@ -173,6 +229,14 @@ export function ClosetPage({
     <div className="main-page sub-page">
       <MainHeader back={back} title="옷장" />
       <div className="closet-content">
+        {added && (
+          <div className="closet-notice">
+            <Check size={14} strokeWidth={2} />
+            {added.tagged
+              ? "옷장에 넣고 제주 여행으로 묶었어요"
+              : "옷장에 넣었어요"}
+          </div>
+        )}
         <div className="filter-chips">
           {["전체", "제주 여행", "시험기간"].map((item) => (
             <Action
@@ -191,7 +255,7 @@ export function ClosetPage({
               <div className="closet-card" key={name}>
                 <div className={cx("closet-image", visual)}>
                   <Shirt size={38} strokeWidth={1.1} />
-                  {name === "원피스" && <Badge>NEW</Badge>}
+                  {visual === "dress" && <Badge>NEW</Badge>}
                 </div>
                 <strong>{name}</strong>
                 <span>{date}</span>

@@ -22,7 +22,6 @@ import {
   cx,
 } from "@/components/common"
 import { MainHeader } from "@/components/layout"
-import { type RecognizedFields } from "@/types"
 
 export const recordTiles: Array<{
   key: string
@@ -207,40 +206,83 @@ export function LinkRecord({ back }: { back: () => void }) {
     </div>
   )
 }
+type ScheduleDraft = {
+  examName: string
+  examDate: string
+  tripPlace: string
+  tripDate: string
+  people: number
+}
+const recognizedSchedule: ScheduleDraft = {
+  examName: "기말고사",
+  examDate: "12월 9일~20일",
+  tripPlace: "제주도",
+  tripDate: "12월 22일~24일",
+  people: 3,
+}
+const tripMembers = ["나", "수현", "민지"]
+
 export function RecognitionSheet({ confirm }: { confirm: () => void }) {
   const [editing, setEditing] = useState(false)
-  const [fields, setFields] = useState<RecognizedFields>({
-    title: "기말고사 · 제주도 여행",
-    date: "12월 9일~20일 · 12월 22일~24일",
-    people: "3명 (나, 수현, 민지)",
-    place: "제주도",
-  })
-  const rows: Array<{
-    key: keyof RecognizedFields
-    label: string
-    icon: ReactNode
+  const [edited, setEdited] = useState(false)
+  const [draft, setDraft] = useState<ScheduleDraft>(recognizedSchedule)
+  const [saved, setSaved] = useState<ScheduleDraft>(recognizedSchedule)
+  const shown = editing ? draft : saved
+  const peopleLabel = (count: number) =>
+    count === tripMembers.length
+      ? `${count}명 (${tripMembers.join(", ")})`
+      : `${count}명`
+  const complete = Object.values(draft).every((value) =>
+    typeof value === "string" ? value.trim() : value > 0,
+  )
+  const groups: Array<{
+    title: string
+    rows: Array<{
+      key: Exclude<keyof ScheduleDraft, "people">
+      label: string
+      icon: ReactNode
+    }>
   }> = [
     {
-      key: "title",
-      label: "일정명",
-      icon: <FileText size={18} strokeWidth={1.5} />,
+      title: "시험기간",
+      rows: [
+        {
+          key: "examName",
+          label: "일정명",
+          icon: <FileText size={18} strokeWidth={1.5} />,
+        },
+        {
+          key: "examDate",
+          label: "날짜",
+          icon: <CalendarDays size={18} strokeWidth={1.5} />,
+        },
+      ],
     },
     {
-      key: "date",
-      label: "날짜",
-      icon: <CalendarDays size={18} strokeWidth={1.5} />,
-    },
-    {
-      key: "people",
-      label: "인원",
-      icon: <Users size={18} strokeWidth={1.5} />,
-    },
-    {
-      key: "place",
-      label: "장소",
-      icon: <MapPin size={18} strokeWidth={1.5} />,
+      title: "여행",
+      rows: [
+        {
+          key: "tripPlace",
+          label: "장소",
+          icon: <MapPin size={18} strokeWidth={1.5} />,
+        },
+        {
+          key: "tripDate",
+          label: "날짜",
+          icon: <CalendarDays size={18} strokeWidth={1.5} />,
+        },
+      ],
     },
   ]
+  const startEdit = () => {
+    setDraft(saved)
+    setEditing(true)
+  }
+  const finishEdit = () => {
+    setSaved(draft)
+    setEdited(true)
+    setEditing(false)
+  }
   return (
     <div className="recognition-overlay">
       <div className="recognition-sheet">
@@ -249,46 +291,117 @@ export function RecognitionSheet({ confirm }: { confirm: () => void }) {
           <span>
             <Check size={14} strokeWidth={2.2} />
           </span>
-          <p>린이가 인식한 내용이에요</p>
+          <p>
+            {editing
+              ? "틀린 부분만 고쳐주세요"
+              : edited
+                ? "고친 내용으로 바꿨어요"
+                : "린이가 인식한 내용이에요"}
+          </p>
         </div>
-        <div className="recognition-rows">
-          {rows.map((row) => (
-            <div
-              className={cx("recognition-row", editing && "editing")}
-              key={row.key}
-            >
-              <span className="recognition-row-icon">{row.icon}</span>
-              <div>
-                <span>{row.label}</span>
-                {editing ? (
+        {!editing && (
+          <p className="recognition-question">
+            {saved.examDate} {saved.examName},{"\n"}
+            {saved.tripDate} {saved.tripPlace} {saved.people}명 맞나요?
+          </p>
+        )}
+        <div className="recognition-groups">
+          {groups.map((group) => (
+            <div className="recognition-group" key={group.title}>
+              <p className="recognition-group-title">{group.title}</p>
+              <div className="recognition-rows">
+                {group.rows.map((row) => (
                   <div
-                    className="recognition-value"
-                    contentEditable
-                    onInput={(event) =>
-                      setFields((current) => ({
-                        ...current,
-                        [row.key]: event.currentTarget.textContent || "",
-                      }))
-                    }
-                    role="textbox"
-                    suppressContentEditableWarning
+                    className={cx("recognition-row", editing && "editing")}
+                    key={row.key}
                   >
-                    {fields[row.key]}
+                    <span className="recognition-row-icon">{row.icon}</span>
+                    <div>
+                      <span>{row.label}</span>
+                      {editing ? (
+                        <input
+                          aria-label={`${group.title} ${row.label}`}
+                          className="recognition-value"
+                          onChange={(event) =>
+                            setDraft((current) => ({
+                              ...current,
+                              [row.key]: event.target.value,
+                            }))
+                          }
+                          value={draft[row.key]}
+                        />
+                      ) : (
+                        <strong>{shown[row.key]}</strong>
+                      )}
+                    </div>
                   </div>
-                ) : (
-                  <strong>{fields[row.key]}</strong>
+                ))}
+                {group.title === "여행" && (
+                  <div
+                    className={cx("recognition-row", editing && "editing")}
+                  >
+                    <span className="recognition-row-icon">
+                      <Users size={18} strokeWidth={1.5} />
+                    </span>
+                    <div>
+                      <span>인원</span>
+                      {editing ? (
+                        <div className="recognition-people">
+                          {[2, 3, 4, 5].map((count) => (
+                            <Action
+                              className={cx(
+                                "suggestion-chip",
+                                draft.people === count && "selected",
+                              )}
+                              key={count}
+                              onClick={() =>
+                                setDraft((current) => ({
+                                  ...current,
+                                  people: count,
+                                }))
+                              }
+                            >
+                              {count}명
+                            </Action>
+                          ))}
+                        </div>
+                      ) : (
+                        <strong>{peopleLabel(shown.people)}</strong>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
           ))}
         </div>
         <div className="ai-confirm-buttons">
-          <Action className="secondary-button" onClick={() => setEditing(true)}>
-            수정
-          </Action>
-          <Action className="primary-button" onClick={confirm}>
-            맞아요
-          </Action>
+          {editing ? (
+            <>
+              <Action
+                className="secondary-button"
+                onClick={() => setEditing(false)}
+              >
+                취소
+              </Action>
+              <Action
+                className="primary-button"
+                disabled={!complete}
+                onClick={finishEdit}
+              >
+                완료
+              </Action>
+            </>
+          ) : (
+            <>
+              <Action className="secondary-button" onClick={startEdit}>
+                수정
+              </Action>
+              <Action className="primary-button" onClick={confirm}>
+                맞아요
+              </Action>
+            </>
+          )}
         </div>
       </div>
     </div>
