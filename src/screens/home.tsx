@@ -1,6 +1,7 @@
 import {
   ChevronRight,
   CircleDollarSign,
+  CalendarDays,
   Car,
   MapPin,
   MessageCircleMore,
@@ -13,7 +14,7 @@ import {
   UtensilsCrossed,
   X,
 } from "lucide-react"
-import { useState } from "react"
+import { useState, type ReactNode } from "react"
 import { Action, StatusChip, cx } from "@/components/common"
 import { HomeSegments } from "@/components/layout"
 import { HealthCard } from "@/screens/health"
@@ -26,20 +27,36 @@ import {
   won,
 } from "@/lib/today"
 import { MainHeader } from "@/components/layout"
+import { type UTMode } from "@/lib/ut"
 import { type Tone } from "@/types"
 
 export function WeekCalendar({
+  confirmMode = false,
+  scheduleRegistered = false,
   travelMode = false,
   prepareMode = false,
   afterMode = false,
   monthLaterMode = false,
 }: {
+  confirmMode?: boolean
+  scheduleRegistered?: boolean
   travelMode?: boolean
   prepareMode?: boolean
   afterMode?: boolean
   monthLaterMode?: boolean
 }) {
-  const dates = monthLaterMode
+  // 여행 확정: 시험 3주 전(11월 18일 주). 일정은 아직 이 주에 걸리지 않는다.
+  const dates = confirmMode
+    ? [
+        ["월", "18"],
+        ["화", "19"],
+        ["수", "20"],
+        ["목", "21"],
+        ["금", "22"],
+        ["토", "23"],
+        ["일", "24"],
+      ]
+    : monthLaterMode
     ? [
         ["월", "20"],
         ["화", "21"],
@@ -82,7 +99,9 @@ export function WeekCalendar({
     <div className="main-card calendar-strip">
       <div className="block-heading">
         <strong>이번 주</strong>
-        <span>{monthLaterMode ? "1월" : "12월"}</span>
+        <span>
+          {confirmMode ? "11월" : monthLaterMode ? "1월" : "12월"}
+        </span>
       </div>
       <div className="week-grid">
         {dates.map(([day, date], index) => (
@@ -107,7 +126,14 @@ export function WeekCalendar({
           </div>
         ))}
       </div>
-      {monthLaterMode ? null : afterMode ? (
+      {confirmMode ? (
+        scheduleRegistered && (
+          <div className="upcoming-lines">
+            <span className="upcoming-exam">시험기간 12/9~20</span>
+            <span className="upcoming-travel">제주 여행 12/22~24</span>
+          </div>
+        )
+      ) : monthLaterMode ? null : afterMode ? (
         <div className="after-event-lines">
           <span className="past-exam">시험기간</span>
           <span className="past-travel">제주 여행 · 12/22~24</span>
@@ -133,6 +159,7 @@ export function WeekCalendar({
   )
 }
 export function SpendingCard({
+  confirmMode,
   pendingCount,
   flightPersonal,
   openExpense,
@@ -142,6 +169,7 @@ export function SpendingCard({
   monthLaterMode,
   openSettlement,
 }: {
+  confirmMode: boolean
   pendingCount: number
   flightPersonal: boolean
   openExpense: () => void
@@ -164,7 +192,40 @@ export function SpendingCard({
     amount: won(expense.amount),
     status: false,
   }))
-  const rows = monthLaterMode
+  const confirmRows = [
+    {
+      icon: <UtensilsCrossed size={17} strokeWidth={1.5} />,
+      name: "학식",
+      merchant: "학생식당",
+      amount: "6,000원",
+      status: false,
+    },
+    {
+      icon: <ShoppingBag size={17} strokeWidth={1.5} />,
+      name: "카페",
+      merchant: "스터디 카페",
+      amount: "4,500원",
+      status: false,
+    },
+    {
+      icon: <CircleDollarSign size={17} strokeWidth={1.5} />,
+      name: "지하철",
+      merchant: "교통",
+      amount: "1,500원",
+      status: false,
+    },
+  ]
+  const rows: Array<{
+    icon: ReactNode
+    name: string
+    merchant: string
+    note?: string
+    tripTag?: boolean
+    amount: string
+    status: boolean
+  }> = confirmMode
+    ? confirmRows
+    : monthLaterMode
     ? [
         {
           icon: <UtensilsCrossed size={17} strokeWidth={1.5} />,
@@ -234,7 +295,9 @@ export function SpendingCard({
           <span>오늘 지출</span>
           <p>
             오늘{" "}
-            {monthLaterMode
+            {confirmMode
+              ? "3건 · 12,000원"
+              : monthLaterMode
               ? "3건 · 11,200원"
               : prepareMode
                 ? `4건 · ${won(360000 + todayTotal)}`
@@ -265,10 +328,10 @@ export function SpendingCard({
             <div>
               <strong>{row.name}</strong>
               {row.merchant && <span>{row.merchant}</span>}
-              {"note" in row && row.note && (
+              {row.note && (
                 <span className="row-note">{row.note}</span>
               )}
-              {"tripTag" in row && row.tripTag && (
+              {row.tripTag && (
                 // U8-1: 제주 위치 결제는 여행 태그로 자동 묶임
                 <span className="trip-tag">📍 제주 여행</span>
               )}
@@ -544,12 +607,77 @@ export function TravelCostPreview({ open }: { open: () => void }) {
     </Action>
   )
 }
+// 여행 확정 단계(U0·U1)의 홈 진입 카드: 일정 등록 → 목표 모드
+export function ScheduleEntry({
+  registered,
+  open,
+}: {
+  registered: boolean
+  open: () => void
+}) {
+  const Wrapper = registered ? "div" : Action
+  return (
+    <Wrapper
+      className="health-detection home-entry"
+      {...(registered ? {} : { onClick: open })}
+    >
+      <span className="health-card-icon">
+        <CalendarDays size={19} strokeWidth={1.5} />
+      </span>
+      <div>
+        <strong>
+          {registered ? "일정을 불러왔어요" : "단톡 캡처로 일정을 등록해요"}
+        </strong>
+        <span>
+          {registered
+            ? "시험기간 12/9~20 · 제주 여행 12/22~24 · 지출을 자동으로 묶어요"
+            : "시험·여행 일정을 한 번에 가져와요"}
+        </span>
+      </div>
+      {!registered && <ChevronRight size={17} strokeWidth={1.5} />}
+    </Wrapper>
+  )
+}
+export function GoalEntry({ open }: { open: () => void }) {
+  return (
+    <Action className="health-detection home-entry" onClick={open}>
+      <span className="health-card-icon">
+        <Sparkles size={19} strokeWidth={1.5} />
+      </span>
+      <div>
+        <strong>다이어트를 시작할까요?</strong>
+        <span>목표 모드를 켜면 식비·배달을 먼저 보여드려요</span>
+      </div>
+      <ChevronRight size={17} strokeWidth={1.5} />
+    </Action>
+  )
+}
+// 여행 후 단계(U10-2) 진입점
+export function GoalAchievementPreview({ open }: { open: () => void }) {
+  return (
+    <Action className="travel-story-preview" onClick={open}>
+      <span>
+        <Sparkles size={27} strokeWidth={1.4} />
+      </span>
+      <div>
+        <strong>목표 달성 관리</strong>
+        <p>해먹은 날과 아낀 돈을 모아봤어요</p>
+      </div>
+      <ChevronRight size={17} strokeWidth={1.5} />
+    </Action>
+  )
+}
 export function HomePage({
   tone,
   dietMode,
   savingMode,
   profile,
   openExpense,
+  confirmMode,
+  scheduleRegistered,
+  openCapture,
+  openGoals,
+  openGoalAchievement,
   travelMode,
   groupSuggestion,
   rejectGroup,
@@ -565,21 +693,22 @@ export function HomePage({
   healthDeclined,
   openHealthConsent,
   prepareMode,
-  selectExam,
-  selectPrepare,
-  selectTravel,
   afterMode,
   flightPersonal,
   nudgeOn,
-  selectAfter,
   monthLaterMode,
-  selectMonthLater,
+  selectMode,
 }: {
   tone: Tone
   dietMode: boolean
   savingMode: boolean
   profile: () => void
   openExpense: () => void
+  confirmMode: boolean
+  scheduleRegistered: boolean
+  openCapture: () => void
+  openGoals: () => void
+  openGoalAchievement: () => void
   travelMode: boolean
   groupSuggestion: boolean
   rejectGroup: () => void
@@ -595,19 +724,28 @@ export function HomePage({
   healthDeclined: boolean
   openHealthConsent: () => void
   prepareMode: boolean
-  selectExam: () => void
-  selectPrepare: () => void
-  selectTravel: () => void
   afterMode: boolean
   flightPersonal: boolean
   nudgeOn: boolean
-  selectAfter: () => void
   monthLaterMode: boolean
-  selectMonthLater: () => void
+  selectMode: (mode: UTMode) => void
 }) {
   const [observation, setObservation] = useState(true)
   // 뱃지는 사용자가 켠 목표 모드가 있을 때만 노출 (다이어트 우선)
   const activeGoal = dietMode ? "다이어트 모드" : savingMode ? "절약 모드" : ""
+  const examMode =
+    !confirmMode && !travelMode && !prepareMode && !afterMode && !monthLaterMode
+  const mode: UTMode = confirmMode
+    ? "confirm"
+    : travelMode
+      ? "travel"
+      : prepareMode
+        ? "prepare"
+        : afterMode
+          ? "after"
+          : monthLaterMode
+            ? "monthLater"
+            : "exam"
   return (
     <>
       <div className="home-header">
@@ -617,19 +755,7 @@ export function HomePage({
         </div>
         <div className="home-actions">
           <div className="profile-control">
-            {showSegments && (
-            <HomeSegments
-              afterMode={afterMode}
-              monthLaterMode={monthLaterMode}
-              prepareMode={prepareMode}
-              selectAfter={selectAfter}
-              selectExam={selectExam}
-              selectMonthLater={selectMonthLater}
-              selectPrepare={selectPrepare}
-              selectTravel={selectTravel}
-              travelMode={travelMode}
-            />
-            )}
+            {showSegments && <HomeSegments mode={mode} select={selectMode} />}
           </div>
           <Action className="profile-icon" onClick={profile} label="프로필">
             <UserRound size={17} strokeWidth={1.5} />
@@ -662,18 +788,18 @@ export function HomePage({
           </span>
         )}
         {dietMode && !monthLaterMode && <DietSummaryCard />}
+        {/* U0·U1: 여행 확정 단계의 시작점 */}
+        {confirmMode && (
+          <ScheduleEntry open={openCapture} registered={scheduleRegistered} />
+        )}
+        {confirmMode && !dietMode && <GoalEntry open={openGoals} />}
         {monthLaterMode && <GoalAchievementSummary />}
         {/* U7-1은 여행 준비 단계의 알림 */}
         {prepareMode && groupSuggestion && (
           <GroupSuggestion accept={acceptGroup} reject={rejectGroup} />
         )}
-        {/* U2-1은 넛지가 켜진 경우에만 표시 */}
-        {nudgeOn &&
-          !travelMode &&
-          !prepareMode &&
-          !afterMode &&
-          !monthLaterMode &&
-          observation && (
+        {/* U2-1은 시험기간에 넛지가 켜진 경우에만 표시 */}
+        {nudgeOn && examMode && observation && (
           <div className="observation-card">
             <span className="rini-avatar">L</span>
             <p>시험기간이랑 다이어트가 겹쳐요. 지친 날엔 무리하지 말아요.</p>
@@ -687,23 +813,28 @@ export function HomePage({
         )}
         <WeekCalendar
           afterMode={afterMode}
+          confirmMode={confirmMode}
           monthLaterMode={monthLaterMode}
           prepareMode={prepareMode}
+          scheduleRegistered={scheduleRegistered}
           travelMode={travelMode}
         />
         <SpendingCard
-          pendingCount={pendingCount}
           afterMode={afterMode}
+          confirmMode={confirmMode}
           flightPersonal={flightPersonal}
           monthLaterMode={monthLaterMode}
           openExpense={openExpense}
           openSettlement={openSettlement}
+          pendingCount={pendingCount}
           prepareMode={prepareMode}
           travelMode={travelMode}
         />
         {afterMode && <TravelStoryPreview open={openStory} />}
         {afterMode && tone === "numeric" && <TravelCostPreview open={openCost} />}
-        {!healthEnabled && healthDeclined && (
+        {afterMode && <GoalAchievementPreview open={openGoalAchievement} />}
+        {/* U6: 건강은 시험기간 단계에서만 */}
+        {examMode && !healthEnabled && healthDeclined && (
           <div className="health-detection">
             <span className="health-card-icon">
               <Stethoscope size={19} strokeWidth={1.5} />
@@ -714,7 +845,7 @@ export function HomePage({
             </div>
           </div>
         )}
-        {!healthEnabled && !healthDeclined && (
+        {examMode && !healthEnabled && !healthDeclined && (
           <Action className="health-detection" onClick={openHealthConsent}>
             <span className="health-card-icon">
               <Stethoscope size={19} strokeWidth={1.5} />
@@ -726,12 +857,10 @@ export function HomePage({
             <ChevronRight size={17} strokeWidth={1.5} />
           </Action>
         )}
-        {healthEnabled && <HealthCard />}
-        <HomeReport
-          daily={!travelMode && !prepareMode && !afterMode && !monthLaterMode}
-          openInsight={openInsight}
-          tone={tone}
-        />
+        {examMode && healthEnabled && <HealthCard />}
+        {!confirmMode && (
+          <HomeReport daily={examMode} openInsight={openInsight} tone={tone} />
+        )}
       </div>
     </>
   )

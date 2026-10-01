@@ -5430,3 +5430,32 @@ input.recognition-value {
   font-size: 11px;
   line-height: 1.6;
 }
+
+/* ===== 여행 확정 단계 홈: 다가오는 일정, 진입 카드 ===== */
+.upcoming-lines {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.upcoming-lines span {
+  height: 17px;
+  padding: 0 7px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  font-size: 9px;
+}
+
+.upcoming-lines .upcoming-exam {
+  background: var(--blue);
+}
+
+.upcoming-lines .upcoming-travel {
+  background: var(--primary);
+}
+
+.home-entry > div > span {
+  line-height: 1.4;
+}

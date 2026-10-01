@@ -2,7 +2,13 @@
 // 서버 없이 localStorage에만 저장한다. 주소에 ?ut=1 이 있을 때만 켜진다.
 import { type Tone } from "@/types"
 
-export type UTMode = "exam" | "prepare" | "travel" | "after" | "monthLater"
+export type UTMode =
+  | "confirm"
+  | "exam"
+  | "prepare"
+  | "travel"
+  | "after"
+  | "monthLater"
 
 export type UTTask = {
   id: string
