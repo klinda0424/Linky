@@ -1,7 +1,7 @@
 import {
   ChevronRight,
   CircleDollarSign,
-  HeartPulse,
+  Car,
   MapPin,
   MessageCircleMore,
   Plane,
@@ -17,6 +17,15 @@ import { useState } from "react"
 import { Action, StatusChip, cx } from "@/components/common"
 import { HomeSegments } from "@/components/layout"
 import { HealthCard } from "@/screens/health"
+import {
+  todayByCategory,
+  todayExpenses,
+  todayTotal,
+  usualDaily,
+  usualTotal,
+  won,
+} from "@/lib/today"
+import { MainHeader } from "@/components/layout"
 import { type Tone } from "@/types"
 
 export function WeekCalendar({
@@ -109,8 +118,15 @@ export function WeekCalendar({
           <span className="travel-start">제주 여행</span>
         </div>
       ) : (
-        <div className={cx("event-line", travelMode && "travel-event-line")}>
-          <span>{travelMode ? "제주 여행 · 12/22~24" : "시험기간"}</span>
+        <div
+          className={cx(
+            "event-line",
+            travelMode ? "travel-event-line" : "exam-event-line",
+          )}
+        >
+          <span>
+            {travelMode ? "제주 여행 · 12/22~24" : "시험기간 · 12/20까지"}
+          </span>
         </div>
       )}
     </div>
@@ -135,29 +151,19 @@ export function SpendingCard({
   monthLaterMode: boolean
   openSettlement: () => void
 }) {
-  const standardRows = [
-    {
-      icon: <ShoppingBag size={17} strokeWidth={1.5} />,
-      name: "원피스",
-      merchant: "에이블리",
-      amount: "40,000원",
-      status: false,
-    },
-    {
-      icon: <HeartPulse size={17} strokeWidth={1.5} />,
-      name: "떡볶이",
-      merchant: "배달의민족",
-      amount: "6,500원",
-      status: false,
-    },
-    {
-      icon: <ShoppingBag size={17} strokeWidth={1.5} />,
-      name: "CU 편의점",
-      merchant: "",
-      amount: "1,500원",
-      status: false,
-    },
-  ]
+  const todayIcons = {
+    쇼핑: <ShoppingBag size={17} strokeWidth={1.5} />,
+    배달: <UtensilsCrossed size={17} strokeWidth={1.5} />,
+    교통: <Car size={17} strokeWidth={1.5} />,
+  }
+  const standardRows = todayExpenses.map((expense) => ({
+    icon: todayIcons[expense.category],
+    name: expense.name,
+    merchant: expense.merchant,
+    note: expense.note,
+    amount: won(expense.amount),
+    status: false,
+  }))
   const rows = monthLaterMode
     ? [
         {
@@ -231,10 +237,10 @@ export function SpendingCard({
             {monthLaterMode
               ? "3건 · 11,200원"
               : prepareMode
-                ? "4건 · 408,000원"
+                ? `4건 · ${won(360000 + todayTotal)}`
                 : travelMode
                   ? "3건 · 165,000원"
-                  : "3건 · 48,000원"}
+                  : `${todayExpenses.length}건 · ${won(todayTotal)}`}
           </p>
         </div>
         <Action
@@ -259,6 +265,9 @@ export function SpendingCard({
             <div>
               <strong>{row.name}</strong>
               {row.merchant && <span>{row.merchant}</span>}
+              {"note" in row && row.note && (
+                <span className="row-note">{row.note}</span>
+              )}
               {"tripTag" in row && row.tripTag && (
                 // U8-1: 제주 위치 결제는 여행 태그로 자동 묶임
                 <span className="trip-tag">📍 제주 여행</span>
@@ -312,19 +321,49 @@ export function GoalAchievementSummary() {
     </div>
   )
 }
-export function HomeReport({ tone }: { tone: Tone }) {
+export function HomeReport({
+  tone,
+  daily,
+  openInsight,
+}: {
+  tone: Tone
+  // 시험기간(12월 12일)에는 일간 리포트, 그 밖의 시점은 기존 주간 리포트
+  daily: boolean
+  openInsight: () => void
+}) {
+  const categories = Object.entries(todayByCategory).sort(
+    (a, b) => b[1] - a[1],
+  )
+  // 일간 리포트만 눌러서 인사이트로 이동. 주간 카드는 누를 수 있는 것처럼 보이지 않게 일반 박스로 둔다.
+  const Wrapper = daily ? Action : "div"
   return (
-    <div className="main-card home-report">
+    <Wrapper
+      className="main-card home-report"
+      {...(daily ? { onClick: openInsight } : {})}
+    >
       <div className="block-heading">
-        <strong>린이의 주간 리포트</strong>
+        <strong>{daily ? "린이의 일간 리포트" : "린이의 주간 리포트"}</strong>
         <span className="linky-badge">
           <Sparkles size={12} strokeWidth={1.5} /> Linky
         </span>
       </div>
       {tone === "narrative" ? (
         <div className="report-quote">
-          “시험을 준비한 날엔 카페 결제가 있었고, 일정이 끝난 저녁에는 배달
-          주문이 있었어요.”
+          {daily
+            ? "“새벽에 택시를 탔고, 저녁에는 배달, 밤에는 옷 결제가 있었어요.”"
+            : "“시험을 준비한 날엔 카페 결제가 있었고, 일정이 끝난 저녁에는 배달 주문이 있었어요.”"}
+        </div>
+      ) : daily ? (
+        <div className="home-bars">
+          {categories.map(([label, amount]) => (
+            <div className="home-bar" key={label}>
+              <span>{label}</span>
+              <i>
+                <b style={{ width: `${(amount / todayTotal) * 100}%` }} />
+              </i>
+              <strong>{Math.round((amount / todayTotal) * 100)}%</strong>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="home-bars">
@@ -343,6 +382,106 @@ export function HomeReport({ tone }: { tone: Tone }) {
           ))}
         </div>
       )}
+      {daily && (
+        <span className="home-report-more">
+          평소와 비교한 인사이트 보기 <ChevronRight size={13} strokeWidth={1.6} />
+        </span>
+      )}
+    </Wrapper>
+  )
+}
+// 일간 리포트를 눌렀을 때 열리는 화면: 오늘 소비가 평소 하루와 어떻게 다른지
+export function DailyInsight({ tone, back }: { tone: Tone; back: () => void }) {
+  const difference = todayTotal - usualTotal
+  const ratio = (todayTotal / usualTotal).toFixed(1)
+  const compare = (["쇼핑", "교통", "배달", "기타"] as const).map((label) => ({
+    label,
+    today: todayByCategory[label] ?? 0,
+    usual: usualDaily[label],
+  }))
+  const largest = Math.max(...compare.flatMap((row) => [row.today, row.usual]))
+  const timeline = [...todayExpenses].sort((a, b) =>
+    a.time.localeCompare(b.time),
+  )
+  return (
+    <div className="main-page sub-page">
+      <MainHeader back={back} title="오늘의 인사이트" />
+      <div className="insight-content">
+        <div className="insight-hero">
+          <span>12월 12일 · 평소 하루와 비교</span>
+          <strong>{won(todayTotal)}</strong>
+          <p>
+            평소 하루 평균 {won(usualTotal)}보다 {won(difference)} 많았어요
+            (약 {ratio}배)
+          </p>
+        </div>
+        {tone === "narrative" ? (
+          <div className="insight-cards">
+            {[
+              [
+                "옷에 쓴 비중이 평소와 달랐어요",
+                `평소 하루 ${won(usualDaily.쇼핑)} 정도였던 쇼핑이 오늘은 ${won(todayByCategory.쇼핑)}이에요. 밤 11시 41분에 에이블리 결제가 한 번 있었어요.`,
+              ],
+              [
+                "이동이 평소보다 길었어요",
+                `새벽 1시에 경희대학교 서울캠퍼스에서 강남역 3번출구까지 택시를 탔어요. 평소 하루 교통비는 ${won(usualDaily.교통)} 정도예요.`,
+              ],
+              [
+                "친구와의 하루가 함께 남았어요",
+                "이별을 겪은 친구와 먹죽 day로 기록된 날이에요. 오늘의 이동과 저녁 배달은 그 약속과 이어져 있어요.",
+              ],
+            ].map(([title, copy]) => (
+              <div className="main-card insight-card" key={title}>
+                <strong>{title}</strong>
+                <p>{copy}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="main-card insight-compare">
+            <div className="block-heading">
+              <strong>카테고리별 오늘 vs 평소</strong>
+              <span>하루 기준</span>
+            </div>
+            {compare.map((row) => (
+              <div className="insight-row" key={row.label}>
+                <span>{row.label}</span>
+                <i>
+                  <b style={{ width: `${(row.today / largest) * 100}%` }} />
+                  <u style={{ left: `${(row.usual / largest) * 100}%` }} />
+                </i>
+                <strong>
+                  {won(row.today)}
+                  <small>평소 {won(row.usual)}</small>
+                </strong>
+              </div>
+            ))}
+            <p className="insight-legend">
+              <b /> 오늘 <u /> 평소 평균
+            </p>
+          </div>
+        )}
+        <div className="main-card insight-time">
+          <div className="block-heading">
+            <strong>결제 시간대</strong>
+            <span>평소와 다른 점</span>
+          </div>
+          <div className="insight-timeline">
+            {timeline.map((expense) => (
+              <div key={expense.name}>
+                <time>{expense.time}</time>
+                <span>
+                  {expense.name} · {won(expense.amount)}
+                </span>
+              </div>
+            ))}
+          </div>
+          <p>
+            평소 결제는 낮 12시~오후 6시에 몰려 있어요. 오늘은 새벽과 밤 시간대
+            결제가 있었어요.
+          </p>
+        </div>
+      </div>
     </div>
   )
 }
@@ -418,6 +557,7 @@ export function HomePage({
   openSettlement,
   openStory,
   openCost,
+  openInsight,
   pendingCount,
   showSegments = true,
   openMood,
@@ -447,6 +587,7 @@ export function HomePage({
   openSettlement: () => void
   openStory: () => void
   openCost: () => void
+  openInsight: () => void
   pendingCount: number
   showSegments?: boolean
   openMood: () => void
@@ -586,7 +727,11 @@ export function HomePage({
           </Action>
         )}
         {healthEnabled && <HealthCard />}
-        <HomeReport tone={tone} />
+        <HomeReport
+          daily={!travelMode && !prepareMode && !afterMode && !monthLaterMode}
+          openInsight={openInsight}
+          tone={tone}
+        />
       </div>
     </>
   )

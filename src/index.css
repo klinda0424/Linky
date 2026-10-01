@@ -1015,6 +1015,14 @@ p {
   margin-left: 0;
 }
 
+/* 시험기간은 이번 주를 지나 12/20까지 이어지므로 끝까지 채우고, '여행 준비' 주와 같은 하늘색을 쓴다 */
+.event-line.exam-event-line {
+  width: 100%;
+  margin-left: 0;
+  border-radius: 4px 0 0 4px;
+  background: var(--blue);
+}
+
 .prepare-event-lines {
   height: 34px;
   position: relative;
@@ -1144,6 +1152,12 @@ p {
 .spending-row > div span {
   color: var(--sub);
   font-size: 10px;
+}
+
+.spending-row .row-note {
+  color: var(--text);
+  font-size: 10px;
+  line-height: 1.4;
 }
 
 .spending-row .trip-tag {
@@ -5238,4 +5252,181 @@ input.recognition-value {
 
 .ut-facilitator {
   z-index: 1;
+}
+
+/* ===== 일간 리포트 인사이트 ===== */
+.home-report-more {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  color: var(--sub);
+  font-size: 10px;
+}
+
+.insight-content {
+  height: calc(100% - 56px);
+  padding: 8px var(--page-padding) 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.insight-hero {
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-radius: 16px;
+  background: var(--primary-light);
+}
+
+.insight-hero > span {
+  color: var(--primary-strong);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.insight-hero > strong {
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.insight-hero > p {
+  color: var(--sub);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.insight-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.insight-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.insight-card strong {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.insight-card p {
+  color: var(--sub);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.insight-compare {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.insight-row {
+  display: grid;
+  grid-template-columns: 30px 1fr 74px;
+  align-items: center;
+  gap: 8px;
+  color: var(--sub);
+  font-size: 11px;
+}
+
+.insight-row i {
+  height: 8px;
+  position: relative;
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.insight-row b {
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+  background: var(--primary);
+}
+
+.insight-row u,
+.insight-legend u {
+  width: 2px;
+  height: 14px;
+  position: absolute;
+  top: -3px;
+  display: block;
+  background: var(--text);
+  text-decoration: none;
+}
+
+.insight-row strong {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.insight-row small {
+  color: var(--sub);
+  font-size: 9px;
+  font-weight: 400;
+}
+
+.insight-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--sub);
+  font-size: 10px;
+}
+
+.insight-legend b {
+  width: 8px;
+  height: 8px;
+  display: inline-block;
+  border-radius: 2px;
+  background: var(--primary);
+}
+
+.insight-legend u {
+  position: static;
+  height: 10px;
+}
+
+.insight-time {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.insight-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.insight-timeline > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.insight-timeline time {
+  width: 44px;
+  color: var(--primary-strong);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.insight-time > p {
+  color: var(--sub);
+  font-size: 11px;
+  line-height: 1.6;
 }

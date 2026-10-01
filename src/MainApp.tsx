@@ -11,7 +11,7 @@ import {
 import { CoachChat, CoachHub, GoalAchievement } from "@/screens/coach"
 import { FoodRecognition, FridgePage } from "@/screens/diet"
 import { HealthArchive, HealthConsent } from "@/screens/health"
-import { HomePage } from "@/screens/home"
+import { DailyInsight, HomePage } from "@/screens/home"
 import { GoalModeSettings, ProfilePage, ProfileTone } from "@/screens/profile"
 import {
   CaptureUpload,
@@ -156,6 +156,8 @@ export function MainApp({
         skip={() => setView("tabs")}
       />
     )
+  else if (view === "dailyInsight")
+    page = <DailyInsight back={() => setView("tabs")} tone={tone} />
   else if (view === "dailyReport")
     page = (
       <DailyReport
@@ -387,6 +389,7 @@ export function MainApp({
             }}
             openHealthConsent={() => setHealthConsent(true)}
             openCost={() => setView("travelCost")}
+            openInsight={() => setView("dailyInsight")}
             pendingCount={settlement.items.length}
             openMood={() => setView("coachHub")}
             openSettlement={() => setView("settlement")}
