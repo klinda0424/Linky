@@ -31,6 +31,7 @@ import {
 } from "@/screens/settlement"
 import { ClosetPage, ExpenseDetail, ShoppingStorage } from "@/screens/shopping"
 import { TravelCostReport, TravelStory } from "@/screens/travel"
+import { summarize } from "@/lib/settlement"
 import {
   type GoalModeKey,
   type MainTab,
@@ -59,6 +60,10 @@ export function MainApp({
   const [healthAgreed, setHealthAgreed] = useState(false)
   const [healthDeclined, setHealthDeclined] = useState(false)
   const [toast, setToast] = useState("")
+  // 정산: 정산표에서 제외한 항목, 민지 입금 매칭 여부
+  const [excluded, setExcluded] = useState<string[]>([])
+  const [matched, setMatched] = useState(false)
+  const settlement = summarize(excluded)
   // 지출 상세(U3-1)를 연 곳: 홈에서 열면 "맞아요" 뒤 옷장(U3-2)으로 이어짐
   const [expenseFrom, setExpenseFrom] = useState<"home" | "search">("home")
   const [closetFromExpense, setClosetFromExpense] = useState(false)
@@ -200,6 +205,7 @@ export function MainApp({
     page = (
       <SettlementInbox
         back={() => setView("tabs")}
+        excluded={excluded}
         openTable={() => setView("settlementTable")}
       />
     )
@@ -208,6 +214,7 @@ export function MainApp({
       <SettlementTable
         back={() => setView("settlement")}
         edit={() => setView("settlementEdit")}
+        excluded={excluded}
         proceed={() => setView("settlementConfirm")}
       />
     )
@@ -215,31 +222,51 @@ export function MainApp({
     page = (
       <SettlementEdit
         back={() => setView("settlementTable")}
-        done={() => setView("settlementTable")}
+        done={(next) => {
+          setExcluded(next)
+          setView("settlementTable")
+        }}
+        excluded={excluded}
       />
     )
   else if (view === "settlementConfirm")
     page = (
       <SettlementConfirm
         back={() => setView("settlementTable")}
+        excluded={excluded}
+        matched={matched}
+        notify={() => {
+          if (matched) return
+          setToast("민지에게 입금 알림을 보냈어요")
+          window.setTimeout(() => {
+            setMatched(true)
+            setToast("민지의 입금이 확인됐어요")
+          }, 1200)
+          window.setTimeout(() => setToast(""), 3200)
+        }}
         result={() => setView("settlementResult")}
       />
     )
   else if (view === "settlementResult")
     page = (
       <SettlementResult
+        excluded={excluded}
         finish={() => setView("travelStory")}
       />
     )
   else if (view === "travelStory")
     page = (
-      <TravelStory close={() => openGoalAchievement("monthLater")} />
+      <TravelStory
+        close={() => openGoalAchievement("monthLater")}
+        mine={settlement.perPerson}
+      />
     )
   else if (view === "travelCost")
     page = (
       <TravelCostReport
         back={() => setView("tabs")}
         goHome={() => openGoalAchievement("monthLater")}
+        summary={settlement}
       />
     )
   else if (view === "shopping")
@@ -353,6 +380,7 @@ export function MainApp({
             }}
             openHealthConsent={() => setHealthConsent(true)}
             openCost={() => setView("travelCost")}
+            pendingCount={settlement.items.length}
             openMood={() => setView("coachHub")}
             openSettlement={() => setView("settlement")}
             openStory={() => setView("travelStory")}

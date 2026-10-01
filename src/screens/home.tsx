@@ -117,6 +117,7 @@ export function WeekCalendar({
   )
 }
 export function SpendingCard({
+  pendingCount,
   flightPersonal,
   openExpense,
   travelMode,
@@ -125,6 +126,7 @@ export function SpendingCard({
   monthLaterMode,
   openSettlement,
 }: {
+  pendingCount: number
   flightPersonal: boolean
   openExpense: () => void
   travelMode: boolean
@@ -243,7 +245,7 @@ export function SpendingCard({
           )}
           onClick={travelMode ? openSettlement : undefined}
         >
-          {afterMode ? "정산 완료" : `정산 대기 ${travelMode ? "7건" : "0건"}`}
+          {afterMode ? "정산 완료" : `정산 대기 ${travelMode ? pendingCount : 0}건`}
         </Action>
       </div>
       <div className="spending-list">
@@ -416,6 +418,7 @@ export function HomePage({
   openSettlement,
   openStory,
   openCost,
+  pendingCount,
   openMood,
   healthEnabled,
   healthDeclined,
@@ -443,6 +446,7 @@ export function HomePage({
   openSettlement: () => void
   openStory: () => void
   openCost: () => void
+  pendingCount: number
   openMood: () => void
   healthEnabled: boolean
   healthDeclined: boolean
@@ -543,6 +547,7 @@ export function HomePage({
           travelMode={travelMode}
         />
         <SpendingCard
+          pendingCount={pendingCount}
           afterMode={afterMode}
           flightPersonal={flightPersonal}
           monthLaterMode={monthLaterMode}

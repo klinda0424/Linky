@@ -15,16 +15,8 @@ import {
   cx,
 } from "@/components/common"
 import { MainHeader } from "@/components/layout"
+import { settlementItems, summarize, won } from "@/lib/settlement"
 
-export const settlementItems = [
-  ["항공권", "교통", 360000],
-  ["숙소 에어비앤비", "숙박", 420000],
-  ["렌터카", "교통", 150000],
-  ["해녀 식당", "식비", 132000],
-  ["성산일출봉 입장료", "관광", 15000],
-  ["제주 공항 편의점", "간식", 18000],
-  ["편의점 야식", "간식", 24000],
-] as const
 export function GroupSplitSheet({
   close,
   confirm,
@@ -118,10 +110,13 @@ export function GroupExpenseDetail({
 export function SettlementInbox({
   back,
   openTable,
+  excluded,
 }: {
   back: () => void
   openTable: () => void
+  excluded: string[]
 }) {
+  const summary = summarize(excluded)
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="정산 대기함" />
@@ -133,8 +128,8 @@ export function SettlementInbox({
         <div className="settlement-summary">
           <div>
             <span>정산 대기</span>
-            <strong>1,119,000원</strong>
-            <p>7건의 결제 · 3명</p>
+            <strong>{won(summary.total)}</strong>
+            <p>{summary.items.length}건의 결제 · 3명</p>
           </div>
           <div className="stacked-avatars">
             {(["나", "수현", "민지"] as const).map((name) => (
@@ -144,7 +139,7 @@ export function SettlementInbox({
         </div>
         <p className="section-title settlement-list-title">포함된 결제</p>
         <div className="settlement-items">
-          {settlementItems.map(([name, category, amount]) => (
+          {summary.items.map(({ name, category, amount }) => (
             <div className="settlement-item" key={name}>
               <span className="expense-icon">
                 <ReceiptText size={17} strokeWidth={1.5} />
@@ -154,7 +149,7 @@ export function SettlementInbox({
                 <span className="category-chip">{category}</span>
               </div>
               {name === "숙소 에어비앤비" && <StatusChip type="check" />}
-              <p>{amount.toLocaleString()}원</p>
+              <p>{won(amount)}</p>
             </div>
           ))}
         </div>
@@ -171,15 +166,18 @@ export function SettlementTable({
   back,
   edit,
   proceed,
+  excluded,
 }: {
   back: () => void
   edit: () => void
   proceed: () => void
+  excluded: string[]
 }) {
+  const summary = summarize(excluded)
   const people = [
-    ["나", "628,000원", "done"],
-    ["수현", "250,000원", "done"],
-    ["민지", "241,000원", "waiting"],
+    ["나", won(summary.paid["나"]), "done"],
+    ["수현", won(summary.paid["수현"]), "done"],
+    ["민지", won(summary.paid["민지"]), "waiting"],
   ] as const
   return (
     <div className="main-page sub-page">
@@ -188,11 +186,11 @@ export function SettlementTable({
         <div className="table-total">
           <div>
             <span>총 지출</span>
-            <strong>1,119,000원</strong>
+            <strong>{won(summary.total)}</strong>
           </div>
           <div>
             <span>1인당</span>
-            <strong>373,000원</strong>
+            <strong>{won(summary.perPerson)}</strong>
           </div>
         </div>
         <div className="people-settlement">
@@ -210,7 +208,9 @@ export function SettlementTable({
         <div className="warning-banner">
           <Info size={16} strokeWidth={1.6} />
           <p>
-            잘못 묶인 항목이 있나요?숙소 결제 항목이 실제 3명인지 확인해보세요
+            {excluded.length > 0
+              ? `${excluded.length}건을 제외하고 다시 계산했어요`
+              : "잘못 묶인 항목이 있나요? 숙소 결제 항목이 실제 3명인지 확인해보세요"}
           </p>
           <Action onClick={edit}>수정</Action>
         </div>
@@ -226,12 +226,16 @@ export function SettlementTable({
 export function SettlementEdit({
   back,
   done,
+  excluded,
 }: {
   back: () => void
-  done: () => void
+  done: (excluded: string[]) => void
+  excluded: string[]
 }) {
   const [items, setItems] = useState(
-    settlementItems.map((item) => [...item] as [string, string, number]),
+    settlementItems
+      .filter((item) => !excluded.includes(item.name))
+      .map((item) => [item.name, item.category, item.amount] as [string, string, number]),
   )
   const [swiped, setSwiped] = useState<number>()
   const [touchX, setTouchX] = useState<number>()
@@ -285,7 +289,17 @@ export function SettlementEdit({
         ))}
       </div>
       <div className="main-footer">
-        <Action className="primary-button" onClick={done}>
+        <Action
+          className="primary-button"
+          onClick={() =>
+            // 남은 항목에 없는 이름이 제외된 항목 → 정산표에 반영
+            done(
+              settlementItems
+                .map((item) => item.name)
+                .filter((name) => !items.some((item) => item[0] === name)),
+            )
+          }
+        >
           완료
         </Action>
       </div>
@@ -295,10 +309,18 @@ export function SettlementEdit({
 export function SettlementConfirm({
   back,
   result,
+  notify,
+  excluded,
+  matched,
 }: {
   back: () => void
   result: () => void
+  notify: () => void
+  excluded: string[]
+  // 민지 입금까지 매칭되면 true → 결과 확인 가능
+  matched: boolean
 }) {
+  const summary = summarize(excluded)
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="정산 확정" />
@@ -309,36 +331,55 @@ export function SettlementConfirm({
         </div>
         <div className="receive-card">
           <span>내가 받아야 할 금액</span>
-          <strong>613,000원</strong>
-          <p>항공권·렌터카·성산일출봉 등 대표 결제 기준</p>
+          <strong>{won(summary.receive)}</strong>
+          <p>
+            내가 낸 {won(summary.paid["나"])} − 내 몫 {won(summary.perPerson)}
+          </p>
           <div>
             <span>입금 현황</span>
-            <strong>2명 중 1명 입금 완료</strong>
+            <strong>2명 중 {matched ? 2 : 1}명 입금 완료</strong>
           </div>
         </div>
         <div className="deposit-list">
           <div>
             <PersonAvatar name="수현" />
-            <strong>수현</strong>
+            <strong>수현 · {won(summary.owes["수현"])}</strong>
             <span className="deposit-done">✓ 입금 확인</span>
           </div>
           <div>
             <PersonAvatar name="민지" />
-            <strong>민지</strong>
-            <span className="deposit-waiting">◷ 대기 중</span>
+            <strong>민지 · {won(summary.owes["민지"])}</strong>
+            {matched ? (
+              <span className="deposit-done">✓ 입금 확인</span>
+            ) : (
+              <span className="deposit-waiting">◷ 대기 중</span>
+            )}
           </div>
         </div>
       </div>
       <div className="confirm-bottom">
-        <Action className="secondary-button">친구에게 알림 보내기</Action>
-        <Action className="primary-button" onClick={result}>
-          결과 보기
+        <Action className="secondary-button" onClick={notify}>
+          친구에게 알림 보내기
+        </Action>
+        <Action
+          className="primary-button"
+          disabled={!matched}
+          onClick={result}
+        >
+          {matched ? "결과 보기" : "입금 확인 중"}
         </Action>
       </div>
     </div>
   )
 }
-export function SettlementResult({ finish }: { finish: () => void }) {
+export function SettlementResult({
+  finish,
+  excluded,
+}: {
+  finish: () => void
+  excluded: string[]
+}) {
+  const summary = summarize(excluded)
   return (
     <div className="main-page sub-page">
       <MainHeader title="정산 결과" />
@@ -347,10 +388,10 @@ export function SettlementResult({ finish }: { finish: () => void }) {
           <Check size={28} strokeWidth={2.2} />
         </span>
         <p>결제 총액</p>
-        <strong className="original-total">1,119,000원</strong>
+        <strong className="original-total">{won(summary.total)}</strong>
         <ArrowDown size={20} strokeWidth={1.5} />
         <p>내가 실제로 쓴 돈</p>
-        <strong className="actual-total">373,000원</strong>
+        <strong className="actual-total">{won(summary.perPerson)}</strong>
         <span>여행 지출은 내 몫만 가계에 반영했어요</span>
       </div>
       <div className="main-footer">
