@@ -1,4 +1,4 @@
-import { type KeyboardEvent, type ReactNode } from "react"
+import { useEffect, useRef, type KeyboardEvent, type ReactNode } from "react"
 import { ChevronLeft } from "lucide-react"
 
 export const cx = (...classes: Array<string | false | undefined>) =>
@@ -171,18 +171,23 @@ export function EditableLine({
   setValue: (value: string) => void
   placeholder: string
 }) {
+  const ref = useRef<HTMLDivElement>(null)
+  // key로 다시 마운트하면 입력할 때마다 커서가 맨 앞으로 튄다.
+  // 칩 선택처럼 바깥에서 값이 바뀐 경우에만 DOM 텍스트를 맞춘다.
+  useEffect(() => {
+    const element = ref.current
+    if (element && element.textContent !== value) element.textContent = value
+  }, [value])
   return (
     <div
       className="main-input"
       contentEditable
       data-placeholder={placeholder}
-      key={value}
       onInput={(event) => setValue(event.currentTarget.textContent || "")}
+      ref={ref}
       role="textbox"
       suppressContentEditableWarning
-    >
-      {value}
-    </div>
+    />
   )
 }
 export function PersonAvatar({
