@@ -2651,16 +2651,59 @@ p {
   font-size: 10px;
 }
 
-.calendar-import {
-  margin-top: 20px;
+.capture-zone.attached {
+  border-style: solid;
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.capture-zone.attached .capture-icon {
+  background: var(--primary);
+  color: var(--text);
+}
+
+.capture-link {
+  margin-top: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.capture-link.attached {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.capture-link-field {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
+  gap: 8px;
   color: var(--sub);
-  font-size: 12px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+}
+
+.capture-link-field input {
+  min-width: 0;
+  flex: 1;
+  height: 28px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.capture-link .suggestion-chip {
+  align-self: flex-start;
+}
+
+.recognition-group-title span {
+  margin-left: 6px;
+  color: var(--primary-strong);
+  font-weight: 500;
 }
 
 .recognition-overlay {
@@ -4242,6 +4285,28 @@ input.recognition-value {
   border-radius: 6px;
   background: var(--background);
   outline: none;
+}
+
+.health-card.editing {
+  align-items: flex-start;
+}
+
+.health-options {
+  margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.health-options .suggestion-chip {
+  font-size: 11px;
+}
+
+.health-edit-actions {
+  margin-top: 6px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
 }
 
 .health-edit {

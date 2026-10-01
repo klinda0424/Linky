@@ -1,34 +1,84 @@
 import { useEffect, useRef, useState } from "react"
 import { Receipt, ShieldCheck, Stethoscope } from "lucide-react"
-import { Action } from "@/components/common"
+import { Action, cx } from "@/components/common"
 import { MainHeader } from "@/components/layout"
 
+const healthGuess = "수액"
+const healthOptions: Array<[label: string, particle: string]> = [
+  [healthGuess, "으로"],
+  ["진료·처방", "으로"],
+  ["검사", "로"],
+  ["예방접종", "으로"],
+]
+
+// home.tsx에서도 props 없이 사용한다. props를 추가하면 선택값으로만.
 export function HealthCard() {
   const [editing, setEditing] = useState(false)
+  const [record, setRecord] = useState(healthGuess)
+  const [draft, setDraft] = useState(healthGuess)
+  const particle =
+    healthOptions.find(([label]) => label === record)?.[1] ?? "으로"
   return (
-    <div className="health-card">
+    <div className={cx("health-card", editing && "editing")}>
       <span className="health-card-icon">
         <Stethoscope size={20} strokeWidth={1.5} />
       </span>
       <div>
         <span>OO내과 45,000원</span>
         {editing ? (
-          <div
-            className="health-editable"
-            contentEditable
-            role="textbox"
-            suppressContentEditableWarning
-          >
-            수액 추정
-          </div>
+          <>
+            <strong>어떤 진료였는지 골라주세요</strong>
+            <div className="health-options">
+              {healthOptions.map(([label]) => (
+                <Action
+                  className={cx("suggestion-chip", draft === label && "selected")}
+                  key={label}
+                  onClick={() => setDraft(label)}
+                >
+                  {label}
+                </Action>
+              ))}
+            </div>
+            <div className="health-edit-actions">
+              <Action
+                className="mini-secondary"
+                onClick={() => setEditing(false)}
+              >
+                취소
+              </Action>
+              <Action
+                className="mini-primary"
+                onClick={() => {
+                  setRecord(draft)
+                  setEditing(false)
+                }}
+              >
+                완료
+              </Action>
+            </div>
+          </>
         ) : (
-          <strong>→ 수액을 맞은 것으로 추정돼요</strong>
+          <>
+            <strong>
+              {record === healthGuess
+                ? "→ 수액을 맞은 것으로 추정돼요"
+                : `→ ${record}${particle} 기록했어요`}
+            </strong>
+            <p>{record === healthGuess ? "가맹점·금액 기준" : "직접 고친 기록"}</p>
+          </>
         )}
-        <p>가맹점·금액 기준</p>
       </div>
-      <Action className="health-edit" onClick={() => setEditing(true)}>
-        수정
-      </Action>
+      {!editing && (
+        <Action
+          className="health-edit"
+          onClick={() => {
+            setDraft(record)
+            setEditing(true)
+          }}
+        >
+          수정
+        </Action>
+      )}
     </div>
   )
 }
