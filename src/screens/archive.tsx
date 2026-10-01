@@ -24,6 +24,7 @@ export function ArchiveSearch({
   const [query, setQuery] = useState("")
   const [loading, setLoading] = useState(false)
   const runSearch = (value: string) => {
+    if (loading || !value.trim()) return
     setQuery(value)
     setLoading(true)
     window.setTimeout(results, 1100)
@@ -38,6 +39,14 @@ export function ArchiveSearch({
             contentEditable
             data-placeholder="기억나는 말로 찾아보세요"
             onInput={(event) => setQuery(event.currentTarget.textContent || "")}
+            onKeyDown={(event) => {
+              // 직접 입력한 검색어는 Enter로 실행
+              // 한글 조합 중 Enter는 무시해 중복 실행을 막음
+              if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+                event.preventDefault()
+                runSearch(event.currentTarget.textContent || "")
+              }
+            }}
             role="textbox"
             suppressContentEditableWarning
           >
