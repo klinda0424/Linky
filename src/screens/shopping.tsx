@@ -20,7 +20,8 @@ export function ExpenseDetail({
   confirm,
 }: {
   back: () => void
-  confirm: () => void
+  // 여행 태그 선택 결과: 묶기 true / 아니요 false / 선택 안 함 undefined
+  confirm: (tagged?: boolean) => void
 }) {
   const [editing, setEditing] = useState(false)
   const [linked, setLinked] = useState(false)
@@ -102,7 +103,10 @@ export function ExpenseDetail({
         <Action className="secondary-button" onClick={() => setEditing(true)}>
           수정
         </Action>
-        <Action className="primary-button" onClick={confirm}>
+        <Action
+          className="primary-button"
+          onClick={() => confirm(linked ? true : skipped ? false : undefined)}
+        >
           맞아요
         </Action>
       </div>
@@ -150,10 +154,17 @@ export function ShoppingStorage({
     </div>
   )
 }
-export function ClosetPage({ back }: { back: () => void }) {
+export function ClosetPage({
+  back,
+  dressTagged = true,
+}: {
+  back: () => void
+  // U3-1에서 여행 태그를 수락했는지 (거절하면 일반 의류로만 보임)
+  dressTagged?: boolean
+}) {
   const [filter, setFilter] = useState("전체")
   const items = [
-    ["원피스", "12월 12일 구매", "제주 여행", "dress"],
+    ["원피스", "12월 12일 구매", dressTagged ? "제주 여행" : "", "dress"],
     ["울 카디건", "12월 7일 구매", "", "cardigan"],
     ["니트 머플러", "11월 28일 구매", "시험기간", "scarf"],
     ["롱 코트", "11월 19일 구매", "", "coat"],
