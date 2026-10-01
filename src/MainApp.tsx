@@ -59,6 +59,9 @@ export function MainApp({
   const [healthAgreed, setHealthAgreed] = useState(false)
   const [healthDeclined, setHealthDeclined] = useState(false)
   const [toast, setToast] = useState("")
+  // 지출 상세(U3-1)를 연 곳: 홈에서 열면 "맞아요" 뒤 옷장(U3-2)으로 이어짐
+  const [expenseFrom, setExpenseFrom] = useState<"home" | "search">("home")
+  const [closetFromExpense, setClosetFromExpense] = useState(false)
   // 목표 달성 관리(U10-2)에서 뒤로 갈 곳: 코치 허브 또는 회고 흐름의 다음 단계(한 달 뒤 홈)
   const [goalReturn, setGoalReturn] = useState<"coachHub" | "monthLater">(
     "coachHub",
@@ -171,8 +174,13 @@ export function MainApp({
   else if (view === "expense")
     page = (
       <ExpenseDetail
-        back={() => setView("tabs")}
-        confirm={() => setView("tabs")}
+        back={() => setView(expenseFrom === "home" ? "tabs" : "searchResults")}
+        confirm={() => {
+          if (expenseFrom === "home") {
+            setClosetFromExpense(true)
+            setView("closet")
+          } else setView("tabs")
+        }}
       />
     )
   else if (view === "groupExpense")
@@ -243,7 +251,16 @@ export function MainApp({
       />
     )
   else if (view === "closet")
-    page = <ClosetPage back={() => setView("shopping")} />
+    page = (
+      <ClosetPage
+        back={() => {
+          if (closetFromExpense) {
+            setClosetFromExpense(false)
+            setView("tabs")
+          } else setView("shopping")
+        }}
+      />
+    )
   else if (view === "fridge")
     page = (
       <FridgePage
@@ -277,7 +294,10 @@ export function MainApp({
     page = (
       <ArchiveSearchResults
         back={() => setView("search")}
-        openExpense={() => setView("expense")}
+        openExpense={() => {
+          setExpenseFrom("search")
+          setView("expense")
+        }}
       />
     )
   else if (view === "profile")
@@ -327,7 +347,10 @@ export function MainApp({
             healthDeclined={healthDeclined}
             healthEnabled={healthAgreed}
             monthLaterMode={monthLaterMode}
-            openExpense={() => setView("expense")}
+            openExpense={() => {
+              setExpenseFrom("home")
+              setView("expense")
+            }}
             openHealthConsent={() => setHealthConsent(true)}
             openCost={() => setView("travelCost")}
             openMood={() => setView("coachHub")}

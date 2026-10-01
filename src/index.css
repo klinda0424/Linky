@@ -1146,6 +1146,14 @@ p {
   font-size: 10px;
 }
 
+.spending-row .trip-tag {
+  align-self: flex-start;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--primary-light);
+  color: var(--text);
+}
+
 .linky-badge {
   padding: 4px 6px;
   display: inline-flex;

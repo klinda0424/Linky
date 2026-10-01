@@ -186,6 +186,7 @@ export function SpendingCard({
             icon: <UtensilsCrossed size={17} strokeWidth={1.5} />,
             name: "해녀 식당",
             merchant: "제주 성산",
+            tripTag: true,
             amount: "132,000원",
             status: false,
           },
@@ -193,6 +194,7 @@ export function SpendingCard({
             icon: <MapPin size={17} strokeWidth={1.5} />,
             name: "성산일출봉 입장료",
             merchant: "관광",
+            tripTag: true,
             amount: "15,000원",
             status: false,
           },
@@ -200,6 +202,7 @@ export function SpendingCard({
             icon: <ShoppingBag size={17} strokeWidth={1.5} />,
             name: "제주 공항 편의점",
             merchant: "제주 공항",
+            tripTag: true,
             amount: "18,000원",
             status: false,
           },
@@ -254,6 +257,10 @@ export function SpendingCard({
             <div>
               <strong>{row.name}</strong>
               {row.merchant && <span>{row.merchant}</span>}
+              {"tripTag" in row && row.tripTag && (
+                // U8-1: 제주 위치 결제는 여행 태그로 자동 묶임
+                <span className="trip-tag">📍 제주 여행</span>
+              )}
             </div>
             {row.status && <StatusChip type="check" />}
             <p>{row.amount}</p>
@@ -505,7 +512,7 @@ export function HomePage({
             {activeGoal}
           </span>
         )}
-        {dietMode && <DietSummaryCard />}
+        {dietMode && !monthLaterMode && <DietSummaryCard />}
         {monthLaterMode && <GoalAchievementSummary />}
         {/* U7-1은 여행 준비 단계의 알림 */}
         {prepareMode && groupSuggestion && (
