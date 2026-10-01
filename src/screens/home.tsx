@@ -481,22 +481,15 @@ export function HomePage({
           <Action
             className={cx(
               "round-icon",
-              (travelMode || prepareMode || afterMode || monthLaterMode) &&
-                "has-notification",
+              (travelMode || prepareMode || afterMode) && "has-notification",
             )}
             label="AI 코치"
             onClick={openMood}
           >
             <MessageCircleMore size={19} strokeWidth={1.5} />
-            {(travelMode || prepareMode || afterMode || monthLaterMode) && (
+            {(travelMode || prepareMode || afterMode) && (
               <span className="notification-badge">
-                {monthLaterMode
-                  ? "0"
-                  : afterMode
-                    ? "1"
-                    : prepareMode
-                      ? "3"
-                      : "2"}
+                {afterMode ? "1" : prepareMode ? "3" : "2"}
               </span>
             )}
           </Action>
@@ -519,7 +512,12 @@ export function HomePage({
           <GroupSuggestion accept={acceptGroup} reject={rejectGroup} />
         )}
         {/* U2-1은 넛지가 켜진 경우에만 표시 */}
-        {nudgeOn && !travelMode && !prepareMode && observation && (
+        {nudgeOn &&
+          !travelMode &&
+          !prepareMode &&
+          !afterMode &&
+          !monthLaterMode &&
+          observation && (
           <div className="observation-card">
             <span className="rini-avatar">L</span>
             <p>시험기간이랑 다이어트가 겹쳐요. 지친 날엔 무리하지 말아요.</p>

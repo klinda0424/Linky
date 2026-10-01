@@ -43,11 +43,13 @@ export function MainApp({
   setTone,
   goals,
   nudge,
+  nickname,
 }: {
   tone: Tone
   setTone: (tone: Tone) => void
   goals: string[]
   nudge: boolean
+  nickname: string
 }) {
   const [tab, setTab] = useState<MainTab>("home")
   const [view, setView] = useState<MainView>("tabs")
@@ -281,6 +283,8 @@ export function MainApp({
   else if (view === "profile")
     page = (
       <ProfilePage
+        // 온보딩 닉네임이 없으면 시연 주인공 이름 사용
+        name={nickname || "김소연"}
         back={() => setView("tabs")}
         openGoals={() => setView("goals")}
         openTone={() => setView("tone")}

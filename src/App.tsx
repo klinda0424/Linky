@@ -109,6 +109,7 @@ export default function App() {
     content = (
       <MainApp
         goals={goals}
+        nickname={nickname}
         nudge={nudge}
         setTone={setTone}
         tone={tone ?? "narrative"}

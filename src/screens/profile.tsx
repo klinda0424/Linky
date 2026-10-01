@@ -18,10 +18,12 @@ import { ToneOptions } from "@/screens/onboarding"
 import { type GoalModeKey, type Tone } from "@/types"
 
 export function ProfilePage({
+  name,
   back,
   openTone,
   openGoals,
 }: {
+  name: string
   back: () => void
   openTone: () => void
   openGoals: () => void
@@ -37,9 +39,9 @@ export function ProfilePage({
     <div className="main-page sub-page">
       <MainHeader back={back} title="프로필" />
       <div className="profile-top">
-        <span>소</span>
+        <span>{name.slice(0, 1)}</span>
         <div>
-          <strong>김소연</strong>
+          <strong>{name}</strong>
           <p>린이가 기록을 연결하고 있어요</p>
         </div>
       </div>
