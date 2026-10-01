@@ -4,6 +4,63 @@ import { Action, cx } from "@/components/common"
 import { MainHeader } from "@/components/layout"
 import { type Tone } from "@/types"
 
+const moods = [
+  { emoji: "😆", label: "아주 좋아요" },
+  { emoji: "🙂", label: "좋아요" },
+  { emoji: "😐", label: "보통이에요" },
+  { emoji: "😩", label: "지쳤어요" },
+  { emoji: "😣", label: "힘들어요" },
+] as const
+
+// Both tones render this same day. Connecting the chosen mood needs shared state.
+const dailyReport = {
+  title: "12월 12일 리포트",
+  mood: { context: "지친 날", label: "기분 안좋음" },
+  previousWeekTotal: 16000,
+  expenses: [
+    {
+      name: "원피스",
+      merchant: "에이블리",
+      category: "쇼핑",
+      narrative: "옷",
+      amount: 40000,
+    },
+    {
+      name: "떡볶이",
+      merchant: "배달의민족",
+      category: "배달",
+      narrative: "배달",
+      amount: 6500,
+    },
+    {
+      name: "CU 편의점",
+      merchant: "",
+      category: "편의점",
+      narrative: "편의점",
+      amount: 1500,
+    },
+  ],
+} as const
+const formatWon = (amount: number) => `${amount.toLocaleString("ko-KR")}원`
+const dailyTotal = dailyReport.expenses.reduce(
+  (sum, expense) => sum + expense.amount,
+  0,
+)
+const categoryTotals = Object.entries(
+  dailyReport.expenses.reduce<Record<string, number>>((totals, expense) => {
+    totals[expense.category] = (totals[expense.category] ?? 0) + expense.amount
+    return totals
+  }, {}),
+).sort((a, b) => b[1] - a[1])
+const largestCategory = Math.max(
+  ...categoryTotals.map(([, amount]) => amount),
+  1,
+)
+const connectedExpenses = dailyReport.expenses.filter(
+  (expense) => expense.category === "쇼핑" || expense.category === "배달",
+)
+const weeklyDifference = dailyTotal - dailyReport.previousWeekTotal
+
 export function MoodPrompt({
   skip,
   select,
@@ -11,6 +68,7 @@ export function MoodPrompt({
   skip: () => void
   select: () => void
 }) {
+  const [selectedMood, setSelectedMood] = useState<string | null>(null)
   return (
     <div className="main-page mood-page">
       <div className="night-time">오후 10:18</div>
@@ -22,17 +80,33 @@ export function MoodPrompt({
         <p>오늘 하루 어땠어요?</p>
         <span>한 번만 눌러도 오늘 기록과 연결해요</span>
         <div className="push-moods">
-          {["😆", "🙂", "😐", "😩", "😣"].map((mood) => (
-            <Action
-              className="push-mood"
-              key={mood}
-              onClick={mood === "😩" ? select : undefined}
+          {moods.map(({ emoji, label }) => (
+            <button
+              type="button"
+              className="action push-mood"
+              key={emoji}
+              aria-label={label}
+              aria-pressed={selectedMood === emoji}
+              disabled={selectedMood !== null}
+              style={
+                selectedMood === emoji
+                  ? { background: "var(--primary-light)" }
+                  : undefined
+              }
+              onClick={() => {
+                setSelectedMood(emoji)
+                select()
+              }}
             >
-              {mood}
-            </Action>
+              {emoji}
+            </button>
           ))}
         </div>
-        <Action className="push-skip" onClick={skip}>
+        <Action
+          className="push-skip"
+          onClick={skip}
+          disabled={selectedMood !== null}
+        >
           건너뛰기
         </Action>
       </div>
@@ -59,7 +133,7 @@ export function DailyReport({
   }
   return (
     <div className="main-page sub-page">
-      <MainHeader back={back} title="12월 15일 리포트" />
+      <MainHeader back={back} title={dailyReport.title} />
       <div className="daily-report-content">
         <div
           className="daily-report-card"
@@ -69,13 +143,11 @@ export function DailyReport({
           {page === 0 && (
             <div className="awareness-slide">
               <span className="report-step">1 · 오늘의 기록</span>
-              <p>오늘 3건, 48,000원</p>
+              <p>
+                오늘 {dailyReport.expenses.length}건, {formatWon(dailyTotal)}
+              </p>
               <div className="report-expenses">
-                {[
-                  ["원피스", "에이블리", "40,000원"],
-                  ["떡볶이", "배달의민족", "6,500원"],
-                  ["CU 편의점", "", "1,500원"],
-                ].map(([name, merchant, amount]) => (
+                {dailyReport.expenses.map(({ name, merchant, amount }) => (
                   <div key={name}>
                     <span className="expense-icon">
                       <ShoppingBag size={16} strokeWidth={1.5} />
@@ -84,7 +156,7 @@ export function DailyReport({
                       <strong>{name}</strong>
                       {merchant && <span>{merchant}</span>}
                     </div>
-                    <p>{amount}</p>
+                    <p>{formatWon(amount)}</p>
                   </div>
                 ))}
               </div>
@@ -94,11 +166,18 @@ export function DailyReport({
             <div className="interpret-slide">
               <span className="report-step">2 · 연결된 흐름</span>
               <span className="large-rini">L</span>
-              <p>지친 날, 옷과 배달이 같이 있었어요.</p>
+              <p>
+                {dailyReport.mood.context},{" "}
+                {connectedExpenses
+                  .map((expense) => expense.narrative)
+                  .join("과 ")}
+                이 같이 있었어요.
+              </p>
               <div className="connection-chips">
-                <span>기분 안좋음</span>
-                <span>원피스</span>
-                <span>떡볶이</span>
+                <span>{dailyReport.mood.label}</span>
+                {connectedExpenses.map((expense) => (
+                  <span key={expense.name}>{expense.name}</span>
+                ))}
               </div>
             </div>
           )}
@@ -106,21 +185,24 @@ export function DailyReport({
             <div className="numeric-slide">
               <span className="report-step">2 · 카테고리별 지출</span>
               <div className="daily-bars">
-                {[
-                  ["쇼핑", "40,000원", "daily-long"],
-                  ["배달", "6,500원", "daily-mid"],
-                  ["편의점", "1,500원", "daily-short"],
-                ].map(([label, amount, width]) => (
+                {categoryTotals.map(([label, amount]) => (
                   <div key={label}>
                     <span>{label}</span>
-                    <i>
-                      <b className={width} />
+                    <i aria-hidden="true">
+                      <b
+                        style={{
+                          width: `${(amount / largestCategory) * 100}%`,
+                        }}
+                      />
                     </i>
-                    <strong>{amount}</strong>
+                    <strong>{formatWon(amount)}</strong>
                   </div>
                 ))}
               </div>
-              <p>지난주 같은 요일 대비 +32,000원</p>
+              <p>
+                지난주 같은 요일 대비 {weeklyDifference > 0 ? "+" : ""}
+                {formatWon(weeklyDifference)}
+              </p>
             </div>
           )}
           {page === 2 && (

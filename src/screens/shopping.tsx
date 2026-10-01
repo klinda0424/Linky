@@ -23,12 +23,11 @@ const itemCandidates = [
   "블라우스 (블랙 · M)",
 ]
 
-// `confirm`은 MainApp 연결용으로 남겨둠. U3-1 분기는 이 파일 안에서 옷장(U3-2)으로 넘어간다.
+// U3-1 분기(수락/거절)는 이 파일 안에서 옷장(U3-2)으로 넘어간다.
 export function ExpenseDetail({
   back,
 }: {
   back: () => void
-  confirm: () => void
 }) {
   const [editing, setEditing] = useState(false)
   const [edited, setEdited] = useState(false)

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 import {
   Bell,
   ChevronRight,
@@ -18,10 +18,12 @@ import { ToneOptions } from "@/screens/onboarding"
 import { type GoalModeKey, type Tone } from "@/types"
 
 export function ProfilePage({
+  name,
   back,
   openTone,
   openGoals,
 }: {
+  name: string
   back: () => void
   openTone: () => void
   openGoals: () => void
@@ -37,9 +39,9 @@ export function ProfilePage({
     <div className="main-page sub-page">
       <MainHeader back={back} title="프로필" />
       <div className="profile-top">
-        <span>지</span>
+        <span>{name.slice(0, 1)}</span>
         <div>
-          <strong>지은이</strong>
+          <strong>{name}</strong>
           <p>린이가 기록을 연결하고 있어요</p>
         </div>
       </div>
@@ -59,12 +61,19 @@ export function GoalModeSettings({
   values,
   toggle,
   back,
+  home,
 }: {
   values: Record<GoalModeKey, boolean>
   toggle: (key: GoalModeKey) => void
   back: () => void
+  home: () => void
 }) {
   const [toast, setToast] = useState(false)
+  const timers = useRef<number[]>([])
+  useEffect(
+    () => () => timers.current.forEach((timer) => window.clearTimeout(timer)),
+    [],
+  )
   const modes: Array<{
     key: GoalModeKey
     emoji: string
@@ -94,7 +103,8 @@ export function GoalModeSettings({
     toggle(key)
     if (key === "diet" && !values.diet) {
       setToast(true)
-      window.setTimeout(() => setToast(false), 2000)
+      // U1-1 → U1-2: 토스트로 활성화를 알린 뒤 다이어트 뱃지가 붙은 홈으로 이동
+      timers.current.push(window.setTimeout(home, 1100))
     }
   }
   return (

@@ -8,8 +8,15 @@ import {
 } from "lucide-react"
 import { Action, cx } from "@/components/common"
 import { MainHeader } from "@/components/layout"
+import { won, type SettlementSummary } from "@/lib/settlement"
 
-export function TravelStory({ close }: { close: () => void }) {
+export function TravelStory({
+  close,
+  mine,
+}: {
+  close: () => void
+  mine: number
+}) {
   const [page, setPage] = useState(0)
   const [touchY, setTouchY] = useState<number>()
   const stories = [
@@ -30,7 +37,7 @@ export function TravelStory({ close }: { close: () => void }) {
     },
     {
       visual: "cost",
-      content: "내 몫 373,000원으로 다녀온 제주",
+      content: `내 몫 ${mine.toLocaleString()}원으로 다녀온 제주`,
       caption: "공유하지 않고 나만 볼 수 있어요",
       icon: <Plane size={58} strokeWidth={1.1} />,
     },
@@ -84,44 +91,68 @@ export function TravelStory({ close }: { close: () => void }) {
     </div>
   )
 }
-export function TravelCostReport({ back, goHome }: { back: () => void; goHome: () => void }) {
+export function TravelCostReport({
+  back,
+  goHome,
+  summary,
+}: {
+  back: () => void
+  goHome: () => void
+  summary: SettlementSummary
+}) {
+  const costs: Array<[string, number, string, string]> = [
+    ["교통", summary.byCategory.교통, "transport", "var(--primary)"],
+    ["숙박", summary.byCategory.숙박, "stay", "var(--blue)"],
+    ["식비", summary.byCategory.식비, "food", "var(--pink)"],
+    ["관광", summary.byCategory.관광, "tour", "var(--purple)"],
+  ]
+  // 카테고리 비율대로 도넛 구간 계산
+  let cursor = 0
+  const donut = costs
+    .filter(([, amount]) => amount > 0)
+    .map(([, amount, , color]) => {
+      const from = cursor
+      cursor += (amount / summary.perPerson) * 100
+      return `${color} ${from}% ${cursor}%`
+    })
+    .join(", ")
   return (
     <div className="main-page sub-page travel-cost-page">
       <MainHeader back={back} title="제주 여행 비용 리포트" />
       <div className="travel-cost-content">
         <div className="actual-cost-card">
           <span>1인 실제 비용</span>
-          <strong>373,000원</strong>
+          <strong>{won(summary.perPerson)}</strong>
           <p>내 몫만 가계에 반영했어요</p>
         </div>
         <div className="cost-compare">
           <div>
             <span>여행 준비</span>
-            <strong>160,000원</strong>
+            <strong>{won(summary.prepShare)}</strong>
           </div>
           <i />
           <div>
             <span>제주 현지</span>
-            <strong>213,000원</strong>
+            <strong>{won(summary.localShare)}</strong>
           </div>
         </div>
         <div className="category-report">
           <p className="section-title">카테고리별 비용</p>
           <div className="donut-wrap">
-            <div className="cost-donut">
-              <span>373,000원</span>
+            <div
+              className="cost-donut"
+              style={{ background: `conic-gradient(${donut})` }}
+            >
+              <span>{won(summary.perPerson)}</span>
             </div>
             <div className="cost-legend">
-              {[
-                ["교통", "128,000원", "transport"],
-                ["숙박", "140,000원", "stay"],
-                ["식비", "90,000원", "food"],
-                ["관광", "15,000원", "tour"],
-              ].map(([label, amount, color]) => (
+              {costs
+                .filter(([, amount]) => amount > 0)
+                .map(([label, amount, color]) => (
                 <div key={label}>
                   <i className={color} />
                   <span>{label}</span>
-                  <strong>{amount}</strong>
+                  <strong>{won(amount)}</strong>
                 </div>
               ))}
             </div>

@@ -117,6 +117,8 @@ export function WeekCalendar({
   )
 }
 export function SpendingCard({
+  pendingCount,
+  flightPersonal,
   openExpense,
   travelMode,
   prepareMode,
@@ -124,6 +126,8 @@ export function SpendingCard({
   monthLaterMode,
   openSettlement,
 }: {
+  pendingCount: number
+  flightPersonal: boolean
   openExpense: () => void
   travelMode: boolean
   prepareMode: boolean
@@ -184,6 +188,7 @@ export function SpendingCard({
             icon: <UtensilsCrossed size={17} strokeWidth={1.5} />,
             name: "해녀 식당",
             merchant: "제주 성산",
+            tripTag: true,
             amount: "132,000원",
             status: false,
           },
@@ -191,6 +196,7 @@ export function SpendingCard({
             icon: <MapPin size={17} strokeWidth={1.5} />,
             name: "성산일출봉 입장료",
             merchant: "관광",
+            tripTag: true,
             amount: "15,000원",
             status: false,
           },
@@ -198,6 +204,7 @@ export function SpendingCard({
             icon: <ShoppingBag size={17} strokeWidth={1.5} />,
             name: "제주 공항 편의점",
             merchant: "제주 공항",
+            tripTag: true,
             amount: "18,000원",
             status: false,
           },
@@ -207,9 +214,9 @@ export function SpendingCard({
             {
               icon: <Plane size={17} strokeWidth={1.5} />,
               name: "항공권",
-              merchant: "제주 여행 · 3명",
+              merchant: flightPersonal ? "개인 지출" : "제주 여행 · 3명",
               amount: "360,000원",
-              status: true,
+              status: !flightPersonal,
             },
             ...standardRows,
           ]
@@ -238,7 +245,7 @@ export function SpendingCard({
           )}
           onClick={travelMode ? openSettlement : undefined}
         >
-          {afterMode ? "정산 완료" : `정산 대기 ${travelMode ? "7건" : "0건"}`}
+          {afterMode ? "정산 완료" : `정산 대기 ${travelMode ? pendingCount : 0}건`}
         </Action>
       </div>
       <div className="spending-list">
@@ -252,6 +259,10 @@ export function SpendingCard({
             <div>
               <strong>{row.name}</strong>
               {row.merchant && <span>{row.merchant}</span>}
+              {"tripTag" in row && row.tripTag && (
+                // U8-1: 제주 위치 결제는 여행 태그로 자동 묶임
+                <span className="trip-tag">📍 제주 여행</span>
+              )}
             </div>
             {row.status && <StatusChip type="check" />}
             <p>{row.amount}</p>
@@ -365,9 +376,9 @@ export function GroupSuggestion({
     </div>
   )
 }
-export function TravelStoryPreview() {
+export function TravelStoryPreview({ open }: { open: () => void }) {
   return (
-    <div className="travel-story-preview">
+    <Action className="travel-story-preview" onClick={open}>
       <span>
         <Plane size={27} strokeWidth={1.4} />
       </span>
@@ -376,13 +387,28 @@ export function TravelStoryPreview() {
         <p>여행 이야기를 한 장씩 모아봤어요</p>
       </div>
       <ChevronRight size={17} strokeWidth={1.5} />
-    </div>
+    </Action>
+  )
+}
+// 🅑 수치형 톤: 여행 비용 리포트(U10-1B) 진입점
+export function TravelCostPreview({ open }: { open: () => void }) {
+  return (
+    <Action className="travel-story-preview" onClick={open}>
+      <span>
+        <CircleDollarSign size={27} strokeWidth={1.4} />
+      </span>
+      <div>
+        <strong>제주 여행 비용 리포트</strong>
+        <p>1인 실제 비용을 정리했어요</p>
+      </div>
+      <ChevronRight size={17} strokeWidth={1.5} />
+    </Action>
   )
 }
 export function HomePage({
   tone,
-  goals,
   dietMode,
+  savingMode,
   profile,
   openExpense,
   travelMode,
@@ -390,21 +416,27 @@ export function HomePage({
   rejectGroup,
   acceptGroup,
   openSettlement,
+  openStory,
+  openCost,
+  pendingCount,
   openMood,
   healthEnabled,
+  healthDeclined,
   openHealthConsent,
   prepareMode,
   selectExam,
   selectPrepare,
   selectTravel,
   afterMode,
+  flightPersonal,
+  nudgeOn,
   selectAfter,
   monthLaterMode,
   selectMonthLater,
 }: {
   tone: Tone
-  goals: string[]
   dietMode: boolean
+  savingMode: boolean
   profile: () => void
   openExpense: () => void
   travelMode: boolean
@@ -412,21 +444,27 @@ export function HomePage({
   rejectGroup: () => void
   acceptGroup: () => void
   openSettlement: () => void
+  openStory: () => void
+  openCost: () => void
+  pendingCount: number
   openMood: () => void
   healthEnabled: boolean
+  healthDeclined: boolean
   openHealthConsent: () => void
   prepareMode: boolean
   selectExam: () => void
   selectPrepare: () => void
   selectTravel: () => void
   afterMode: boolean
+  flightPersonal: boolean
+  nudgeOn: boolean
   selectAfter: () => void
   monthLaterMode: boolean
   selectMonthLater: () => void
 }) {
   const [observation, setObservation] = useState(true)
-  const [prepareSuggestion, setPrepareSuggestion] = useState(true)
-  const activeGoal = dietMode ? "다이어트 모드" : goals[0]?.replace("하기", "")
+  // 뱃지는 사용자가 켠 목표 모드가 있을 때만 노출 (다이어트 우선)
+  const activeGoal = dietMode ? "다이어트 모드" : savingMode ? "절약 모드" : ""
   return (
     <>
       <div className="home-header">
@@ -454,22 +492,15 @@ export function HomePage({
           <Action
             className={cx(
               "round-icon",
-              (travelMode || prepareMode || afterMode || monthLaterMode) &&
-                "has-notification",
+              (travelMode || prepareMode || afterMode) && "has-notification",
             )}
             label="AI 코치"
             onClick={openMood}
           >
             <MessageCircleMore size={19} strokeWidth={1.5} />
-            {(travelMode || prepareMode || afterMode || monthLaterMode) && (
+            {(travelMode || prepareMode || afterMode) && (
               <span className="notification-badge">
-                {monthLaterMode
-                  ? "0"
-                  : afterMode
-                    ? "1"
-                    : prepareMode
-                      ? "3"
-                      : "2"}
+                {afterMode ? "1" : prepareMode ? "3" : "2"}
               </span>
             )}
           </Action>
@@ -479,29 +510,28 @@ export function HomePage({
         {travelMode && (
           <div className="travel-banner">✈️ 제주 여행 중 · 알림을 줄였어요</div>
         )}
-        {!travelMode && !prepareMode && !monthLaterMode && activeGoal && (
+        {activeGoal && (
           <span className="goal-mode">
             {dietMode ? "🥗" : <Sparkles size={11} strokeWidth={1.5} />}{" "}
             {activeGoal}
           </span>
         )}
+        {dietMode && !monthLaterMode && <DietSummaryCard />}
         {monthLaterMode && <GoalAchievementSummary />}
-        {!travelMode &&
+        {/* U7-1은 여행 준비 단계의 알림 */}
+        {prepareMode && groupSuggestion && (
+          <GroupSuggestion accept={acceptGroup} reject={rejectGroup} />
+        )}
+        {/* U2-1은 넛지가 켜진 경우에만 표시 */}
+        {nudgeOn &&
+          !travelMode &&
+          !prepareMode &&
           !afterMode &&
           !monthLaterMode &&
-          (prepareMode ? prepareSuggestion : groupSuggestion) && (
-            <GroupSuggestion
-              accept={acceptGroup}
-              reject={() => {
-                if (prepareMode) setPrepareSuggestion(false)
-                else rejectGroup()
-              }}
-            />
-          )}
-        {!travelMode && !prepareMode && observation && (
+          observation && (
           <div className="observation-card">
             <span className="rini-avatar">L</span>
-            <p>시험기간이랑 다이어트가 겹쳐요.지친 날엔 무리하지 말아요.</p>
+            <p>시험기간이랑 다이어트가 겹쳐요. 지친 날엔 무리하지 말아요.</p>
             <Action
               onClick={() => setObservation(false)}
               label="관찰 카드 닫기"
@@ -516,19 +546,30 @@ export function HomePage({
           prepareMode={prepareMode}
           travelMode={travelMode}
         />
-        {dietMode && !travelMode && !prepareMode && !monthLaterMode && (
-          <DietSummaryCard />
-        )}
         <SpendingCard
+          pendingCount={pendingCount}
           afterMode={afterMode}
+          flightPersonal={flightPersonal}
           monthLaterMode={monthLaterMode}
           openExpense={openExpense}
           openSettlement={openSettlement}
           prepareMode={prepareMode}
           travelMode={travelMode}
         />
-        {afterMode && <TravelStoryPreview />}
-        {!healthEnabled && (
+        {afterMode && <TravelStoryPreview open={openStory} />}
+        {afterMode && tone === "numeric" && <TravelCostPreview open={openCost} />}
+        {!healthEnabled && healthDeclined && (
+          <div className="health-detection">
+            <span className="health-card-icon">
+              <Stethoscope size={19} strokeWidth={1.5} />
+            </span>
+            <div>
+              <strong>지출로만 기록했어요</strong>
+              <span>건강 기록은 만들지 않아요</span>
+            </div>
+          </div>
+        )}
+        {!healthEnabled && !healthDeclined && (
           <Action className="health-detection" onClick={openHealthConsent}>
             <span className="health-card-icon">
               <Stethoscope size={19} strokeWidth={1.5} />
