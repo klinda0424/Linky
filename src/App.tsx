@@ -1,6 +1,8 @@
-import { useState, type ReactNode } from "react"
+import { useMemo, useState, type ReactNode } from "react"
 import { MainApp } from "@/MainApp"
 import { StatusBar } from "@/components/common"
+import { UTLayer, useUTSession } from "@/components/ut"
+import { parseUT } from "@/lib/ut"
 import {
   AnalysisComplete,
   BasicInfo,
@@ -13,7 +15,10 @@ import {
 import { type DomainKey, type PermissionKey, type Tone } from "@/types"
 
 export default function App() {
-  const [step, setStep] = useState(1)
+  // UT 모드(?ut=1)에서는 온보딩을 건너뛰고 과제 시작 상태로 바로 진입
+  const utConfig = useMemo(() => parseUT(window.location.search), [])
+  const ut = useUTSession(utConfig)
+  const [step, setStep] = useState(utConfig.enabled ? 8 : 1)
   const [nickname, setNickname] = useState("")
   const [job, setJob] = useState("")
   const [goals, setGoals] = useState<string[]>([])
@@ -35,7 +40,9 @@ export default function App() {
       photos: false,
       health: false,
     })
-  const [tone, setTone] = useState<Tone>()
+  const [tone, setTone] = useState<Tone | undefined>(
+    utConfig.enabled ? utConfig.tone : undefined,
+  )
   const [slide, setSlide] = useState(0)
   const [nudge, setNudge] = useState(false)
 
@@ -108,11 +115,13 @@ export default function App() {
   else
     content = (
       <MainApp
+        key={ut.runKey}
         goals={goals}
         nickname={nickname}
         nudge={nudge}
         setTone={setTone}
         tone={tone ?? "narrative"}
+        ut={utConfig.enabled ? ut.api : undefined}
       />
     )
 
@@ -121,6 +130,7 @@ export default function App() {
       <div className="phone">
         <StatusBar />
         {content}
+        {utConfig.enabled && <UTLayer session={ut} />}
       </div>
     </div>
   )

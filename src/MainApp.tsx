@@ -1,6 +1,7 @@
-import { useState, type ReactNode } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 import { Check } from "lucide-react"
 import { BottomTabs } from "@/components/layout"
+import { type UTApi } from "@/components/ut"
 import {
   ArchivePage,
   ArchiveSearch,
@@ -45,12 +46,15 @@ export function MainApp({
   goals,
   nudge,
   nickname,
+  ut,
 }: {
   tone: Tone
   setTone: (tone: Tone) => void
   goals: string[]
   nudge: boolean
   nickname: string
+  // 사용성 테스트 모드일 때만 전달됨 (시작 상태·성공 지점·화면 기록)
+  ut?: UTApi
 }) {
   const [tab, setTab] = useState<MainTab>("home")
   const [view, setView] = useState<MainView>("tabs")
@@ -75,16 +79,24 @@ export function MainApp({
   const [flightPersonal, setFlightPersonal] = useState(false)
   // 온보딩에서 켠 넛지 + 하루 리포트 옵트인("네")으로 켜지는 넛지
   const [nudgeOn, setNudgeOn] = useState(nudge)
-  const [travelMode, setTravelMode] = useState(false)
-  const [prepareMode, setPrepareMode] = useState(false)
-  const [afterMode, setAfterMode] = useState(false)
-  const [monthLaterMode, setMonthLaterMode] = useState(false)
+  const [travelMode, setTravelMode] = useState(ut?.mode === "travel")
+  const [prepareMode, setPrepareMode] = useState(ut?.mode === "prepare")
+  const [afterMode, setAfterMode] = useState(ut?.mode === "after")
+  const [monthLaterMode, setMonthLaterMode] = useState(
+    ut?.mode === "monthLater",
+  )
   const [goalModes, setGoalModes] = useState<Record<GoalModeKey, boolean>>({
     // U1-1 시연에서 사용자가 직접 켜는 흐름이라 온보딩 선택과 무관하게 OFF로 시작
     diet: false,
     saving: goals.includes("절약하기"),
     exercise: false,
   })
+
+  // UT: 화면 이동 기록, 검색 결과 도달은 U11-1 성공 지점
+  useEffect(() => {
+    ut?.screen(`${tab}:${view}`)
+    if (view === "searchResults") ut?.milestone("u111_results")
+  }, [tab, ut, view])
 
   const showMoodToast = () => {
     setSheet(false)
@@ -148,7 +160,12 @@ export function MainApp({
     page = (
       <DailyReport
         back={() => setView("tabs")}
+        decline={() => {
+          ut?.milestone("u52_nudge_no")
+          setView("tabs")
+        }}
         notify={() => {
+          ut?.milestone("u52_nudge_yes")
           setNudgeOn(true)
           setToast("필요할 때만 조용히 알려드릴게요")
           window.setTimeout(() => setView("tabs"), 900)
@@ -179,6 +196,9 @@ export function MainApp({
     page = (
       <ExpenseDetail
         back={() => setView(expenseFrom === "home" ? "tabs" : "searchResults")}
+        onTag={(tagged) =>
+          ut?.milestone(tagged ? "u31_tag_yes" : "u31_tag_no")
+        }
       />
     )
   else if (view === "groupExpense")
@@ -349,6 +369,7 @@ export function MainApp({
         {tab === "home" && (
           <HomePage
             acceptGroup={() => {
+              ut?.milestone("u71_yes")
               setGroupSuggestion(false)
               setSplitSheet(true)
             }}
@@ -373,7 +394,9 @@ export function MainApp({
             profile={() => setView("profile")}
             savingMode={goalModes.saving}
             prepareMode={prepareMode}
+            showSegments={!ut}
             rejectGroup={() => {
+              ut?.milestone("u71_no")
               setGroupSuggestion(false)
               setFlightPersonal(true)
             }}
@@ -452,11 +475,13 @@ export function MainApp({
       {healthConsent && (
         <HealthConsent
           agree={() => {
+            ut?.milestone("u61_agree")
             setHealthAgreed(true)
             setHealthConsent(false)
             setView("health")
           }}
           decline={() => {
+            ut?.milestone("u61_decline")
             setHealthDeclined(true)
             setHealthConsent(false)
           }}

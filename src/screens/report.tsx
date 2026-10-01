@@ -117,10 +117,13 @@ export function DailyReport({
   tone,
   back,
   notify,
+  decline,
 }: {
   tone: Tone
   back: () => void
   notify: () => void
+  // "아니요" 선택 (없으면 back과 동일하게 동작)
+  decline?: () => void
 }) {
   const [page, setPage] = useState(0)
   const [touchX, setTouchX] = useState<number>()
@@ -214,7 +217,7 @@ export function DailyReport({
               <p>비슷한 날, 미리 알려드릴까요?</p>
               <span>패턴이 겹치는 순간에만 조용히 알려드려요</span>
               <div className="confirm-buttons">
-                <Action className="secondary-button" onClick={back}>
+                <Action className="secondary-button" onClick={decline ?? back}>
                   아니요
                 </Action>
                 <Action className="primary-button" onClick={notify}>

@@ -419,6 +419,7 @@ export function HomePage({
   openStory,
   openCost,
   pendingCount,
+  showSegments = true,
   openMood,
   healthEnabled,
   healthDeclined,
@@ -447,6 +448,7 @@ export function HomePage({
   openStory: () => void
   openCost: () => void
   pendingCount: number
+  showSegments?: boolean
   openMood: () => void
   healthEnabled: boolean
   healthDeclined: boolean
@@ -474,6 +476,7 @@ export function HomePage({
         </div>
         <div className="home-actions">
           <div className="profile-control">
+            {showSegments && (
             <HomeSegments
               afterMode={afterMode}
               monthLaterMode={monthLaterMode}
@@ -485,6 +488,7 @@ export function HomePage({
               selectTravel={selectTravel}
               travelMode={travelMode}
             />
+            )}
           </div>
           <Action className="profile-icon" onClick={profile} label="프로필">
             <UserRound size={17} strokeWidth={1.5} />
