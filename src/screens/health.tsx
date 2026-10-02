@@ -1,5 +1,22 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from "react"
-import { Receipt, ShieldCheck, Stethoscope } from "lucide-react"
+import {
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react"
+import {
+  Cookie,
+  Dumbbell,
+  Footprints,
+  Moon,
+  Receipt,
+  ShieldCheck,
+  Stethoscope,
+  Sun,
+  Sunrise,
+  Utensils,
+} from "lucide-react"
 import { Action, cx } from "@/components/common"
 import { MainHeader } from "@/components/layout"
 
@@ -185,13 +202,216 @@ export function HealthConsent({
     </div>
   )
 }
+// 건강 보관함: 시험기간 주(12/8~14, 일요일 시작)의 하루별 건강 기록.
+// 오늘(12일)은 U4-3 식단 사진 인식, 저녁 배달 결제, U6 내과 결제와 이어진다.
+type Meal = {
+  slot: "아침" | "점심" | "저녁" | "간식"
+  name?: string
+  kcal?: number
+  // 어디서 기록됐는지 (입력 요구 없이 자동 연결)
+  source?: string
+}
+type HealthDay = {
+  date: number
+  weekday: string
+  steps: number
+  // 운동 기록(건강 앱). 없으면 0
+  workout: { minutes: number; name?: string }
+  meals: Meal[]
+  // 탄·단·지 g
+  macros?: [number, number, number]
+  hospital?: boolean
+}
+const emptyMeals: Meal[] = [
+  { slot: "아침" },
+  { slot: "점심" },
+  { slot: "저녁" },
+  { slot: "간식" },
+]
+const healthWeek: HealthDay[] = [
+  { date: 8, weekday: "일", steps: 7420, workout: { minutes: 30, name: "걷기" }, meals: emptyMeals },
+  { date: 9, weekday: "월", steps: 6810, workout: { minutes: 40, name: "요가" }, meals: emptyMeals },
+  { date: 10, weekday: "화", steps: 5230, workout: { minutes: 0 }, meals: emptyMeals },
+  { date: 11, weekday: "수", steps: 4980, workout: { minutes: 0 }, meals: emptyMeals },
+  {
+    date: 12,
+    weekday: "목",
+    steps: 3410,
+    workout: { minutes: 0 },
+    meals: [
+      { slot: "아침" },
+      { slot: "점심", name: "닭가슴살 샐러드", kcal: 320, source: "사진 인식" },
+      { slot: "저녁", name: "떡볶이", kcal: 480, source: "배달 결제" },
+      { slot: "간식" },
+    ],
+    macros: [108, 42, 22],
+    hospital: true,
+  },
+  { date: 13, weekday: "금", steps: 0, workout: { minutes: 0 }, meals: emptyMeals },
+  { date: 14, weekday: "토", steps: 0, workout: { minutes: 0 }, meals: emptyMeals },
+]
+const todayDate = 12
+const mealIcons: Record<Meal["slot"], ReactNode> = {
+  아침: <Sunrise size={20} strokeWidth={1.5} />,
+  점심: <Sun size={20} strokeWidth={1.5} />,
+  저녁: <Moon size={20} strokeWidth={1.5} />,
+  간식: <Cookie size={20} strokeWidth={1.5} />,
+}
+const formatNumber = (value: number) => value.toLocaleString("ko-KR")
+
 export function HealthArchive({ back }: { back: () => void }) {
+  const [selected, setSelected] = useState(todayDate)
+  const day = healthWeek.find((item) => item.date === selected) ?? healthWeek[4]
+  const previous = healthWeek.find((item) => item.date === selected - 1)
+  const kcal = day.meals.reduce((sum, meal) => sum + (meal.kcal ?? 0), 0)
+  const macroTotal = day.macros?.reduce((sum, value) => sum + value, 0) ?? 0
+  const macroPercent = (value: number) =>
+    macroTotal ? Math.round((value / macroTotal) * 100) : 0
+  const maxSteps = Math.max(...healthWeek.map((item) => item.steps), 1)
+  const stepDiff = previous ? day.steps - previous.steps : 0
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="건강 보관함" />
       <div className="health-archive-content">
-        <p className="section-title">최근 건강 기록</p>
-        <HealthCard />
+        <div className="main-card health-week">
+          <div className="block-heading">
+            <strong>12월 {selected}일</strong>
+            <span>{selected === todayDate ? "오늘" : "시험기간 주"}</span>
+          </div>
+          <div className="health-week-days">
+            {healthWeek.map((item) => {
+              const future = item.date > todayDate
+              return (
+                <Action
+                  className={cx(
+                    "health-week-day",
+                    item.date === selected && "selected",
+                    future && "future",
+                  )}
+                  disabled={future}
+                  key={item.date}
+                  label={`12월 ${item.date}일`}
+                  onClick={() => setSelected(item.date)}
+                >
+                  <span>{item.weekday}</span>
+                  <strong>{item.date}</strong>
+                </Action>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className="main-card health-diet">
+          <div className="health-card-heading">
+            <span>
+              <Utensils size={14} strokeWidth={1.6} /> 식단
+            </span>
+            <strong>{formatNumber(kcal)} kcal</strong>
+          </div>
+          {day.macros ? (
+            <>
+              <div className="health-macro-bar" aria-hidden="true">
+                {day.macros.map((value, index) => (
+                  <i
+                    className={`macro-${index}`}
+                    key={index}
+                    style={{ width: `${macroPercent(value)}%` }}
+                  />
+                ))}
+              </div>
+              <div className="health-macros">
+                {(["탄", "단", "지"] as const).map((label, index) => (
+                  <span key={label}>
+                    <i className={`macro-${index}`} />
+                    {label} {macroPercent(day.macros![index])}%
+                  </span>
+                ))}
+              </div>
+            </>
+          ) : (
+            <p className="health-empty">이날 식단 기록은 없어요</p>
+          )}
+          <div className="health-meals">
+            {day.meals.map((meal) => (
+              <div
+                className={cx("health-meal", meal.name && "recorded")}
+                key={meal.slot}
+              >
+                <span className="health-meal-icon">{mealIcons[meal.slot]}</span>
+                <strong>{meal.slot}</strong>
+                {meal.name ? (
+                  <>
+                    <span>{meal.name}</span>
+                    <small>{meal.kcal}kcal</small>
+                    <em>{meal.source}</em>
+                  </>
+                ) : (
+                  <span className="muted">기록 없음</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="main-card health-hospital">
+          <div className="health-card-heading">
+            <span>
+              <Stethoscope size={14} strokeWidth={1.6} /> 병원
+            </span>
+          </div>
+          {day.hospital ? (
+            <HealthCard />
+          ) : (
+            <p className="health-empty">이날 병원 기록은 없어요</p>
+          )}
+        </div>
+
+        <div className="health-grid">
+          <div className="main-card health-steps">
+            <div className="health-card-heading">
+              <span>
+                <Footprints size={14} strokeWidth={1.6} /> 걸음수
+              </span>
+            </div>
+            <strong className="health-big">
+              {formatNumber(day.steps)}
+              <small>걸음</small>
+            </strong>
+            {previous && (
+              <p className="health-compare">
+                전날보다 {formatNumber(Math.abs(stepDiff))}걸음{" "}
+                {stepDiff < 0 ? "적어요" : "많아요"}
+              </p>
+            )}
+            <div className="health-step-bars" aria-hidden="true">
+              {healthWeek.map((item) => (
+                <i
+                  className={cx(item.date === selected && "selected")}
+                  key={item.date}
+                  style={{ height: `${Math.max((item.steps / maxSteps) * 100, 6)}%` }}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="main-card health-workout">
+            <div className="health-card-heading">
+              <span>
+                <Dumbbell size={14} strokeWidth={1.6} /> 운동
+              </span>
+            </div>
+            <strong className="health-big">
+              {day.workout.minutes}
+              <small>분</small>
+            </strong>
+            <p className="health-compare">
+              {day.workout.name
+                ? `${day.workout.name} 기록이 있어요`
+                : "이날 운동 기록은 없어요"}
+            </p>
+          </div>
+        </div>
+        <p className="health-source">걸음수·운동은 건강 앱에서 가져와요</p>
+
         <div className="health-security">
           <ShieldCheck size={18} strokeWidth={1.5} />
           <p>
