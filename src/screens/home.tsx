@@ -262,7 +262,7 @@ export function SpendingCard({
   )
 }
 // 단계(그 주)별 식비·배달. 같은 주를 보여주는 여행 중/여행 후는 이어서 쌓인 값이다.
-const dietByStage: Record<UTMode, { delivery: number; food: number }> = {
+export const dietByStage: Record<UTMode, { delivery: number; food: number }> = {
   confirm: { delivery: 2, food: 38000 },
   exam: { delivery: 3, food: 54000 },
   prepare: { delivery: 1, food: 22000 },
