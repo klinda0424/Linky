@@ -66,13 +66,13 @@ const travelItem = "원피스"
 export function ExpenseDetail({
   back,
   merchant,
-  onTag,
+  onAdd,
 }: {
   back: () => void
   // 홈에서 누른 구매처. 없으면 U3-1 대상(원피스)이 있는 구매처를 연다.
   merchant?: string
-  // 여행 태그 수락(true)/거절(false) 알림 (UT 성공 지점 기록용)
-  onTag?: (tagged: boolean) => void
+  // 옷장에 넣었을 때 알림 (UT 성공 지점 기록용)
+  onAdd?: () => void
 }) {
   const groups = shoppingGroups()
   const group =
@@ -92,14 +92,11 @@ export function ExpenseDetail({
   const [editing, setEditing] = useState<string>()
   const [edited, setEdited] = useState<string[]>([])
   const [draft, setDraft] = useState("")
-  const [done, setDone] = useState<{ tagged?: boolean }>()
-  const hasTravelItem = group.items.some(
-    (expense) => expense.name === travelItem,
-  )
+  const [done, setDone] = useState(false)
   if (done)
     return (
       <ClosetPage
-        added={{ merchant: group.merchant, names, tagged: done.tagged }}
+        added={{ merchant: group.merchant, names }}
         back={back}
       />
     )
@@ -225,52 +222,19 @@ export function ExpenseDetail({
             <span>{group.merchant} 앱</span>
           </div>
         </div>
-        {hasTravelItem && (
-          <div className="tag-suggestion">
-            <span className="connect-icon">
-              <Sparkles size={18} strokeWidth={1.5} />
-            </span>
-            <p>제주 여행 준비로 묶어둘 수 있어요</p>
-            <span className="tag-reason">
-              {names[travelItem]} · 12월 22일 제주 여행 열흘 전에 산 옷이에요
-            </span>
-          </div>
-        )}
       </div>
-      {hasTravelItem ? (
-        <div className="ai-bottom">
-          <Action
-            className="secondary-button"
-            disabled={editing !== undefined}
-            onClick={() => {
-              onTag?.(false)
-              setDone({ tagged: false })
-            }}
-          >
-            아니요
-          </Action>
-          <Action
-            className="primary-button"
-            disabled={editing !== undefined}
-            onClick={() => {
-              onTag?.(true)
-              setDone({ tagged: true })
-            }}
-          >
-            여행으로 묶기
-          </Action>
-        </div>
-      ) : (
-        <div className="ai-bottom single">
-          <Action
-            className="primary-button"
-            disabled={editing !== undefined}
-            onClick={() => setDone({})}
-          >
-            옷장에 넣기
-          </Action>
-        </div>
-      )}
+      <div className="ai-bottom single">
+        <Action
+          className="primary-button"
+          disabled={editing !== undefined}
+          onClick={() => {
+            onAdd?.()
+            setDone(true)
+          }}
+        >
+          옷장에 넣기
+        </Action>
+      </div>
     </div>
   )
 }
@@ -321,10 +285,8 @@ type ClosetAdded = {
   merchant: string
   // 지출 상세에서 복원·수정한 상품명 (원래 이름 → 보여줄 이름)
   names: Record<string, string>
-  // 원피스 여행 태그 결정. 원피스가 없는 구매처면 undefined
-  tagged?: boolean
 }
-// 옷장은 종류(카테고리)로 나눈다. 태그(시험기간·제주 여행)는 종류와 별개로 카드에 붙는 표시다.
+// 옷장은 종류(카테고리)로만 나눈다. 시험기간·제주 여행 같은 태그는 붙이지 않는다.
 const closetCategories = ["상의", "하의", "원피스", "아우터", "신발", "악세서리"] as const
 type ClosetCategory = (typeof closetCategories)[number]
 const categoryIcons: Record<ClosetCategory, typeof Shirt> = {
@@ -358,9 +320,6 @@ const earlierClothes: Array<{
   { name: "니트 머플러", category: "악세서리", month: 11, day: 28 },
   { name: "가죽 크로스백", category: "악세서리", month: 11, day: 9 },
 ]
-// 태그는 산 날짜로 정한다: 시험기간(12/9~12/20) 안에 산 옷만 시험기간, 여행 태그는 사용자가 수락한 옷만.
-const examTag = (month: number, day: number) =>
-  month === 12 && day >= 9 && day <= 20 ? "시험기간" : ""
 
 function closetItems(added?: ClosetAdded) {
   const today = todayExpenses
@@ -372,10 +331,6 @@ function closetItems(added?: ClosetAdded) {
         name: (fromDetail && added?.names[expense.name]) || expense.name,
         category: todayCategory[expense.name] ?? ("상의" as ClosetCategory),
         date: `12월 12일 · ${expense.merchant}`,
-        tag:
-          expense.name === travelItem && added?.tagged !== false
-            ? "제주 여행"
-            : examTag(12, 12),
         visual: closetVisual(expense.name),
         isNew: added ? fromDetail : expense.name === travelItem,
       }
@@ -385,7 +340,6 @@ function closetItems(added?: ClosetAdded) {
     name: cloth.name,
     category: cloth.category,
     date: `${cloth.month}월 ${cloth.day}일 구매`,
-    tag: examTag(cloth.month, cloth.day),
     visual: closetVisuals[(today.length + index) % closetVisuals.length],
     isNew: false,
   }))
@@ -411,12 +365,10 @@ export function ClosetPage({
         {added && (
           <div className="closet-notice">
             <Check size={14} strokeWidth={2} />
-            {added.tagged
-              ? "옷장에 넣고 제주 여행으로 묶었어요"
-              : `${added.merchant}에서 산 옷을 옷장에 넣었어요`}
+            {added.merchant}에서 산 옷을 옷장에 넣었어요
           </div>
         )}
-        <div className="filter-chips">
+        <div className="filter-chips wrap">
           {(["전체", ...closetCategories] as const).map((item) => (
             <Action
               className={cx("filter-chip", filter === item && "selected")}
@@ -442,7 +394,6 @@ export function ClosetPage({
                   <span>
                     {item.category} · {item.date}
                   </span>
-                  {item.tag && <i>{item.tag}</i>}
                 </div>
               )
             })}
