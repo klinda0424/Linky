@@ -3096,8 +3096,9 @@ input.recognition-value {
   font-size: 10px;
 }
 
+/* 2024년 12월, 일요일 시작: 1~7 / 8~14 / 15~21 / 22~28 / 29~31 (5줄) */
 .month-grid {
-  height: 276px;
+  height: 230px;
   position: relative;
   margin-top: 6px;
   display: grid;
@@ -3130,31 +3131,26 @@ input.recognition-value {
   white-space: nowrap;
 }
 
+/* 시험기간 12/9(월)~20(금): 둘째 줄 월~토, 셋째 줄 일~금 */
 .exam-one {
-  top: 119px;
-  left: 0;
-  width: 100%;
+  top: 73px;
+  left: 14.29%;
+  width: 85.71%;
   background: var(--blue);
 }
 
 .exam-two {
-  top: 165px;
+  top: 119px;
   left: 0;
-  width: 71.42%;
+  width: 85.71%;
   background: var(--blue);
 }
 
+/* 제주 여행 12/22(일)~24(화): 넷째 줄 일~화 */
 .travel-one {
   top: 165px;
-  right: 0;
-  width: 14.28%;
-  background: var(--primary);
-}
-
-.travel-two {
-  top: 211px;
   left: 0;
-  width: 28.56%;
+  width: 42.86%;
   background: var(--primary);
 }
 
@@ -5604,30 +5600,6 @@ input.recognition-value {
 }
 
 /* ===== 여행 확정 단계 홈: 다가오는 일정, 진입 카드 ===== */
-.upcoming-lines {
-  margin-top: 8px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.upcoming-lines span {
-  height: 17px;
-  padding: 0 7px;
-  display: flex;
-  align-items: center;
-  border-radius: 4px;
-  font-size: 9px;
-}
-
-.upcoming-lines .upcoming-exam {
-  background: var(--blue);
-}
-
-.upcoming-lines .upcoming-travel {
-  background: var(--primary);
-}
-
 .home-entry > div > span {
   line-height: 1.4;
 }

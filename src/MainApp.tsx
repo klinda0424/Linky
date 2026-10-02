@@ -38,6 +38,7 @@ import {
   LinkRecord,
   QuickRecord,
   RecordSheet,
+  type ScheduleKind,
 } from "@/screens/record"
 import { DailyReport, MoodPrompt, type MoodEmoji } from "@/screens/report"
 import { days } from "@/lib/days"
@@ -198,7 +199,17 @@ export function MainApp({
 
   // U0-3까지 마치면 홈 캘린더에 시험기간·제주 여행 일정이 올라옴
 
-  const [scheduleRegistered, setScheduleRegistered] = useState(false)
+  // 캡처 업로드 → 제주 여행, 학사일정 링크 → 시험기간을 따로 등록한다
+  const [schedules, setSchedules] = useState<Record<ScheduleKind, boolean>>({
+    travel: false,
+    exam: false,
+  })
+  const [lastSchedule, setLastSchedule] = useState<ScheduleKind>("travel")
+  const registerSchedule = (kind: ScheduleKind) => {
+    setSchedules((current) => ({ ...current, [kind]: true }))
+    setLastSchedule(kind)
+    setView("calendar")
+  }
 
   const [goalModes, setGoalModes] = useState<Record<GoalModeKey, boolean>>({
     // U1-1 시연에서 사용자가 직접 켜는 흐름이라 온보딩 선택과 무관하게 OFF로 시작
@@ -350,19 +361,26 @@ export function MainApp({
       />
     )
   else if (view === "quick") page = <QuickRecord back={() => setView("tabs")} />
-  else if (view === "link") page = <LinkRecord back={() => setView("tabs")} />
+  else if (view === "link")
+    page = (
+      <LinkRecord
+        back={() => setView("tabs")}
+        confirm={() => registerSchedule("exam")}
+      />
+    )
   else if (view === "capture")
     page = (
       <CaptureUpload
         back={() => setView("tabs")}
-        confirm={() => setView("calendar")}
+        confirm={() => registerSchedule("travel")}
       />
     )
   else if (view === "calendar")
     page = (
       <ImportedCalendar
+        added={lastSchedule}
+        schedules={schedules}
         home={() => {
-          setScheduleRegistered(true)
 
           setHomeMode("confirm")
 
@@ -629,10 +647,11 @@ export function MainApp({
               setView("expense")
             }}
             openCapture={() => setView("capture")}
+            openLink={() => setView("link")}
             openGoalAchievement={() => openGoalAchievement("home")}
             openGoals={() => setView("goals")}
             openHealthConsent={() => setHealthConsent(true)}
-            scheduleRegistered={scheduleRegistered}
+            schedules={schedules}
             openCost={() => setView("travelCost")}
             openInsight={() => setView("dailyInsight")}
             pendingCount={settlement.items.length}
