@@ -15,6 +15,7 @@ import {
   cx,
 } from "@/components/common"
 import { MainHeader } from "@/components/layout"
+import { todayExpenses } from "@/lib/today"
 
 const restoredItem = "원피스 (블랙 · M)"
 const itemCandidates = [
@@ -197,7 +198,7 @@ export function ShoppingStorage({
           </span>
           <div>
             <strong>옷장</strong>
-            <p>옷과 패션 아이템 8개</p>
+            <p>옷과 패션 아이템 {closetCount}개</p>
           </div>
           <ChevronRight size={18} strokeWidth={1.5} />
         </Action>
@@ -215,6 +216,37 @@ export function ShoppingStorage({
     </div>
   )
 }
+// 옷장은 홈 "오늘"(12월 12일) 지출의 옷 결제와 같은 데이터를 쓴다(lib/today.ts).
+// 첫 옷(원피스)은 U3-1에서 복원·태그를 정한 항목이고, 나머지는 시험기간 자동 묶음에 들어간다.
+const closetVisuals = ["dress", "cardigan", "scarf", "coat"]
+const earlierClothes = [{ name: "롱 코트", date: "11월 19일 구매" }]
+
+function closetItems(added?: { name: string; tagged: boolean }) {
+  const today = todayExpenses
+    .filter((expense) => expense.category === "쇼핑")
+    .map((expense, index) => {
+      const restored = index === 0
+      return {
+        key: `today-${index}`,
+        name: restored && added ? added.name : expense.name,
+        date: `12월 12일 · ${expense.merchant}`,
+        tag: restored && (!added || added.tagged) ? "제주 여행" : "시험기간",
+        visual: closetVisuals[index % closetVisuals.length],
+        restored,
+      }
+    })
+  const earlier = earlierClothes.map((cloth, index) => ({
+    key: `earlier-${index}`,
+    name: cloth.name,
+    date: cloth.date,
+    tag: "",
+    visual: closetVisuals[(today.length + index) % closetVisuals.length],
+    restored: false,
+  }))
+  return [...today, ...earlier]
+}
+const closetCount = closetItems().length
+
 export function ClosetPage({
   back,
   added,
@@ -223,17 +255,7 @@ export function ClosetPage({
   added?: { name: string; tagged: boolean }
 }) {
   const [filter, setFilter] = useState("전체")
-  const items = [
-    [
-      added?.name ?? "원피스",
-      "12월 12일 구매",
-      !added || added.tagged ? "제주 여행" : "",
-      "dress",
-    ],
-    ["울 카디건", "12월 7일 구매", "", "cardigan"],
-    ["니트 머플러", "11월 28일 구매", "시험기간", "scarf"],
-    ["롱 코트", "11월 19일 구매", "", "coat"],
-  ]
+  const items = closetItems(added)
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="옷장" />
@@ -259,16 +281,16 @@ export function ClosetPage({
         </div>
         <div className="closet-grid">
           {items
-            .filter(([, , tag]) => filter === "전체" || tag === filter)
-            .map(([name, date, tag, visual]) => (
-              <div className="closet-card" key={name}>
-                <div className={cx("closet-image", visual)}>
+            .filter((item) => filter === "전체" || item.tag === filter)
+            .map((item) => (
+              <div className="closet-card" key={item.key}>
+                <div className={cx("closet-image", item.visual)}>
                   <Shirt size={38} strokeWidth={1.1} />
-                  {visual === "dress" && <Badge>NEW</Badge>}
+                  {item.restored && <Badge>NEW</Badge>}
                 </div>
-                <strong>{name}</strong>
-                <span>{date}</span>
-                {tag && <i>{tag}</i>}
+                <strong>{item.name}</strong>
+                <span>{item.date}</span>
+                {item.tag && <i>{item.tag}</i>}
               </div>
             ))}
         </div>
