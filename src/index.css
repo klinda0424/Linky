@@ -362,6 +362,17 @@ p {
   font-size: 12px;
 }
 
+.dev-skip-link {
+  position: absolute;
+  right: var(--page-padding);
+  bottom: 6px;
+  left: var(--page-padding);
+  z-index: 4;
+  color: var(--sub);
+  text-align: center;
+  font-size: 11px;
+}
+
 .goal-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

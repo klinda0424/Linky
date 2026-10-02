@@ -45,6 +45,8 @@ export function BasicInfo({
   setJob,
 
   next,
+
+  skipToHome,
 }: {
   nickname: string
 
@@ -59,6 +61,8 @@ export function BasicInfo({
   setJob: (value: string) => void
 
   next: () => void
+
+  skipToHome: () => void
 }) {
   return (
     <Screen step={1}>
@@ -123,6 +127,9 @@ export function BasicInfo({
         disabled={!nickname || !job}
         onNext={next}
       />
+      <Action className="dev-skip-link" onClick={skipToHome}>
+        개발용 · 홈으로 건너뛰기
+      </Action>
     </Screen>
   )
 }

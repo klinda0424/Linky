@@ -105,6 +105,7 @@ export default function App() {
         job={job}
         nickname={nickname}
         next={next}
+        skipToHome={() => setStep(8)}
         setBirthYear={setBirthYear}
         setJob={setJob}
         setNickname={setNickname}
