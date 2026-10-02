@@ -4639,6 +4639,46 @@ input.recognition-value {
   background: var(--primary-strong);
 }
 
+.health-big.muted {
+  color: var(--disabled);
+}
+
+/* 체중: 이번 주 잰 날만 이은 선 */
+.health-weight-chart {
+  height: 30px;
+  position: relative;
+  margin-top: auto;
+}
+
+.health-weight-chart svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.health-weight-chart polyline {
+  fill: none;
+  stroke: var(--primary-strong);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.health-weight-chart i {
+  width: 6px;
+  height: 6px;
+  position: absolute;
+  border: 1.5px solid var(--primary-strong);
+  border-radius: 50%;
+  background: var(--background);
+  transform: translate(-50%, -50%);
+}
+
+.health-weight-chart i.selected {
+  width: 9px;
+  height: 9px;
+  background: var(--primary-strong);
+}
+
 .health-source {
   margin: 8px 0 4px;
   color: var(--sub);
