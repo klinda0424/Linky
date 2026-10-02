@@ -6,11 +6,13 @@ import {
   type ReactNode,
 } from "react"
 import {
+  BedDouble,
   Cookie,
   Dumbbell,
   Footprints,
   Moon,
   Receipt,
+  Scale,
   ShieldCheck,
   Stethoscope,
   Sun,
@@ -217,6 +219,10 @@ type HealthDay = {
   steps: number
   // 운동 기록(건강 앱). 없으면 0
   workout: { minutes: number; name?: string }
+  // 수면(건강 앱): 잠든 시각 ~ 일어난 시각, 분
+  sleep: { from: string; to: string; minutes: number }
+  // 체중(건강 앱·체중계). 재지 않은 날은 없음
+  weight?: number
   meals: Meal[]
   // 탄·단·지 g
   macros?: [number, number, number]
@@ -229,15 +235,18 @@ const emptyMeals: Meal[] = [
   { slot: "간식" },
 ]
 const healthWeek: HealthDay[] = [
-  { date: 8, weekday: "일", steps: 7420, workout: { minutes: 30, name: "걷기" }, meals: emptyMeals },
-  { date: 9, weekday: "월", steps: 6810, workout: { minutes: 40, name: "요가" }, meals: emptyMeals },
-  { date: 10, weekday: "화", steps: 5230, workout: { minutes: 0 }, meals: emptyMeals },
-  { date: 11, weekday: "수", steps: 4980, workout: { minutes: 0 }, meals: emptyMeals },
+  { date: 8, weekday: "일", steps: 7420, workout: { minutes: 30, name: "걷기" }, sleep: { from: "00:20", to: "07:30", minutes: 430 }, weight: 55.4, meals: emptyMeals },
+  { date: 9, weekday: "월", steps: 6810, workout: { minutes: 40, name: "요가" }, sleep: { from: "00:50", to: "07:30", minutes: 400 }, weight: 55.3, meals: emptyMeals },
+  { date: 10, weekday: "화", steps: 5230, workout: { minutes: 0 }, sleep: { from: "01:25", to: "07:30", minutes: 365 }, meals: emptyMeals },
+  { date: 11, weekday: "수", steps: 4980, workout: { minutes: 0 }, sleep: { from: "02:10", to: "07:30", minutes: 320 }, weight: 55.1, meals: emptyMeals },
   {
     date: 12,
     weekday: "목",
     steps: 3410,
     workout: { minutes: 0 },
+    // 새벽 1시 택시 귀가 뒤 잠든 날
+    sleep: { from: "02:40", to: "07:30", minutes: 290 },
+    weight: 55.2,
     meals: [
       { slot: "아침" },
       { slot: "점심", name: "닭가슴살 샐러드", kcal: 320, source: "사진 인식" },
@@ -247,8 +256,8 @@ const healthWeek: HealthDay[] = [
     macros: [108, 42, 22],
     hospital: true,
   },
-  { date: 13, weekday: "금", steps: 0, workout: { minutes: 0 }, meals: emptyMeals },
-  { date: 14, weekday: "토", steps: 0, workout: { minutes: 0 }, meals: emptyMeals },
+  { date: 13, weekday: "금", steps: 0, workout: { minutes: 0 }, sleep: { from: "", to: "", minutes: 0 }, meals: emptyMeals },
+  { date: 14, weekday: "토", steps: 0, workout: { minutes: 0 }, sleep: { from: "", to: "", minutes: 0 }, meals: emptyMeals },
 ]
 const todayDate = 12
 const mealIcons: Record<Meal["slot"], ReactNode> = {
@@ -258,6 +267,43 @@ const mealIcons: Record<Meal["slot"], ReactNode> = {
   간식: <Cookie size={20} strokeWidth={1.5} />,
 }
 const formatNumber = (value: number) => value.toLocaleString("ko-KR")
+const formatSleep = (minutes: number) =>
+  `${Math.floor(minutes / 60)}시간${minutes % 60 ? ` ${minutes % 60}분` : ""}`
+
+// 체중 추이: 이번 주 잰 날만 이은 선 (선택한 날까지)
+function WeightLine({ selected }: { selected: number }) {
+  const points = healthWeek.filter(
+    (item) => item.weight !== undefined && item.date <= todayDate,
+  )
+  const values = points.map((item) => item.weight!)
+  const min = Math.min(...values) - 0.2
+  const max = Math.max(...values) + 0.2
+  const x = (date: number) => ((date - 8) / 6) * 100
+  // 0~30 (위가 0). 점이 잘리지 않게 위아래 4씩 여백
+  const y = (weight: number) => 26 - ((weight - min) / (max - min)) * 22
+  return (
+    <div aria-hidden="true" className="health-weight-chart">
+      <svg preserveAspectRatio="none" viewBox="0 0 100 30">
+        <polyline
+          points={points
+            .map((item) => `${x(item.date)},${y(item.weight!)}`)
+            .join(" ")}
+        />
+      </svg>
+      {/* 점은 늘어나지 않게 HTML로 */}
+      {points.map((item) => (
+        <i
+          className={cx(item.date === selected && "selected")}
+          key={item.date}
+          style={{
+            left: `${x(item.date)}%`,
+            top: `${(y(item.weight!) / 30) * 100}%`,
+          }}
+        />
+      ))}
+    </div>
+  )
+}
 
 export function HealthArchive({ back }: { back: () => void }) {
   const [selected, setSelected] = useState(todayDate)
@@ -268,6 +314,11 @@ export function HealthArchive({ back }: { back: () => void }) {
   const macroPercent = (value: number) =>
     macroTotal ? Math.round((value / macroTotal) * 100) : 0
   const maxSteps = Math.max(...healthWeek.map((item) => item.steps), 1)
+  const maxSleep = Math.max(...healthWeek.map((item) => item.sleep.minutes), 1)
+  // 선택한 날 이전의 마지막 체중 기록
+  const lastWeight = [...healthWeek]
+    .reverse()
+    .find((item) => item.date < selected && item.weight !== undefined)
   const stepDiff = previous ? day.steps - previous.steps : 0
   return (
     <div className="main-page sub-page">
@@ -353,20 +404,66 @@ export function HealthArchive({ back }: { back: () => void }) {
           </div>
         </div>
 
-        <div className="main-card health-hospital">
-          <div className="health-card-heading">
-            <span>
-              <Stethoscope size={14} strokeWidth={1.6} /> 병원
-            </span>
-          </div>
-          {day.hospital ? (
+        {/* 병원 기록은 있는 날에만 보여준다 */}
+        {day.hospital && (
+          <div className="main-card health-hospital">
+            <div className="health-card-heading">
+              <span>
+                <Stethoscope size={14} strokeWidth={1.6} /> 병원
+              </span>
+            </div>
             <HealthCard />
-          ) : (
-            <p className="health-empty">이날 병원 기록은 없어요</p>
-          )}
-        </div>
+          </div>
+        )}
 
         <div className="health-grid">
+          <div className="main-card health-sleep">
+            <div className="health-card-heading">
+              <span>
+                <BedDouble size={14} strokeWidth={1.6} /> 수면
+              </span>
+            </div>
+            <strong className="health-big">
+              {formatSleep(day.sleep.minutes)}
+            </strong>
+            <p className="health-compare">
+              {day.sleep.from} ~ {day.sleep.to}
+            </p>
+            <div className="health-step-bars" aria-hidden="true">
+              {healthWeek.map((item) => (
+                <i
+                  className={cx(item.date === selected && "selected")}
+                  key={item.date}
+                  style={{
+                    height: `${Math.max((item.sleep.minutes / maxSleep) * 100, 6)}%`,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="main-card health-weight">
+            <div className="health-card-heading">
+              <span>
+                <Scale size={14} strokeWidth={1.6} /> 체중
+              </span>
+            </div>
+            {day.weight !== undefined ? (
+              <strong className="health-big">
+                {day.weight.toFixed(1)}
+                <small>kg</small>
+              </strong>
+            ) : (
+              <strong className="health-big muted">-</strong>
+            )}
+            <p className="health-compare">
+              {day.weight !== undefined
+                ? lastWeight
+                  ? `지난 기록 ${lastWeight.weight!.toFixed(1)}kg (${lastWeight.date}일)`
+                  : "이번 주 첫 기록이에요"
+                : "이날은 재지 않았어요"}
+            </p>
+            <WeightLine selected={selected} />
+          </div>
           <div className="main-card health-steps">
             <div className="health-card-heading">
               <span>
@@ -410,7 +507,9 @@ export function HealthArchive({ back }: { back: () => void }) {
             </p>
           </div>
         </div>
-        <p className="health-source">걸음수·운동은 건강 앱에서 가져와요</p>
+        <p className="health-source">
+          수면·체중·걸음수·운동은 건강 앱에서 가져와요
+        </p>
 
         <div className="health-security">
           <ShieldCheck size={18} strokeWidth={1.5} />
