@@ -3,6 +3,8 @@ import {
   ArrowDown,
   Check,
   ChevronRight,
+  Footprints,
+  Gem,
   Map,
   Refrigerator,
   Shirt,
@@ -322,7 +324,43 @@ type ClosetAdded = {
   // 원피스 여행 태그 결정. 원피스가 없는 구매처면 undefined
   tagged?: boolean
 }
-const earlierClothes = [{ name: "롱 코트", date: "11월 19일 구매" }]
+// 옷장은 종류(카테고리)로 나눈다. 태그(시험기간·제주 여행)는 종류와 별개로 카드에 붙는 표시다.
+const closetCategories = ["상의", "하의", "원피스", "아우터", "신발", "악세서리"] as const
+type ClosetCategory = (typeof closetCategories)[number]
+const categoryIcons: Record<ClosetCategory, typeof Shirt> = {
+  상의: Shirt,
+  하의: Shirt,
+  원피스: Shirt,
+  아우터: Shirt,
+  신발: Footprints,
+  악세서리: Gem,
+}
+// 홈 "오늘" 옷 결제의 종류. 지출 상세에서 복원한 상품명에 맞춰 분류한다.
+const todayCategory: Record<string, ClosetCategory> = {
+  원피스: "원피스",
+  블라우스: "상의",
+  "니트 가디건": "아우터",
+  "와이드 데님": "하의",
+  "플리츠 스커트": "하의",
+}
+// 시험기간 이전에 산 옷(옷장에 원래 있던 것)
+const earlierClothes: Array<{
+  name: string
+  category: ClosetCategory
+  month: number
+  day: number
+}> = [
+  { name: "스트라이프 니트", category: "상의", month: 11, day: 25 },
+  { name: "슬랙스", category: "하의", month: 11, day: 12 },
+  { name: "롱 코트", category: "아우터", month: 11, day: 19 },
+  { name: "첼시 부츠", category: "신발", month: 11, day: 3 },
+  { name: "스니커즈", category: "신발", month: 10, day: 21 },
+  { name: "니트 머플러", category: "악세서리", month: 11, day: 28 },
+  { name: "가죽 크로스백", category: "악세서리", month: 11, day: 9 },
+]
+// 태그는 산 날짜로 정한다: 시험기간(12/9~12/20) 안에 산 옷만 시험기간, 여행 태그는 사용자가 수락한 옷만.
+const examTag = (month: number, day: number) =>
+  month === 12 && day >= 9 && day <= 20 ? "시험기간" : ""
 
 function closetItems(added?: ClosetAdded) {
   const today = todayExpenses
@@ -332,11 +370,12 @@ function closetItems(added?: ClosetAdded) {
       return {
         key: `today-${expense.name}`,
         name: (fromDetail && added?.names[expense.name]) || expense.name,
+        category: todayCategory[expense.name] ?? ("상의" as ClosetCategory),
         date: `12월 12일 · ${expense.merchant}`,
         tag:
           expense.name === travelItem && added?.tagged !== false
             ? "제주 여행"
-            : "시험기간",
+            : examTag(12, 12),
         visual: closetVisual(expense.name),
         isNew: added ? fromDetail : expense.name === travelItem,
       }
@@ -344,8 +383,9 @@ function closetItems(added?: ClosetAdded) {
   const earlier = earlierClothes.map((cloth, index) => ({
     key: `earlier-${index}`,
     name: cloth.name,
-    date: cloth.date,
-    tag: "",
+    category: cloth.category,
+    date: `${cloth.month}월 ${cloth.day}일 구매`,
+    tag: examTag(cloth.month, cloth.day),
     visual: closetVisuals[(today.length + index) % closetVisuals.length],
     isNew: false,
   }))
@@ -360,8 +400,10 @@ export function ClosetPage({
   back: () => void
   added?: ClosetAdded
 }) {
-  const [filter, setFilter] = useState("전체")
+  const [filter, setFilter] = useState<"전체" | ClosetCategory>("전체")
   const items = closetItems(added)
+  const countOf = (category: ClosetCategory) =>
+    items.filter((item) => item.category === category).length
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="옷장" />
@@ -375,30 +417,35 @@ export function ClosetPage({
           </div>
         )}
         <div className="filter-chips">
-          {["전체", "제주 여행", "시험기간"].map((item) => (
+          {(["전체", ...closetCategories] as const).map((item) => (
             <Action
               className={cx("filter-chip", filter === item && "selected")}
               key={item}
               onClick={() => setFilter(item)}
             >
-              {item}
+              {item} {item === "전체" ? items.length : countOf(item)}
             </Action>
           ))}
         </div>
         <div className="closet-grid">
           {items
-            .filter((item) => filter === "전체" || item.tag === filter)
-            .map((item) => (
-              <div className="closet-card" key={item.key}>
-                <div className={cx("closet-image", item.visual)}>
-                  <Shirt size={38} strokeWidth={1.1} />
-                  {item.isNew && <Badge>NEW</Badge>}
+            .filter((item) => filter === "전체" || item.category === filter)
+            .map((item) => {
+              const Icon = categoryIcons[item.category]
+              return (
+                <div className="closet-card" key={item.key}>
+                  <div className={cx("closet-image", item.visual)}>
+                    <Icon size={38} strokeWidth={1.1} />
+                    {item.isNew && <Badge>NEW</Badge>}
+                  </div>
+                  <strong>{item.name}</strong>
+                  <span>
+                    {item.category} · {item.date}
+                  </span>
+                  {item.tag && <i>{item.tag}</i>}
                 </div>
-                <strong>{item.name}</strong>
-                <span>{item.date}</span>
-                {item.tag && <i>{item.tag}</i>}
-              </div>
-            ))}
+              )
+            })}
         </div>
       </div>
     </div>
