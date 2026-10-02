@@ -2247,6 +2247,13 @@ p {
   font-size: 11px;
 }
 
+/* 옷장(U3-2): 옷이 한 화면보다 많으면 목록만 스크롤 (헤더 56px 제외) */
+.closet-content {
+  height: calc(100% - 56px);
+  padding-bottom: 32px;
+  overflow-y: auto;
+}
+
 .closet-notice {
   height: 38px;
   margin-bottom: 14px;
