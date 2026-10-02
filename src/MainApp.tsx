@@ -1,19 +1,37 @@
 import { useEffect, useState, type ReactNode } from "react"
+
 import { Check } from "lucide-react"
+
 import { BottomTabs } from "@/components/layout"
+
 import { type UTApi } from "@/components/ut"
+
 import { type UTMode } from "@/lib/ut"
+
 import {
   ArchivePage,
   ArchiveSearch,
   ArchiveSearchResults,
   EmptyTab,
 } from "@/screens/archive"
+
 import { CoachChat, CoachHub, GoalAchievement } from "@/screens/coach"
+
 import { FoodRecognition, FridgePage } from "@/screens/diet"
+
 import { HealthArchive, HealthConsent } from "@/screens/health"
+
 import { DailyInsight, HomePage } from "@/screens/home"
-import { GoalModeSettings, ProfilePage, ProfileTone } from "@/screens/profile"
+
+import {
+  ConnectionSettings,
+  GoalModeSettings,
+  NotificationSettings,
+  ProfileInfoSettings,
+  ProfilePage,
+  ProfileTone,
+} from "@/screens/profile"
+
 import {
   CaptureUpload,
   ImportedCalendar,
@@ -32,78 +50,171 @@ import {
   SettlementResult,
   SettlementTable,
 } from "@/screens/settlement"
+
 import { ClosetPage, ExpenseDetail, ShoppingStorage } from "@/screens/shopping"
+
 import { TravelCostReport, TravelStory } from "@/screens/travel"
+
 import { summarize } from "@/lib/settlement"
+
 import {
   type GoalModeKey,
   type MainTab,
   type MainView,
+  type NotificationKey,
+  type PermissionKey,
+  type ProfileDetails,
   type Tone,
 } from "@/types"
 
 export function MainApp({
   tone,
+
   setTone,
+
   goals,
+
   nudge,
+
   nickname,
+
+  birthYear,
+
+  job,
+
+  permissions,
+
+  setNickname,
+
+  setBirthYear,
+
+  setJob,
+
+  setNudge,
+
+  togglePermission,
+
   ut,
+
+  // 사용성 테스트 모드일 때만 전달됨 (시작 상태·성공 지점·화면 기록)
 }: {
   tone: Tone
+
   setTone: (tone: Tone) => void
+
   goals: string[]
+
   nudge: boolean
+
   nickname: string
-  // 사용성 테스트 모드일 때만 전달됨 (시작 상태·성공 지점·화면 기록)
+
+  birthYear: string
+
+  job: string
+
+  permissions: Record<PermissionKey, boolean>
+
+  setNickname: (value: string) => void
+
+  setBirthYear: (value: string) => void
+
+  setJob: (value: string) => void
+
+  setNudge: (value: boolean) => void
+
+  togglePermission: (key: PermissionKey) => void
+
   ut?: UTApi
 }) {
   const [tab, setTab] = useState<MainTab>("home")
+
   const [view, setView] = useState<MainView>("tabs")
+
   const [sheet, setSheet] = useState(false)
+
   const [splitSheet, setSplitSheet] = useState(false)
+
   const [healthConsent, setHealthConsent] = useState(false)
+
   const [healthAgreed, setHealthAgreed] = useState(false)
+
   const [healthDeclined, setHealthDeclined] = useState(false)
+
   const [toast, setToast] = useState("")
+
   // 정산: 정산표에서 제외한 항목, 민지 입금 매칭 여부
+
   const [excluded, setExcluded] = useState<string[]>([])
+
   const [matched, setMatched] = useState(false)
+
   const settlement = summarize(excluded)
+
   // 지출 상세(U3-1)를 연 곳: 뒤로 갈 때 돌아갈 화면
+
   const [expenseFrom, setExpenseFrom] = useState<"home" | "search">("home")
+
   // 홈에서 누른 구매처 (검색 결과에서 열면 undefined → U3-1 대상 구매처)
+
   const [expenseMerchant, setExpenseMerchant] = useState<string>()
+
   // 목표 달성 관리(U10-2)에서 뒤로 갈 곳: 코치 허브 또는 회고 흐름의 다음 단계(한 달 뒤 홈)
-  const [goalReturn, setGoalReturn] = useState<
-    "coachHub" | "monthLater" | "home"
-  >("coachHub")
+
+  const [goalReturn, setGoalReturn] =
+    useState<"coachHub" | "monthLater" | "home">("coachHub")
+
   const [groupSuggestion, setGroupSuggestion] = useState(true)
+
   // U7-1에서 "아니요"를 고르면 항공권은 그룹이 아닌 개인 지출로 남음
+
   const [flightPersonal, setFlightPersonal] = useState(false)
+
   // 온보딩에서 켠 넛지 + 하루 리포트 옵트인("네")으로 켜지는 넛지
+
   const [nudgeOn, setNudgeOn] = useState(nudge)
+
+  const [notificationSettings, setNotificationSettings] = useState({
+    schedule: true,
+
+    health: false,
+
+    report: true,
+  })
+
   // 홈 시점(드롭다운 6단계). 처음에는 유저플로우 시작인 "여행 확정".
+
   const [homeMode, setHomeMode] = useState<UTMode>(ut?.mode ?? "confirm")
   // 마지막으로 고른 기분 (하루 리포트의 "연결된 흐름"에 쓰임)
   const [mood, setMood] = useState<MoodEmoji>()
   const confirmMode = homeMode === "confirm"
+
   const travelMode = homeMode === "travel"
+
   const prepareMode = homeMode === "prepare"
+
   const afterMode = homeMode === "after"
+
   const monthLaterMode = homeMode === "monthLater"
+
   // U0-3까지 마치면 홈 캘린더에 시험기간·제주 여행 일정이 올라옴
+
   const [scheduleRegistered, setScheduleRegistered] = useState(false)
+
   const [goalModes, setGoalModes] = useState<Record<GoalModeKey, boolean>>({
     // U1-1 시연에서 사용자가 직접 켜는 흐름이라 온보딩 선택과 무관하게 OFF로 시작
+
     diet: false,
+
     saving: goals.includes("절약하기"),
+
     exercise: false,
   })
 
   // UT: 화면 이동 기록, 검색 결과 도달은 U11-1 성공 지점
+
   useEffect(() => {
     ut?.screen(`${tab}:${view}`)
+
     if (view === "searchResults") ut?.milestone("u111_results")
   }, [tab, ut, view])
 
@@ -115,30 +226,67 @@ export function MainApp({
     setMood(mood)
     setToast(moodToast())
     // U5-1 → U5-2: 결제 연결 안내 후 하루 리포트로 이어짐
+
     window.setTimeout(() => setView("dailyReport"), 700)
+
     window.setTimeout(() => setToast(""), 2200)
   }
+
   const openGoalAchievement = (from: "coachHub" | "monthLater" | "home") => {
     setGoalReturn(from)
+
     setView("goalAchievement")
   }
+
   const goMonthLaterHome = () => {
     setHomeMode("monthLater")
+
     setTab("home")
+
     setView("tabs")
   }
+
   const changeTab = (next: MainTab) => {
     setTab(next)
+
     setView("tabs")
   }
+
   const openInput = (next: "quick" | "link" | "capture" | "food") => {
     setSheet(false)
+
     setView(next)
   }
+
   const toggleGoalMode = (key: GoalModeKey) =>
     setGoalModes((current) => ({ ...current, [key]: !current[key] }))
 
+  const notificationValues: Record<NotificationKey, boolean> = {
+    pattern: nudgeOn,
+
+    ...notificationSettings,
+  }
+
+  const toggleNotification = (key: NotificationKey) => {
+    if (key === "pattern") {
+      const next = !nudgeOn
+
+      setNudgeOn(next)
+
+      setNudge(next)
+
+      return
+    }
+
+    setNotificationSettings((current) => ({
+      ...current,
+
+      [key]: !current[key],
+    }))
+  }
+
   let page: ReactNode
+
   if (view === "coachHub")
     page = (
       <CoachHub
@@ -166,6 +314,7 @@ export function MainApp({
           setMood(selected)
           setToast(moodToast())
           window.setTimeout(() => setView("dailyReport"), 700)
+
           window.setTimeout(() => setToast(""), 2200)
         }}
         skip={() => setView("tabs")}
@@ -181,13 +330,20 @@ export function MainApp({
         stage={homeMode}
         decline={() => {
           ut?.milestone("u52_nudge_no")
+
           setView("tabs")
         }}
         notify={() => {
           ut?.milestone("u52_nudge_yes")
+
           setNudgeOn(true)
+
+          setNudge(true)
+
           setToast("필요할 때만 조용히 알려드릴게요")
+
           window.setTimeout(() => setView("tabs"), 900)
+
           window.setTimeout(() => setToast(""), 2200)
         }}
         tone={tone}
@@ -207,8 +363,11 @@ export function MainApp({
       <ImportedCalendar
         home={() => {
           setScheduleRegistered(true)
+
           setHomeMode("confirm")
+
           setTab("home")
+
           setView("tabs")
         }}
       />
@@ -218,9 +377,7 @@ export function MainApp({
       <ExpenseDetail
         back={() => setView(expenseFrom === "home" ? "tabs" : "searchResults")}
         merchant={expenseMerchant}
-        onTag={(tagged) =>
-          ut?.milestone(tagged ? "u31_tag_yes" : "u31_tag_no")
-        }
+        onTag={(tagged) => ut?.milestone(tagged ? "u31_tag_yes" : "u31_tag_no")}
       />
     )
   else if (view === "groupExpense")
@@ -229,6 +386,7 @@ export function MainApp({
         back={() => setView("tabs")}
         confirm={() => {
           setHomeMode("travel")
+
           setView("tabs")
         }}
       />
@@ -256,6 +414,7 @@ export function MainApp({
         back={() => setView("settlementTable")}
         done={(next) => {
           setExcluded(next)
+
           setView("settlementTable")
         }}
         excluded={excluded}
@@ -269,11 +428,15 @@ export function MainApp({
         matched={matched}
         notify={() => {
           if (matched) return
+
           setToast("민지에게 입금 알림을 보냈어요")
+
           window.setTimeout(() => {
             setMatched(true)
+
             setToast("민지의 입금이 확인됐어요")
           }, 1200)
+
           window.setTimeout(() => setToast(""), 3200)
         }}
         result={() => setView("settlementResult")}
@@ -285,6 +448,7 @@ export function MainApp({
         excluded={excluded}
         finish={() => {
           setHomeMode("after")
+
           setView("travelStory")
         }}
       />
@@ -313,9 +477,7 @@ export function MainApp({
       />
     )
   else if (view === "closet")
-    page = (
-      <ClosetPage back={() => setView("shopping")} />
-    )
+    page = <ClosetPage back={() => setView("shopping")} />
   else if (view === "fridge")
     page = (
       <FridgePage
@@ -330,8 +492,11 @@ export function MainApp({
         back={() => setView("tabs")}
         saved={() => {
           setTab("home")
+
           setView("tabs")
+
           setToast("오늘 식단에 저장했어요")
+
           window.setTimeout(() => setToast(""), 2200)
         }}
       />
@@ -351,7 +516,9 @@ export function MainApp({
         back={() => setView("search")}
         openExpense={() => {
           setExpenseFrom("search")
+
           setExpenseMerchant(undefined)
+
           setView("expense")
         }}
       />
@@ -360,10 +527,56 @@ export function MainApp({
     page = (
       <ProfilePage
         // 온보딩 닉네임이 없으면 시연 주인공 이름 사용
+
         name={nickname || "김소연"}
         back={() => setView("tabs")}
+        openConnections={() => setView("connections")}
         openGoals={() => setView("goals")}
+        openInfo={() => setView("profileInfo")}
+        openNotifications={() => setView("notifications")}
         openTone={() => setView("tone")}
+      />
+    )
+  else if (view === "profileInfo")
+    page = (
+      <ProfileInfoSettings
+        back={() => setView("profile")}
+        save={(value: ProfileDetails) => {
+          setNickname(value.nickname)
+
+          setBirthYear(value.birthYear)
+
+          setJob(value.job)
+
+          setView("profile")
+
+          setToast("회원 정보를 저장했어요")
+
+          window.setTimeout(() => setToast(""), 2200)
+        }}
+        value={{
+          nickname: nickname || "김소연",
+
+          birthYear,
+
+          job: job || "🎓 대학생",
+        }}
+      />
+    )
+  else if (view === "connections")
+    page = (
+      <ConnectionSettings
+        back={() => setView("profile")}
+        toggle={togglePermission}
+        values={permissions}
+      />
+    )
+  else if (view === "notifications")
+    page = (
+      <NotificationSettings
+        back={() => setView("profile")}
+        toggle={toggleNotification}
+        values={notificationValues}
       />
     )
   else if (view === "goals")
@@ -372,6 +585,7 @@ export function MainApp({
         back={() => setView("profile")}
         home={() => {
           setTab("home")
+
           setView("tabs")
         }}
         toggle={toggleGoalMode}
@@ -393,7 +607,9 @@ export function MainApp({
           <HomePage
             acceptGroup={() => {
               ut?.milestone("u71_yes")
+
               setGroupSuggestion(false)
+
               setSplitSheet(true)
             }}
             afterMode={afterMode}
@@ -407,7 +623,9 @@ export function MainApp({
             monthLaterMode={monthLaterMode}
             openExpense={(merchant) => {
               setExpenseFrom("home")
+
               setExpenseMerchant(merchant)
+
               setView("expense")
             }}
             openCapture={() => setView("capture")}
@@ -427,7 +645,9 @@ export function MainApp({
             showSegments={!ut}
             rejectGroup={() => {
               ut?.milestone("u71_no")
+
               setGroupSuggestion(false)
+
               setFlightPersonal(true)
             }}
             selectMode={setHomeMode}
@@ -469,6 +689,7 @@ export function MainApp({
           close={() => setSplitSheet(false)}
           confirm={() => {
             setSplitSheet(false)
+
             setView("groupExpense")
           }}
         />
@@ -477,13 +698,18 @@ export function MainApp({
         <HealthConsent
           agree={() => {
             ut?.milestone("u61_agree")
+
             setHealthAgreed(true)
+
             setHealthConsent(false)
+
             setView("health")
           }}
           decline={() => {
             ut?.milestone("u61_decline")
+
             setHealthDeclined(true)
+
             setHealthConsent(false)
           }}
         />
