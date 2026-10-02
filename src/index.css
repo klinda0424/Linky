@@ -1596,6 +1596,13 @@ p {
   font-size: 11px;
 }
 
+/* 아이콘 칸도 span이라 위 규칙에 걸려 가운데 정렬이 풀리지 않도록 */
+.connect-card > .connect-icon {
+  margin-top: 0;
+  display: flex;
+  color: var(--primary-strong);
+}
+
 .confirm-buttons {
   margin-top: 15px;
   display: grid;
