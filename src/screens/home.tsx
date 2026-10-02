@@ -28,6 +28,7 @@ import {
   won,
 } from "@/lib/today"
 import { MainHeader } from "@/components/layout"
+import { type DayIcon, dayCategories, dayTotal, days } from "@/lib/days"
 import { type UTMode } from "@/lib/ut"
 import { type Tone } from "@/types"
 
@@ -119,6 +120,14 @@ export function WeekCalendar({
     </div>
   )
 }
+const dayIcons: Record<DayIcon, ReactNode> = {
+  food: <UtensilsCrossed size={17} strokeWidth={1.5} />,
+  shop: <ShoppingBag size={17} strokeWidth={1.5} />,
+  car: <Car size={17} strokeWidth={1.5} />,
+  won: <CircleDollarSign size={17} strokeWidth={1.5} />,
+  pin: <MapPin size={17} strokeWidth={1.5} />,
+  plane: <Plane size={17} strokeWidth={1.5} />,
+}
 export function SpendingCard({
   confirmMode,
   pendingCount,
@@ -168,53 +177,19 @@ export function SpendingCard({
       (_, index) => todayExpenses[index].category !== "쇼핑",
     ),
   ]
-  const confirmRows = [
-    {
-      icon: <UtensilsCrossed size={17} strokeWidth={1.5} />,
-      name: "학식",
-      merchant: "학생식당",
-      amount: "6,000원",
-      status: false,
-    },
-    {
-      icon: <ShoppingBag size={17} strokeWidth={1.5} />,
-      name: "카페",
-      merchant: "스터디 카페",
-      amount: "4,500원",
-      status: false,
-    },
-    {
-      icon: <CircleDollarSign size={17} strokeWidth={1.5} />,
-      name: "지하철",
-      merchant: "교통",
-      amount: "1,500원",
-      status: false,
-    },
-  ]
-  // 여행 후(12월 27일, 귀가 사흘 뒤): 공항버스 같은 귀가 결제가 아니라 일상 결제
-  const afterRows = [
-    {
-      icon: <UtensilsCrossed size={17} strokeWidth={1.5} />,
-      name: "분식",
-      merchant: "집 근처 분식",
-      amount: "7,000원",
-      status: false,
-    },
-    {
-      icon: <ShoppingBag size={17} strokeWidth={1.5} />,
-      name: "아메리카노",
-      merchant: "카페",
-      amount: "4,500원",
-      status: false,
-    },
-    {
-      icon: <CircleDollarSign size={17} strokeWidth={1.5} />,
-      name: "지하철",
-      merchant: "교통",
-      amount: "1,550원",
-      status: false,
-    },
-  ]
+  // 시험기간 외 단계의 오늘 지출은 lib/days.ts의 그날 결제로 그린다 (하루 리포트와 같은 데이터)
+  const stage: UTMode = confirmMode
+    ? "confirm"
+    : afterMode
+      ? "after"
+      : monthLaterMode
+        ? "monthLater"
+        : travelMode
+          ? "travel"
+          : prepareMode
+            ? "prepare"
+            : "exam"
+  const day = days[stage]
   const rows: Array<{
     icon: ReactNode
     name: string
@@ -224,90 +199,29 @@ export function SpendingCard({
     amount: string
     status: boolean
     expenseMerchant?: string
-  }> = confirmMode
-    ? confirmRows
-    : afterMode
-    ? afterRows
-    : monthLaterMode
-    ? [
-        {
-          icon: <UtensilsCrossed size={17} strokeWidth={1.5} />,
-          name: "스타벅스",
-          merchant: "카페",
-          amount: "6,500원",
-          status: false,
-        },
-        {
-          icon: <ShoppingBag size={17} strokeWidth={1.5} />,
-          name: "편의점",
-          merchant: "간식",
-          amount: "3,200원",
-          status: false,
-        },
-        {
-          icon: <CircleDollarSign size={17} strokeWidth={1.5} />,
-          name: "지하철",
-          merchant: "교통",
-          amount: "1,500원",
-          status: false,
-        },
-      ]
-    : travelMode
-      ? [
-          {
-            icon: <UtensilsCrossed size={17} strokeWidth={1.5} />,
-            name: "해녀 식당",
-            merchant: "제주 성산",
-            tripTag: true,
-            amount: "132,000원",
-            status: false,
-          },
-          {
-            icon: <MapPin size={17} strokeWidth={1.5} />,
-            name: "성산일출봉 입장료",
-            merchant: "관광",
-            tripTag: true,
-            amount: "15,000원",
-            status: false,
-          },
-          {
-            icon: <ShoppingBag size={17} strokeWidth={1.5} />,
-            name: "제주 공항 편의점",
-            merchant: "제주 공항",
-            tripTag: true,
-            amount: "18,000원",
-            status: false,
-          },
-        ]
-      : prepareMode
-        ? [
-            {
-              icon: <Plane size={17} strokeWidth={1.5} />,
-              name: "항공권",
-              merchant: flightPersonal ? "개인 지출" : "제주 여행 · 3명",
-              amount: "360,000원",
-              status: !flightPersonal,
-            },
-          ]
-        : examRows
+  }> =
+    stage === "exam"
+      ? examRows
+      : day.expenses.map((expense) => ({
+          icon: dayIcons[expense.icon],
+          name: expense.name,
+          // 여행 준비: U7-1에서 "아니요"를 고르면 항공권은 개인 지출로 기록
+          merchant:
+            stage === "prepare" && flightPersonal
+              ? "개인 지출"
+              : expense.merchant,
+          note: expense.note,
+          tripTag: expense.tripTag,
+          amount: won(expense.amount),
+          status: stage === "prepare" && !flightPersonal,
+        }))
   return (
     <div className="main-card spending-card">
       <div className="spending-top">
         <div>
           <span>오늘 지출</span>
           <p>
-            오늘{" "}
-            {confirmMode
-              ? "3건 · 12,000원"
-              : afterMode
-              ? "3건 · 13,050원"
-              : monthLaterMode
-              ? "3건 · 11,200원"
-              : prepareMode
-                ? "1건 · 360,000원"
-                : travelMode
-                  ? "3건 · 165,000원"
-                  : `${todayExpenses.length}건 · ${won(todayTotal)}`}
+            오늘 {day.expenses.length}건 · {won(dayTotal(day))}
           </p>
         </div>
         <Action
@@ -402,45 +316,15 @@ export function GoalAchievementSummary() {
     </div>
   )
 }
-// 단계별 일간 리포트: 각 단계 홈의 "오늘 지출"(SpendingCard 행)과 같은 결제로 만든다.
-// 오늘 지출 금액을 바꾸면 여기도 같이 맞출 것. 시험기간은 lib/today.ts를 그대로 쓴다.
-const stageReports: Record<
-  Exclude<UTMode, "confirm" | "exam">,
-  { quote: string; categories: Array<[label: string, amount: number]> }
-> = {
-  // 여행 준비(12월 20일): 항공권 1건
-  prepare: {
-    quote: "“제주행 항공권을 결제했어요. 오늘 결제는 이 한 건이에요.”",
-    categories: [["교통", 360000]],
-  },
-  // 여행 중(12월 23일): 제주 위치 결제 3건
-  travel: {
-    quote:
-      "“성산일출봉에 들렀고, 해녀 식당에서 식사했고, 제주 공항 편의점 결제도 있었어요.”",
-    categories: [
-      ["식비", 132000],
-      ["간식", 18000],
-      ["관광", 15000],
-    ],
-  },
-  // 여행 후(12월 27일): 귀가 사흘 뒤의 일상 결제
-  after: {
-    quote: "“분식과 카페, 지하철 결제가 한 건씩 있었어요.”",
-    categories: [
-      ["식비", 7000],
-      ["카페", 4500],
-      ["교통", 1550],
-    ],
-  },
-  // 한 달 뒤: 평소 하루
-  monthLater: {
-    quote: "“스타벅스, 편의점, 지하철 결제가 한 건씩 있었어요.”",
-    categories: [
-      ["카페", 6500],
-      ["간식", 3200],
-      ["교통", 1500],
-    ],
-  },
+// 단계별 일간 리포트: 서사형 문장. 수치형 막대는 lib/days.ts의 그날 결제로 계산한다.
+const stageQuotes: Record<UTMode, string> = {
+  confirm: "“학식을 먹고, 스터디 카페와 지하철 결제가 있었어요.”",
+  exam: "“새벽에 택시를 탔고, 저녁에는 배달, 밤에는 옷 결제가 있었어요.”",
+  prepare: "“제주행 항공권을 결제했어요. 오늘 결제는 이 한 건이에요.”",
+  travel:
+    "“성산일출봉에 들렀고, 해녀 식당에서 식사했고, 제주 공항 편의점 결제도 있었어요.”",
+  after: "“분식과 카페, 지하철 결제가 한 건씩 있었어요.”",
+  monthLater: "“스타벅스, 편의점, 지하철 결제가 한 건씩 있었어요.”",
 }
 
 export function HomeReport({
@@ -455,16 +339,9 @@ export function HomeReport({
 }) {
   // 평소와 비교한 인사이트(DailyInsight)는 시험기간(12월 12일) 기준이라 시험기간에서만 연다.
   const withInsight = stage === "exam"
-  const report =
-    stage === "exam" || stage === "confirm"
-      ? {
-          quote:
-            "“새벽에 택시를 탔고, 저녁에는 배달, 밤에는 옷 결제가 있었어요.”",
-          categories: Object.entries(todayByCategory),
-        }
-      : stageReports[stage]
-  const total = report.categories.reduce((sum, [, amount]) => sum + amount, 0)
-  const categories = [...report.categories].sort((a, b) => b[1] - a[1])
+  const report = { quote: stageQuotes[stage] }
+  const categories = dayCategories(days[stage])
+  const total = dayTotal(days[stage])
   // 인사이트로 이어지지 않는 카드는 누를 수 있는 것처럼 보이지 않게 일반 박스로 둔다.
   const Wrapper = withInsight ? Action : "div"
   return (

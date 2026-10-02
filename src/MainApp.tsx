@@ -39,9 +39,8 @@ import {
   QuickRecord,
   RecordSheet,
 } from "@/screens/record"
-
-import { DailyReport, MoodPrompt } from "@/screens/report"
-
+import { DailyReport, MoodPrompt, type MoodEmoji } from "@/screens/report"
+import { days } from "@/lib/days"
 import {
   GroupExpenseDetail,
   GroupSplitSheet,
@@ -185,7 +184,8 @@ export function MainApp({
   // 홈 시점(드롭다운 6단계). 처음에는 유저플로우 시작인 "여행 확정".
 
   const [homeMode, setHomeMode] = useState<UTMode>(ut?.mode ?? "confirm")
-
+  // 마지막으로 고른 기분 (하루 리포트의 "연결된 흐름"에 쓰임)
+  const [mood, setMood] = useState<MoodEmoji>()
   const confirmMode = homeMode === "confirm"
 
   const travelMode = homeMode === "travel"
@@ -218,11 +218,13 @@ export function MainApp({
     if (view === "searchResults") ut?.milestone("u111_results")
   }, [tab, ut, view])
 
-  const showMoodToast = () => {
+  // U5-1: 기분 기록은 지금 홈 단계의 "오늘"(lib/days.ts) 결제와 연결된다
+  const moodToast = () =>
+    `오늘 결제 ${days[homeMode].expenses.length}건과 연결했어요`
+  const showMoodToast = (mood?: MoodEmoji) => {
     setSheet(false)
-
-    setToast("오늘 결제 3건과 연결했어요")
-
+    setMood(mood)
+    setToast(moodToast())
     // U5-1 → U5-2: 결제 연결 안내 후 하루 리포트로 이어짐
 
     window.setTimeout(() => setView("dailyReport"), 700)
@@ -308,9 +310,9 @@ export function MainApp({
   else if (view === "mood")
     page = (
       <MoodPrompt
-        select={() => {
-          setToast("오늘 결제 3건과 연결했어요")
-
+        select={(selected) => {
+          setMood(selected)
+          setToast(moodToast())
           window.setTimeout(() => setView("dailyReport"), 700)
 
           window.setTimeout(() => setToast(""), 2200)
@@ -324,6 +326,8 @@ export function MainApp({
     page = (
       <DailyReport
         back={() => setView("tabs")}
+        mood={mood}
+        stage={homeMode}
         decline={() => {
           ut?.milestone("u52_nudge_no")
 

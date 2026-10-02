@@ -22,6 +22,7 @@ import {
   cx,
 } from "@/components/common"
 import { MainHeader } from "@/components/layout"
+import { type MoodEmoji, moods } from "@/screens/report"
 
 export const recordTiles: Array<{
   key: string
@@ -73,7 +74,8 @@ export function RecordSheet({
 }: {
   close: () => void
   openInput: (view: "quick" | "link" | "capture" | "food") => void
-  mood: () => void
+  // 고른 기분을 지금 홈 단계의 오늘 결제와 연결한다 (U5-1, 하루 리포트와 같은 다섯 가지)
+  mood: (mood: MoodEmoji) => void
 }) {
   return (
     <div className="main-overlay" onClick={close}>
@@ -110,9 +112,14 @@ export function RecordSheet({
         <div className="mood-block">
           <p>오늘 기분은요?</p>
           <div>
-            {["😆", "🙂", "😐", "😮‍💨", "😣"].map((item) => (
-              <Action className="mood-button" key={item} onClick={mood}>
-                {item}
+            {moods.map((item) => (
+              <Action
+                className="mood-button"
+                key={item.emoji}
+                label={item.label}
+                onClick={() => mood(item.emoji)}
+              >
+                {item.emoji}
               </Action>
             ))}
           </div>
