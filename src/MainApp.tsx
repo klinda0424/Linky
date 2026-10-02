@@ -71,6 +71,8 @@ export function MainApp({
   const settlement = summarize(excluded)
   // 지출 상세(U3-1)를 연 곳: 뒤로 갈 때 돌아갈 화면
   const [expenseFrom, setExpenseFrom] = useState<"home" | "search">("home")
+  // 홈에서 누른 구매처 (검색 결과에서 열면 undefined → U3-1 대상 구매처)
+  const [expenseMerchant, setExpenseMerchant] = useState<string>()
   // 목표 달성 관리(U10-2)에서 뒤로 갈 곳: 코치 허브 또는 회고 흐름의 다음 단계(한 달 뒤 홈)
   const [goalReturn, setGoalReturn] = useState<
     "coachHub" | "monthLater" | "home"
@@ -205,6 +207,7 @@ export function MainApp({
     page = (
       <ExpenseDetail
         back={() => setView(expenseFrom === "home" ? "tabs" : "searchResults")}
+        merchant={expenseMerchant}
         onTag={(tagged) =>
           ut?.milestone(tagged ? "u31_tag_yes" : "u31_tag_no")
         }
@@ -338,6 +341,7 @@ export function MainApp({
         back={() => setView("search")}
         openExpense={() => {
           setExpenseFrom("search")
+          setExpenseMerchant(undefined)
           setView("expense")
         }}
       />
@@ -391,8 +395,9 @@ export function MainApp({
             healthDeclined={healthDeclined}
             healthEnabled={healthAgreed}
             monthLaterMode={monthLaterMode}
-            openExpense={() => {
+            openExpense={(merchant) => {
               setExpenseFrom("home")
+              setExpenseMerchant(merchant)
               setView("expense")
             }}
             openCapture={() => setView("capture")}

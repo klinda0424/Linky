@@ -18,6 +18,7 @@ import { useState, type ReactNode } from "react"
 import { Action, StatusChip, cx } from "@/components/common"
 import { HomeSegments } from "@/components/layout"
 import { HealthCard } from "@/screens/health"
+import { shoppingGroups } from "@/screens/shopping"
 import {
   todayByCategory,
   todayExpenses,
@@ -172,7 +173,8 @@ export function SpendingCard({
   confirmMode: boolean
   pendingCount: number
   flightPersonal: boolean
-  openExpense: () => void
+  // 구매처를 누르면 그 구매처의 지출 상세(U3-1)를 연다
+  openExpense: (merchant?: string) => void
   travelMode: boolean
   prepareMode: boolean
   afterMode: boolean
@@ -192,6 +194,20 @@ export function SpendingCard({
     amount: won(expense.amount),
     status: false,
   }))
+  // 시험기간 오늘 지출: 옷 결제는 구매처별로 묶어 보여주고, 누르면 구매 항목을 복원한다(U3-1)
+  const examRows = [
+    ...shoppingGroups().map((group) => ({
+      icon: todayIcons["쇼핑"],
+      name: group.merchant,
+      merchant: `옷 ${group.items.length}건`,
+      amount: won(group.total),
+      status: false,
+      expenseMerchant: group.merchant,
+    })),
+    ...standardRows.filter(
+      (_, index) => todayExpenses[index].category !== "쇼핑",
+    ),
+  ]
   const confirmRows = [
     {
       icon: <UtensilsCrossed size={17} strokeWidth={1.5} />,
@@ -256,6 +272,7 @@ export function SpendingCard({
     tripTag?: boolean
     amount: string
     status: boolean
+    expenseMerchant?: string
   }> = confirmMode
     ? confirmRows
     : afterMode
@@ -322,7 +339,7 @@ export function SpendingCard({
             },
             ...lifeRows,
           ]
-        : standardRows
+        : examRows
   return (
     <div className="main-card spending-card">
       <div className="spending-top">
@@ -359,7 +376,11 @@ export function SpendingCard({
           <Action
             className="spending-row"
             key={row.name}
-            onClick={row.name === "원피스" ? openExpense : undefined}
+            onClick={
+              row.expenseMerchant
+                ? () => openExpense(row.expenseMerchant)
+                : undefined
+            }
           >
             <span className="expense-icon">{row.icon}</span>
             <div>
@@ -740,7 +761,7 @@ export function HomePage({
   dietMode: boolean
   savingMode: boolean
   profile: () => void
-  openExpense: () => void
+  openExpense: (merchant?: string) => void
   confirmMode: boolean
   scheduleRegistered: boolean
   openCapture: () => void
