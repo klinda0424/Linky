@@ -239,6 +239,15 @@ export function SpendingCard({
       status: false,
     },
   ]
+  // 여행 준비 날(12월 20일)은 옷 쇼핑 없이 생활 결제만 (항공권과 함께)
+  const lifeIndexes = todayExpenses
+    .map((expense, index) => (expense.category === "쇼핑" ? -1 : index))
+    .filter((index) => index >= 0)
+  const lifeRows = lifeIndexes.map((index) => standardRows[index])
+  const lifeTotal = lifeIndexes.reduce(
+    (sum, index) => sum + todayExpenses[index].amount,
+    0,
+  )
   const rows: Array<{
     icon: ReactNode
     name: string
@@ -311,7 +320,7 @@ export function SpendingCard({
               amount: "360,000원",
               status: !flightPersonal,
             },
-            ...standardRows,
+            ...lifeRows,
           ]
         : standardRows
   return (
@@ -328,7 +337,7 @@ export function SpendingCard({
               : monthLaterMode
               ? "3건 · 11,200원"
               : prepareMode
-                ? `4건 · ${won(360000 + todayTotal)}`
+                ? `${1 + lifeRows.length}건 · ${won(360000 + lifeTotal)}`
                 : travelMode
                   ? "3건 · 165,000원"
                   : `${todayExpenses.length}건 · ${won(todayTotal)}`}
@@ -511,7 +520,7 @@ export function DailyInsight({ tone, back }: { tone: Tone; back: () => void }) {
             {[
               [
                 "옷에 쓴 비중이 평소와 달랐어요",
-                `평소 하루 ${won(usualDaily.쇼핑)} 정도였던 쇼핑이 오늘은 ${won(todayByCategory.쇼핑)}이에요. 밤 11시 41분에 에이블리 결제가 한 번 있었어요.`,
+                `평소 하루 ${won(usualDaily.쇼핑)} 정도였던 쇼핑이 오늘은 ${won(todayByCategory.쇼핑)}이에요. 밤 11시 20분대부터 에이블리·무신사·지그재그에서 옷 5벌을 이어서 결제했어요.`,
               ],
               [
                 "이동이 평소보다 길었어요",

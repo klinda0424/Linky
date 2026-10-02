@@ -13,6 +13,7 @@ export type TodayExpense = {
 }
 
 export const todayExpenses: readonly TodayExpense[] = [
+  // 시험 스트레스로 밤사이 여러 앱에서 산 옷 5벌, 합계 180,000원. 첫 항목(원피스)이 U3-1 구매항목 복원의 대상.
   {
     name: "원피스",
     merchant: "에이블리",
@@ -20,6 +21,38 @@ export const todayExpenses: readonly TodayExpense[] = [
     narrative: "옷",
     amount: 40000,
     time: "23:41",
+  },
+  {
+    name: "니트 가디건",
+    merchant: "무신사",
+    category: "쇼핑",
+    narrative: "옷",
+    amount: 42000,
+    time: "23:48",
+  },
+  {
+    name: "와이드 데님",
+    merchant: "지그재그",
+    category: "쇼핑",
+    narrative: "옷",
+    amount: 49000,
+    time: "23:55",
+  },
+  {
+    name: "블라우스",
+    merchant: "에이블리",
+    category: "쇼핑",
+    narrative: "옷",
+    amount: 29000,
+    time: "23:32",
+  },
+  {
+    name: "플리츠 스커트",
+    merchant: "무신사",
+    category: "쇼핑",
+    narrative: "옷",
+    amount: 20000,
+    time: "23:26",
   },
   {
     name: "떡볶이",
