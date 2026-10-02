@@ -1056,7 +1056,7 @@ p {
 }
 
 .after-event-lines {
-  height: 34px;
+  height: 15px;
   position: relative;
   margin-top: 7px;
 }
@@ -1075,15 +1075,10 @@ p {
   white-space: nowrap;
 }
 
-.after-event-lines .past-exam {
+/* 12/22(일)~24(화): 주의 첫 세 칸 */
+.after-event-lines .past-travel {
   top: 0;
   left: 0;
-  width: 50%;
-}
-
-.after-event-lines .past-travel {
-  right: 0;
-  bottom: 0;
   width: 42.85%;
 }
 

@@ -135,8 +135,8 @@ export function WeekCalendar({
           </div>
         )
       ) : monthLaterMode ? null : afterMode ? (
+        // 여행 후(12/27)는 12/22~28 주: 시험기간(~12/20)은 이 주에 없고, 지난 제주 여행만 22~24일 칸에 표시
         <div className="after-event-lines">
-          <span className="past-exam">시험기간</span>
           <span className="past-travel">제주 여행 · 12/22~24</span>
         </div>
       ) : prepareMode ? (
