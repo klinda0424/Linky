@@ -38,6 +38,16 @@ const largestCategory = Math.max(
 const connectedExpenses = dailyReport.expenses.filter(
   (expense) => expense.category === "쇼핑" || expense.category === "배달",
 )
+// 같은 종류의 결제(옷 5벌 등)는 "옷과 옷과 …"처럼 반복하지 않고 한 번만 언급
+const connectedGroups = Object.entries(
+  connectedExpenses.reduce<Record<string, Array<(typeof connectedExpenses)[number]>>>(
+    (groups, expense) => {
+      groups[expense.narrative] = [...(groups[expense.narrative] ?? []), expense]
+      return groups
+    },
+    {},
+  ),
+)
 const weeklyDifference = dailyTotal - dailyReport.previousWeekTotal
 
 export function MoodPrompt({
@@ -150,15 +160,17 @@ export function DailyReport({
               <span className="large-rini">L</span>
               <p>
                 {dailyReport.mood.context},{" "}
-                {connectedExpenses
-                  .map((expense) => expense.narrative)
-                  .join("과 ")}
+                {connectedGroups.map(([narrative]) => narrative).join("과 ")}
                 이 같이 있었어요.
               </p>
               <div className="connection-chips">
                 <span>{dailyReport.mood.label}</span>
-                {connectedExpenses.map((expense) => (
-                  <span key={expense.name}>{expense.name}</span>
+                {connectedGroups.map(([narrative, items]) => (
+                  <span key={narrative}>
+                    {items.length > 1
+                      ? `${items[0].name} 외 ${items.length - 1}건`
+                      : items[0].name}
+                  </span>
                 ))}
               </div>
             </div>
