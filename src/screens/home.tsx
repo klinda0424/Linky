@@ -2,6 +2,7 @@ import {
   ChevronRight,
   CircleDollarSign,
   CalendarDays,
+  Link2,
   Car,
   MapPin,
   MessageCircleMore,
@@ -18,6 +19,7 @@ import { useState, type ReactNode } from "react"
 import { Action, StatusChip, cx } from "@/components/common"
 import { HomeSegments } from "@/components/layout"
 import { HealthCard } from "@/screens/health"
+import { type ScheduleKind } from "@/screens/record"
 import { shoppingGroups } from "@/screens/shopping"
 import {
   todayByCategory,
@@ -34,14 +36,12 @@ import { type Tone } from "@/types"
 
 export function WeekCalendar({
   confirmMode = false,
-  scheduleRegistered = false,
   travelMode = false,
   prepareMode = false,
   afterMode = false,
   monthLaterMode = false,
 }: {
   confirmMode?: boolean
-  scheduleRegistered?: boolean
   travelMode?: boolean
   prepareMode?: boolean
   afterMode?: boolean
@@ -88,14 +88,9 @@ export function WeekCalendar({
           </div>
         ))}
       </div>
-      {confirmMode ? (
-        scheduleRegistered && (
-          <div className="upcoming-lines">
-            <span className="upcoming-exam">시험기간 12/9~20</span>
-            <span className="upcoming-travel">제주 여행 12/22~24</span>
-          </div>
-        )
-      ) : monthLaterMode ? null : afterMode ? (
+      {/* 여행 확정 주(11/17~23)에는 12월 일정이 걸리지 않으므로 막대를 그리지 않는다.
+          등록한 일정은 위의 일정 등록 카드에 표시된다. */}
+      {confirmMode || monthLaterMode ? null : afterMode ? (
         // 여행 후(12/27)는 12/22~28 주: 시험기간(~12/20)은 이 주에 없고, 지난 제주 여행만 22~24일 칸에 표시
         <div className="after-event-lines">
           <span className="past-travel">제주 여행 · 12/22~24</span>
@@ -533,31 +528,46 @@ export function TravelCostPreview({ open }: { open: () => void }) {
   )
 }
 // 여행 확정 단계(U0·U1)의 홈 진입 카드: 일정 등록 → 목표 모드
+// U0 여행 확정: 일정 등록 두 갈래 (캡처 → 제주 여행 / 학사일정 링크 → 시험기간)
+const scheduleEntries: Record<
+  ScheduleKind,
+  { icon: ReactNode; title: string; sub: string; doneTitle: string; doneSub: string }
+> = {
+  travel: {
+    icon: <CalendarDays size={19} strokeWidth={1.5} />,
+    title: "단톡 캡처로 여행 일정을 등록해요",
+    sub: "캡처에서 날짜·장소·인원을 가져와요",
+    doneTitle: "제주 여행 일정을 등록했어요",
+    doneSub: "12/22~24 · 3명 · 이 기간 지출을 자동으로 묶어요",
+  },
+  exam: {
+    icon: <Link2 size={19} strokeWidth={1.5} />,
+    title: "학사일정 링크로 시험기간을 등록해요",
+    sub: "학교 일정 페이지에서 기간을 가져와요",
+    doneTitle: "시험기간을 등록했어요",
+    doneSub: "12/9~20 · 이 기간 지출을 자동으로 묶어요",
+  },
+}
 export function ScheduleEntry({
+  kind,
   registered,
   open,
 }: {
+  kind: ScheduleKind
   registered: boolean
   open: () => void
 }) {
+  const entry = scheduleEntries[kind]
   const Wrapper = registered ? "div" : Action
   return (
     <Wrapper
       className="health-detection home-entry"
       {...(registered ? {} : { onClick: open })}
     >
-      <span className="health-card-icon">
-        <CalendarDays size={19} strokeWidth={1.5} />
-      </span>
+      <span className="health-card-icon">{entry.icon}</span>
       <div>
-        <strong>
-          {registered ? "일정을 불러왔어요" : "단톡 캡처로 일정을 등록해요"}
-        </strong>
-        <span>
-          {registered
-            ? "시험기간 12/9~20 · 제주 여행 12/22~24 · 지출을 자동으로 묶어요"
-            : "시험·여행 일정을 한 번에 가져와요"}
-        </span>
+        <strong>{registered ? entry.doneTitle : entry.title}</strong>
+        <span>{registered ? entry.doneSub : entry.sub}</span>
       </div>
       {!registered && <ChevronRight size={17} strokeWidth={1.5} />}
     </Wrapper>
@@ -599,8 +609,9 @@ export function HomePage({
   profile,
   openExpense,
   confirmMode,
-  scheduleRegistered,
+  schedules,
   openCapture,
+  openLink,
   openGoals,
   openGoalAchievement,
   travelMode,
@@ -630,8 +641,9 @@ export function HomePage({
   profile: () => void
   openExpense: (merchant?: string) => void
   confirmMode: boolean
-  scheduleRegistered: boolean
+  schedules: Record<ScheduleKind, boolean>
   openCapture: () => void
+  openLink: () => void
   openGoals: () => void
   openGoalAchievement: () => void
   travelMode: boolean
@@ -715,7 +727,18 @@ export function HomePage({
         {dietMode && !monthLaterMode && <DietSummaryCard stage={mode} />}
         {/* U0·U1: 여행 확정 단계의 시작점 */}
         {confirmMode && (
-          <ScheduleEntry open={openCapture} registered={scheduleRegistered} />
+          <>
+            <ScheduleEntry
+              kind="travel"
+              open={openCapture}
+              registered={schedules.travel}
+            />
+            <ScheduleEntry
+              kind="exam"
+              open={openLink}
+              registered={schedules.exam}
+            />
+          </>
         )}
         {confirmMode && !dietMode && <GoalEntry open={openGoals} />}
         {monthLaterMode && <GoalAchievementSummary />}
@@ -741,7 +764,6 @@ export function HomePage({
           confirmMode={confirmMode}
           monthLaterMode={monthLaterMode}
           prepareMode={prepareMode}
-          scheduleRegistered={scheduleRegistered}
           travelMode={travelMode}
         />
         <SpendingCard
