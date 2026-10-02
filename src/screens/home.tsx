@@ -255,15 +255,6 @@ export function SpendingCard({
       status: false,
     },
   ]
-  // 여행 준비 날(12월 20일)은 옷 쇼핑 없이 생활 결제만 (항공권과 함께)
-  const lifeIndexes = todayExpenses
-    .map((expense, index) => (expense.category === "쇼핑" ? -1 : index))
-    .filter((index) => index >= 0)
-  const lifeRows = lifeIndexes.map((index) => standardRows[index])
-  const lifeTotal = lifeIndexes.reduce(
-    (sum, index) => sum + todayExpenses[index].amount,
-    0,
-  )
   const rows: Array<{
     icon: ReactNode
     name: string
@@ -337,7 +328,6 @@ export function SpendingCard({
               amount: "360,000원",
               status: !flightPersonal,
             },
-            ...lifeRows,
           ]
         : examRows
   return (
@@ -354,7 +344,7 @@ export function SpendingCard({
               : monthLaterMode
               ? "3건 · 11,200원"
               : prepareMode
-                ? `${1 + lifeRows.length}건 · ${won(360000 + lifeTotal)}`
+                ? "1건 · 360,000원"
                 : travelMode
                   ? "3건 · 165,000원"
                   : `${todayExpenses.length}건 · ${won(todayTotal)}`}
@@ -389,13 +379,13 @@ export function SpendingCard({
               {row.note && (
                 <span className="row-note">{row.note}</span>
               )}
-              {row.tripTag && (
-                // U8-1: 제주 위치 결제는 여행 태그로 자동 묶임
-                <span className="trip-tag">📍 제주 여행</span>
-              )}
             </div>
+            {row.tripTag && (
+              // U8-1: 제주 위치 결제는 여행 태그로 자동 묶임 (가격 옆, 칸마다 같은 위치)
+              <span className="trip-tag">📍 제주 여행</span>
+            )}
             {row.status && <StatusChip type="check" />}
-            <p>{row.amount}</p>
+            <p className={cx(row.tripTag && "with-trip-tag")}>{row.amount}</p>
           </Action>
         ))}
       </div>
