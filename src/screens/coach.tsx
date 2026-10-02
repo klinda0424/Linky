@@ -12,17 +12,20 @@ export function CoachHub({
   talk,
   report,
   advice,
+  goals,
 }: {
   back: () => void
   talk: () => void
   report: () => void
   advice: () => void
+  goals: () => void
 }) {
-  // IA의 AI 코치: 대화하기 · 맞춤 리포트 · 지출 조언
+  // IA의 AI 코치: 대화하기 · 맞춤 리포트 · 지출 조언 · 목표 달성 관리
   const menus = [
     [talk, "💬", "pink", "대화하기", "궁금한 걸 린이에게 물어봐요"],
     [report, "📋", "blue", "맞춤 리포트", "나에게 맞춘 요약을 봐요"],
     [advice, "💡", "green", "지출 조언", "필요한 순간의 조언을 확인해요"],
+    [goals, "🎯", "purple", "목표 달성 관리", "목표 모드의 진행 상황을 봐요"],
   ] as const
   return (
     <div className="main-page sub-page">

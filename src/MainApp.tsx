@@ -305,6 +305,7 @@ export function MainApp({
       <CoachHub
         advice={() => setView("coachAdvice")}
         back={() => setView("tabs")}
+        goals={() => openGoalAchievement("coachHub")}
         report={() => setView("coachReport")}
         talk={() => setView("coachTalk")}
       />
