@@ -456,7 +456,11 @@ export function MainApp({
   else if (view === "travelStory")
     page = (
       <TravelStory
-        close={() => openGoalAchievement("monthLater")}
+        close={() => {
+          setTab("home")
+
+          setView("tabs")
+        }}
         mine={settlement.perPerson}
       />
     )
