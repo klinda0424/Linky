@@ -485,10 +485,14 @@ export function ArchivePage({
   openShopping,
   openHealth,
   openSearch,
+  openSchedule,
+  openEmotion,
 }: {
   openShopping: () => void
   openHealth: () => void
   openSearch: () => void
+  openSchedule: () => void
+  openEmotion: () => void
 }) {
   const sections = [
     [CalendarDays, "일정 보관함", "연결한 약속과 일정을 모아봐요", "blue"],
@@ -515,7 +519,9 @@ export function ArchivePage({
                   ? openShopping
                   : title === "건강 보관함"
                     ? openHealth
-                    : undefined
+                    : title === "일정 보관함"
+                      ? openSchedule
+                      : openEmotion
               }
             >
               <span className={cx("icon-box", color)}>

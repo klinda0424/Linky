@@ -21,6 +21,7 @@ import { FoodRecognition, FridgePage } from "@/screens/diet"
 
 import { HealthArchive, HealthConsent } from "@/screens/health"
 
+import { EmotionArchive, ScheduleArchive } from "@/screens/archives"
 import { DailyInsight, HomePage } from "@/screens/home"
 
 import {
@@ -329,6 +330,26 @@ export function MainApp({
           window.setTimeout(() => setToast(""), 2200)
         }}
         skip={() => setView("tabs")}
+      />
+    )
+  else if (view === "schedule")
+    page = (
+      <ScheduleArchive
+        back={() => setView("tabs")}
+        mode={homeMode}
+        openCost={() => setView("travelCost")}
+        openSettlement={() => setView("settlement")}
+        openStory={() => setView("travelStory")}
+        schedules={schedules}
+      />
+    )
+  else if (view === "emotion")
+    page = (
+      <EmotionArchive
+        back={() => setView("tabs")}
+        mode={homeMode}
+        mood={mood}
+        openMood={() => setView("mood")}
       />
     )
   else if (view === "dailyInsight")
@@ -686,6 +707,8 @@ export function MainApp({
             }}
             openShopping={() => setView("shopping")}
             openSearch={() => setView("search")}
+            openSchedule={() => setView("schedule")}
+            openEmotion={() => setView("emotion")}
           />
         )}
         {(tab === "fun" || tab === "community") && <EmptyTab tab={tab} />}
