@@ -1163,11 +1163,19 @@ p {
 }
 
 .spending-row .trip-tag {
-  align-self: flex-start;
-  padding: 2px 6px;
+  flex: 0 0 auto;
+  padding: 1px 5px;
   border-radius: 4px;
   background: var(--primary-light);
   color: var(--text);
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+/* 여행 태그가 있는 칸은 가격 칸 너비를 고정해 태그가 칸마다 같은 위치에 오게 한다 */
+.spending-row > p.with-trip-tag {
+  min-width: 68px;
+  text-align: right;
 }
 
 .linky-badge {
