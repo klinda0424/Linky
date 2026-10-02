@@ -314,7 +314,6 @@ export function HealthArchive({ back }: { back: () => void }) {
   const macroPercent = (value: number) =>
     macroTotal ? Math.round((value / macroTotal) * 100) : 0
   const maxSteps = Math.max(...healthWeek.map((item) => item.steps), 1)
-  const maxSleep = Math.max(...healthWeek.map((item) => item.sleep.minutes), 1)
   // 선택한 날 이전의 마지막 체중 기록
   const lastWeight = [...healthWeek]
     .reverse()
@@ -429,17 +428,6 @@ export function HealthArchive({ back }: { back: () => void }) {
             <p className="health-compare">
               {day.sleep.from} ~ {day.sleep.to}
             </p>
-            <div className="health-step-bars" aria-hidden="true">
-              {healthWeek.map((item) => (
-                <i
-                  className={cx(item.date === selected && "selected")}
-                  key={item.date}
-                  style={{
-                    height: `${Math.max((item.sleep.minutes / maxSleep) * 100, 6)}%`,
-                  }}
-                />
-              ))}
-            </div>
           </div>
           <div className="main-card health-weight">
             <div className="health-card-heading">
