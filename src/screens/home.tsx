@@ -401,7 +401,7 @@ const stageReports: Record<
   // 여행 준비(12월 20일): 항공권 1건
   prepare: {
     quote: "“제주행 항공권을 결제했어요. 오늘 결제는 이 한 건이에요.”",
-    categories: [["항공", 360000]],
+    categories: [["교통", 360000]],
   },
   // 여행 중(12월 23일): 제주 위치 결제 3건
   travel: {
