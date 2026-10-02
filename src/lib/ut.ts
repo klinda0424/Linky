@@ -2,7 +2,13 @@
 // 서버 없이 localStorage에만 저장한다. 주소에 ?ut=1 이 있을 때만 켜진다.
 import { type Tone } from "@/types"
 
-export type UTMode = "exam" | "prepare" | "travel" | "after" | "monthLater"
+export type UTMode =
+  | "confirm"
+  | "exam"
+  | "prepare"
+  | "travel"
+  | "after"
+  | "monthLater"
 
 export type UTTask = {
   id: string
@@ -20,7 +26,7 @@ export const UT_TASKS: readonly UTTask[] = [
     id: "U3-1",
     label: "구매 항목 확인",
     situation:
-      "12월 12일 밤이에요. 시험 스트레스로 에이블리에서 옷을 한 벌 샀어요. 앱에 이 결제가 어떻게 기록됐는지 확인하고, 마음에 맞게 정리해 보세요.",
+      "12월 12일 밤이에요. 시험 스트레스로 옷을 여러 벌 샀어요. 그중 에이블리에서 결제한 원피스가 앱에 어떻게 기록됐는지 확인하고, 마음에 맞게 정리해 보세요.",
     mode: "exam",
     success: ["u31_tag_yes", "u31_tag_no"],
   },

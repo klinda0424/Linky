@@ -65,7 +65,10 @@ AI는 아래 순서를 지킨다.
 4. GitHub `klinda0424/Linky`에서 **Compare & pull request** → PR 생성.
    - 제목: 무엇을 바꿨는지 한 줄
    - 본문: 바꾼 화면 ID(U3-1 등), 변경 요약, Vercel 프리뷰 URL 또는 캡처
-5. 팀원 1명 이상 확인 후 머지. **자기 PR 혼자 머지 금지.**
+5. `pnpm build` 통과와 Vercel 프리뷰 확인이 끝나면 **작성자가 바로 머지**한다 (Merge pull request).
+   - 리뷰는 필수가 아니다. 막히거나 공용 파일(`components/`, `MainApp.tsx`, `types.ts`, `:root`)을 크게 바꿨다면 팀 채팅에 알린다.
+   - 머지 전에 `git merge origin/main`으로 최신 main을 반영해 충돌이 없는지 확인한다.
+   - **main 직접 push/commit은 여전히 금지.** 반드시 PR을 거친다.
 
 ---
 

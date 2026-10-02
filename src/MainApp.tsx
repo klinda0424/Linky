@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react"
 import { Check } from "lucide-react"
 import { BottomTabs } from "@/components/layout"
 import { type UTApi } from "@/components/ut"
+import { type UTMode } from "@/lib/ut"
 import {
   ArchivePage,
   ArchiveSearch,
@@ -11,7 +12,7 @@ import {
 import { CoachChat, CoachHub, GoalAchievement } from "@/screens/coach"
 import { FoodRecognition, FridgePage } from "@/screens/diet"
 import { HealthArchive, HealthConsent } from "@/screens/health"
-import { HomePage } from "@/screens/home"
+import { DailyInsight, HomePage } from "@/screens/home"
 import { GoalModeSettings, ProfilePage, ProfileTone } from "@/screens/profile"
 import {
   CaptureUpload,
@@ -71,20 +72,23 @@ export function MainApp({
   // 지출 상세(U3-1)를 연 곳: 뒤로 갈 때 돌아갈 화면
   const [expenseFrom, setExpenseFrom] = useState<"home" | "search">("home")
   // 목표 달성 관리(U10-2)에서 뒤로 갈 곳: 코치 허브 또는 회고 흐름의 다음 단계(한 달 뒤 홈)
-  const [goalReturn, setGoalReturn] = useState<"coachHub" | "monthLater">(
-    "coachHub",
-  )
+  const [goalReturn, setGoalReturn] = useState<
+    "coachHub" | "monthLater" | "home"
+  >("coachHub")
   const [groupSuggestion, setGroupSuggestion] = useState(true)
   // U7-1에서 "아니요"를 고르면 항공권은 그룹이 아닌 개인 지출로 남음
   const [flightPersonal, setFlightPersonal] = useState(false)
   // 온보딩에서 켠 넛지 + 하루 리포트 옵트인("네")으로 켜지는 넛지
   const [nudgeOn, setNudgeOn] = useState(nudge)
-  const [travelMode, setTravelMode] = useState(ut?.mode === "travel")
-  const [prepareMode, setPrepareMode] = useState(ut?.mode === "prepare")
-  const [afterMode, setAfterMode] = useState(ut?.mode === "after")
-  const [monthLaterMode, setMonthLaterMode] = useState(
-    ut?.mode === "monthLater",
-  )
+  // 홈 시점(드롭다운 6단계). 처음에는 유저플로우 시작인 "여행 확정".
+  const [homeMode, setHomeMode] = useState<UTMode>(ut?.mode ?? "confirm")
+  const confirmMode = homeMode === "confirm"
+  const travelMode = homeMode === "travel"
+  const prepareMode = homeMode === "prepare"
+  const afterMode = homeMode === "after"
+  const monthLaterMode = homeMode === "monthLater"
+  // U0-3까지 마치면 홈 캘린더에 시험기간·제주 여행 일정이 올라옴
+  const [scheduleRegistered, setScheduleRegistered] = useState(false)
   const [goalModes, setGoalModes] = useState<Record<GoalModeKey, boolean>>({
     // U1-1 시연에서 사용자가 직접 켜는 흐름이라 온보딩 선택과 무관하게 OFF로 시작
     diet: false,
@@ -105,15 +109,12 @@ export function MainApp({
     window.setTimeout(() => setView("dailyReport"), 700)
     window.setTimeout(() => setToast(""), 2200)
   }
-  const openGoalAchievement = (from: "coachHub" | "monthLater") => {
+  const openGoalAchievement = (from: "coachHub" | "monthLater" | "home") => {
     setGoalReturn(from)
     setView("goalAchievement")
   }
   const goMonthLaterHome = () => {
-    setMonthLaterMode(true)
-    setAfterMode(false)
-    setPrepareMode(false)
-    setTravelMode(false)
+    setHomeMode("monthLater")
     setTab("home")
     setView("tabs")
   }
@@ -141,7 +142,11 @@ export function MainApp({
     page = (
       <GoalAchievement
         back={() =>
-          goalReturn === "coachHub" ? setView("coachHub") : goMonthLaterHome()
+          goalReturn === "coachHub"
+            ? setView("coachHub")
+            : goalReturn === "home"
+              ? setView("tabs")
+              : goMonthLaterHome()
         }
       />
     )
@@ -156,6 +161,8 @@ export function MainApp({
         skip={() => setView("tabs")}
       />
     )
+  else if (view === "dailyInsight")
+    page = <DailyInsight back={() => setView("tabs")} tone={tone} />
   else if (view === "dailyReport")
     page = (
       <DailyReport
@@ -187,6 +194,8 @@ export function MainApp({
     page = (
       <ImportedCalendar
         home={() => {
+          setScheduleRegistered(true)
+          setHomeMode("confirm")
           setTab("home")
           setView("tabs")
         }}
@@ -206,10 +215,7 @@ export function MainApp({
       <GroupExpenseDetail
         back={() => setView("tabs")}
         confirm={() => {
-          setMonthLaterMode(false)
-          setAfterMode(false)
-          setPrepareMode(false)
-          setTravelMode(true)
+          setHomeMode("travel")
           setView("tabs")
         }}
       />
@@ -264,7 +270,10 @@ export function MainApp({
     page = (
       <SettlementResult
         excluded={excluded}
-        finish={() => setView("travelStory")}
+        finish={() => {
+          setHomeMode("after")
+          setView("travelStory")
+        }}
       />
     )
   else if (view === "travelStory")
@@ -374,6 +383,7 @@ export function MainApp({
               setSplitSheet(true)
             }}
             afterMode={afterMode}
+            confirmMode={confirmMode}
             flightPersonal={flightPersonal}
             nudgeOn={nudgeOn}
             dietMode={goalModes.diet}
@@ -385,8 +395,13 @@ export function MainApp({
               setExpenseFrom("home")
               setView("expense")
             }}
+            openCapture={() => setView("capture")}
+            openGoalAchievement={() => openGoalAchievement("home")}
+            openGoals={() => setView("goals")}
             openHealthConsent={() => setHealthConsent(true)}
+            scheduleRegistered={scheduleRegistered}
             openCost={() => setView("travelCost")}
+            openInsight={() => setView("dailyInsight")}
             pendingCount={settlement.items.length}
             openMood={() => setView("coachHub")}
             openSettlement={() => setView("settlement")}
@@ -400,36 +415,7 @@ export function MainApp({
               setGroupSuggestion(false)
               setFlightPersonal(true)
             }}
-            selectExam={() => {
-              setMonthLaterMode(false)
-              setAfterMode(false)
-              setPrepareMode(false)
-              setTravelMode(false)
-            }}
-            selectPrepare={() => {
-              setMonthLaterMode(false)
-              setAfterMode(false)
-              setPrepareMode(true)
-              setTravelMode(false)
-            }}
-            selectTravel={() => {
-              setMonthLaterMode(false)
-              setAfterMode(false)
-              setPrepareMode(false)
-              setTravelMode(true)
-            }}
-            selectAfter={() => {
-              setMonthLaterMode(false)
-              setAfterMode(true)
-              setPrepareMode(false)
-              setTravelMode(false)
-            }}
-            selectMonthLater={() => {
-              setMonthLaterMode(true)
-              setAfterMode(false)
-              setPrepareMode(false)
-              setTravelMode(false)
-            }}
+            selectMode={setHomeMode}
             tone={tone}
             travelMode={travelMode}
           />

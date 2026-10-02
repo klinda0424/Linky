@@ -2,6 +2,7 @@ import { useState, type TouchEvent } from "react"
 import { Bell, ShoppingBag } from "lucide-react"
 import { Action, cx } from "@/components/common"
 import { MainHeader } from "@/components/layout"
+import { todayExpenses } from "@/lib/today"
 import { type Tone } from "@/types"
 
 const moods = [
@@ -17,29 +18,7 @@ const dailyReport = {
   title: "12월 12일 리포트",
   mood: { context: "지친 날", label: "기분 안좋음" },
   previousWeekTotal: 16000,
-  expenses: [
-    {
-      name: "원피스",
-      merchant: "에이블리",
-      category: "쇼핑",
-      narrative: "옷",
-      amount: 40000,
-    },
-    {
-      name: "떡볶이",
-      merchant: "배달의민족",
-      category: "배달",
-      narrative: "배달",
-      amount: 6500,
-    },
-    {
-      name: "CU 편의점",
-      merchant: "",
-      category: "편의점",
-      narrative: "편의점",
-      amount: 1500,
-    },
-  ],
+  expenses: todayExpenses,
 } as const
 const formatWon = (amount: number) => `${amount.toLocaleString("ko-KR")}원`
 const dailyTotal = dailyReport.expenses.reduce(

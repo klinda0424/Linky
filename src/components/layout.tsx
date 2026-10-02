@@ -8,8 +8,9 @@ import {
   Plus,
   Users,
 } from "lucide-react"
-import { useEffect, useState, type ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { Action, cx } from "@/components/common"
+import { type UTMode } from "@/lib/ut"
 import { type MainTab } from "@/types"
 
 export function MainHeader({
@@ -35,37 +36,24 @@ export function MainHeader({
     </div>
   )
 }
+// 홈 시점 드롭다운: 통합 유저플로우의 6개 구간. 구간마다 홈 화면과 진입할 수 있는 세부 플로우가 달라진다.
+export const homeStages: Array<[UTMode, string]> = [
+  ["confirm", "여행 확정"],
+  ["exam", "시험기간"],
+  ["prepare", "여행 준비"],
+  ["travel", "여행 중"],
+  ["after", "여행 후"],
+  ["monthLater", "한 달 뒤"],
+]
 export function HomeSegments({
-  travelMode,
-  prepareMode,
-  afterMode,
-  monthLaterMode,
-  selectExam,
-  selectPrepare,
-  selectTravel,
-  selectAfter,
-  selectMonthLater,
+  mode,
+  select,
 }: {
-  travelMode: boolean
-  prepareMode: boolean
-  afterMode: boolean
-  monthLaterMode: boolean
-  selectExam: () => void
-  selectPrepare: () => void
-  selectTravel: () => void
-  selectAfter: () => void
-  selectMonthLater: () => void
+  mode: UTMode
+  select: (mode: UTMode) => void
 }) {
   const [open, setOpen] = useState(false)
-  const [selected, setSelected] = useState(travelMode ? "여행 중" : "시험기간")
-  useEffect(() => {
-    if (travelMode) setSelected("여행 중")
-    else if (prepareMode) setSelected("여행 준비")
-    else if (afterMode) setSelected("여행 후")
-    else if (monthLaterMode) setSelected("한 달 뒤")
-    else setSelected("시험기간")
-  }, [afterMode, monthLaterMode, prepareMode, travelMode])
-  const options = ["시험기간", "여행 준비", "여행 중", "여행 후", "한 달 뒤"]
+  const selected = homeStages.find(([key]) => key === mode)?.[1] ?? "시험기간"
   return (
     <div className="home-period-dropdown">
       <Action className="period-trigger" onClick={() => setOpen(!open)}>
@@ -74,32 +62,17 @@ export function HomeSegments({
       </Action>
       {open && (
         <div className="period-menu">
-          {options.map((label) => (
+          {homeStages.map(([key, label]) => (
             <Action
-              className={cx("period-option", selected === label && "selected")}
-              key={label}
+              className={cx("period-option", mode === key && "selected")}
+              key={key}
               onClick={() => {
                 setOpen(false)
-                if (label === "시험기간") {
-                  setSelected(label)
-                  selectExam()
-                } else if (label === "여행 준비") {
-                  setSelected(label)
-                  selectPrepare()
-                } else if (label === "여행 중") {
-                  setSelected(label)
-                  selectTravel()
-                } else if (label === "여행 후") {
-                  setSelected(label)
-                  selectAfter()
-                } else if (label === "한 달 뒤") {
-                  setSelected(label)
-                  selectMonthLater()
-                }
+                select(key)
               }}
             >
               {label}
-              {selected === label && <Check size={12} strokeWidth={2} />}
+              {mode === key && <Check size={12} strokeWidth={2} />}
             </Action>
           ))}
         </div>

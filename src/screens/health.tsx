@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useSyncExternalStore } from "react"
 import { Receipt, ShieldCheck, Stethoscope } from "lucide-react"
 import { Action, cx } from "@/components/common"
 import { MainHeader } from "@/components/layout"
@@ -11,13 +11,34 @@ const healthOptions: Array<[label: string, particle: string]> = [
   ["예방접종", "으로"],
 ]
 
+// 홈 카드와 건강 보관함 카드가 같은 기록을 보도록 모듈 단위로 공유한다.
+// (카드마다 상태를 따로 두면 한쪽에서 고친 내용이 다른 쪽에 반영되지 않는다)
+let healthRecord = healthGuess
+const healthListeners = new Set<() => void>()
+const setHealthRecord = (next: string) => {
+  healthRecord = next
+  healthListeners.forEach((listener) => listener())
+}
+const subscribeHealth = (listener: () => void) => {
+  healthListeners.add(listener)
+  return () => healthListeners.delete(listener)
+}
+// 직접 입력한 말에 맞는 조사: 받침 없음·ㄹ받침은 "로", 그 외 "으로"
+const particleFor = (text: string) => {
+  const preset = healthOptions.find(([label]) => label === text)?.[1]
+  if (preset) return preset
+  const code = text.trim().charCodeAt(text.trim().length - 1) - 0xac00
+  if (code < 0 || code > 11171) return "으로"
+  const final = code % 28
+  return final === 0 || final === 8 ? "로" : "으로"
+}
+
 // home.tsx에서도 props 없이 사용한다. props를 추가하면 선택값으로만.
 export function HealthCard() {
   const [editing, setEditing] = useState(false)
-  const [record, setRecord] = useState(healthGuess)
-  const [draft, setDraft] = useState(healthGuess)
-  const particle =
-    healthOptions.find(([label]) => label === record)?.[1] ?? "으로"
+  const record = useSyncExternalStore(subscribeHealth, () => healthRecord)
+  const [draft, setDraft] = useState(record)
+  const particle = particleFor(record)
   return (
     <div className={cx("health-card", editing && "editing")}>
       <span className="health-card-icon">
@@ -39,6 +60,14 @@ export function HealthCard() {
                 </Action>
               ))}
             </div>
+            <input
+              aria-label="진료 내용 직접 입력"
+              className="product-input"
+              maxLength={20}
+              onChange={(event) => setDraft(event.target.value)}
+              placeholder="직접 입력"
+              value={draft}
+            />
             <div className="health-edit-actions">
               <Action
                 className="mini-secondary"
@@ -48,8 +77,9 @@ export function HealthCard() {
               </Action>
               <Action
                 className="mini-primary"
+                disabled={!draft.trim()}
                 onClick={() => {
-                  setRecord(draft)
+                  setHealthRecord(draft.trim())
                   setEditing(false)
                 }}
               >
