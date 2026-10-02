@@ -46,56 +46,24 @@ export function WeekCalendar({
   afterMode?: boolean
   monthLaterMode?: boolean
 }) {
-  // 여행 확정: 시험 3주 전(11월 18일 주). 일정은 아직 이 주에 걸리지 않는다.
-  const dates = confirmMode
-    ? [
-        ["월", "18"],
-        ["화", "19"],
-        ["수", "20"],
-        ["목", "21"],
-        ["금", "22"],
-        ["토", "23"],
-        ["일", "24"],
-      ]
+  // 모든 주는 일요일에 시작해 토요일에 끝난다. 각 단계의 "이번 주" 일요일 날짜와 그 달의 마지막 날.
+  // 여행 확정 11/17~23(오늘 21일) · 시험기간 12/8~14(12일) · 여행 준비 12/15~21(20일)
+  // 여행 중·여행 후 12/22~28(23일·27일) · 한 달 뒤 1/19~25(24일)
+  const [sunday, monthEnd, todayDate] = confirmMode
+    ? [17, 30, 21]
     : monthLaterMode
-    ? [
-        ["월", "20"],
-        ["화", "21"],
-        ["수", "22"],
-        ["목", "23"],
-        ["금", "24"],
-        ["토", "25"],
-        ["일", "26"],
-      ]
-    : travelMode || afterMode
-      ? [
-          ["일", "22"],
-          ["월", "23"],
-          ["화", "24"],
-          ["수", "25"],
-          ["목", "26"],
-          ["금", "27"],
-          ["토", "28"],
-        ]
-      : prepareMode
-        ? [
-            ["월", "16"],
-            ["화", "17"],
-            ["수", "18"],
-            ["목", "19"],
-            ["금", "20"],
-            ["토", "21"],
-            ["일", "22"],
-          ]
-        : [
-            ["월", "9"],
-            ["화", "10"],
-            ["수", "11"],
-            ["목", "12"],
-            ["금", "13"],
-            ["토", "14"],
-            ["일", "15"],
-          ]
+      ? [19, 31, 24]
+      : travelMode
+        ? [22, 31, 23]
+        : afterMode
+          ? [22, 31, 27]
+          : prepareMode
+            ? [15, 31, 20]
+            : [8, 31, 12]
+  const dates = ["일", "월", "화", "수", "목", "금", "토"].map((day, index) => [
+    day,
+    String(((sunday + index - 1) % monthEnd) + 1),
+  ])
   return (
     <div className="main-card calendar-strip">
       <div className="block-heading">
@@ -109,15 +77,7 @@ export function WeekCalendar({
           <div
             className={cx(
               "week-day",
-              (monthLaterMode
-                ? index === 4
-                : afterMode
-                  ? index === 5
-                  : travelMode
-                    ? index === 1
-                    : prepareMode
-                      ? index === 4
-                      : index === 3) && "today",
+              date === String(todayDate) && "today",
             )}
             key={date}
           >
@@ -140,9 +100,9 @@ export function WeekCalendar({
           <span className="past-travel">제주 여행 · 12/22~24</span>
         </div>
       ) : prepareMode ? (
+        // 여행 준비 주(12/15~21): 시험기간은 20일(금)에 끝나고, 제주 여행(22일)은 다음 주라 이 주에는 없다
         <div className="prepare-event-lines">
-          <span className="exam-ending">시험기간</span>
-          <span className="travel-start">제주 여행</span>
+          <span className="exam-ending">시험기간 · 12/20까지</span>
         </div>
       ) : (
         <div
