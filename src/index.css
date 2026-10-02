@@ -252,6 +252,27 @@ p {
   font-size: 11px;
 }
 
+.text-field > input,
+.select-field > select {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  outline: none;
+}
+
+.select-field > select {
+  width: 100%;
+  appearance: none;
+}
+
+.select-field > svg {
+  flex: 0 0 auto;
+  pointer-events: none;
+}
+
 .editable {
   min-width: 0;
   flex: 1;
@@ -1743,6 +1764,58 @@ p {
   flex: 1;
   font-size: 13px;
   font-weight: 500;
+}
+
+.profile-settings-content {
+  height: calc(100% - 130px);
+  padding-top: 22px;
+  padding-bottom: 86px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.profile-settings-content::-webkit-scrollbar {
+  display: none;
+}
+
+.profile-settings-content .sub-heading {
+  margin-bottom: 0;
+}
+
+.profile-settings-content .settings-sub {
+  line-height: 1.45;
+}
+
+.profile-settings-content .field:last-child {
+  margin-bottom: 0;
+}
+
+.settings-note {
+  min-height: 44px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 10px;
+  background: var(--primary-light);
+  color: var(--sub);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.settings-note > svg {
+  flex: 0 0 auto;
+}
+
+.notification-settings-list .list-card {
+  min-height: 76px;
+}
+
+.notification-settings-list .list-copy > span {
+  overflow: visible;
+  line-height: 1.4;
+  white-space: normal;
 }
 
 .tone-settings {
