@@ -14,6 +14,7 @@ export type TodayExpense = {
 
 export const todayExpenses: readonly TodayExpense[] = [
   // 시험 스트레스로 밤사이 여러 앱에서 산 옷 5벌, 합계 180,000원. 첫 항목(원피스)이 U3-1 구매항목 복원의 대상.
+  // 같은 쇼핑몰에서 산 옷은 한 번에 결제했으므로 결제 시각이 같다 (무신사 23:26, 에이블리 23:41, 지그재그 23:55).
   {
     name: "원피스",
     merchant: "에이블리",
@@ -28,7 +29,7 @@ export const todayExpenses: readonly TodayExpense[] = [
     category: "쇼핑",
     narrative: "옷",
     amount: 42000,
-    time: "23:48",
+    time: "23:26",
   },
   {
     name: "와이드 데님",
@@ -44,7 +45,7 @@ export const todayExpenses: readonly TodayExpense[] = [
     category: "쇼핑",
     narrative: "옷",
     amount: 29000,
-    time: "23:32",
+    time: "23:41",
   },
   {
     name: "플리츠 스커트",

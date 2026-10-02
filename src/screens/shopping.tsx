@@ -105,17 +105,15 @@ export function ExpenseDetail({
     setEdited((current) => (current.includes(key) ? current : [...current, key]))
     setEditing(undefined)
   }
-  const times = group.items
-    .map((expense) => expense.time)
-    .sort()
-    .join(" · ")
+  // 같은 쇼핑몰에서 같은 시각에 산 옷은 한 번에 결제한 것 (결제 시각 = 결제 건)
+  const times = [...new Set(group.items.map((expense) => expense.time))].sort()
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="지출 상세" />
       <div className="detail-scroll">
         <div className="restored-product">
           <p>
-            {group.merchant} {won(group.total)} · 결제 {group.items.length}건
+            {group.merchant} {won(group.total)} · 결제 {times.length}건
           </p>
           <ArrowDown size={18} strokeWidth={1.5} />
           <p className="restored-caption">
@@ -140,7 +138,9 @@ export function ExpenseDetail({
                       : names[expense.name]}
                   </strong>
                   <span>
-                    {expense.time} · {won(expense.amount)}
+                    {times.length > 1
+                      ? `${expense.time} · ${won(expense.amount)}`
+                      : won(expense.amount)}
                   </span>
                 </div>
                 {editing !== expense.name && (
@@ -203,7 +203,7 @@ export function ExpenseDetail({
         </div>
         <div className="detail-info">
           {[
-            ["결제일시", `12월 12일 ${times}`],
+            ["결제일시", `12월 12일 ${times.join(" · ")}`],
             ["카테고리", "쇼핑 > 의류"],
             ["결제수단", "토스카드"],
           ].map(([label, value]) => (

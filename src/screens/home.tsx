@@ -163,7 +163,7 @@ export function SpendingCard({
     ...shoppingGroups().map((group) => ({
       icon: todayIcons["쇼핑"],
       name: group.merchant,
-      merchant: `옷 ${group.items.length}건`,
+      merchant: `옷 ${group.items.length}벌`,
       amount: won(group.total),
       status: false,
       expenseMerchant: group.merchant,
@@ -383,9 +383,29 @@ export function DailyInsight({ tone, back }: { tone: Tone; back: () => void }) {
     usual: usualDaily[label],
   }))
   const largest = Math.max(...compare.flatMap((row) => [row.today, row.usual]))
-  const timeline = [...todayExpenses].sort((a, b) =>
-    a.time.localeCompare(b.time),
-  )
+  // 결제 한 번당 한 줄: 같은 쇼핑몰에서 같은 시각에 산 옷은 한 결제로 묶는다
+  const timeline = [...todayExpenses]
+    .sort((a, b) => a.time.localeCompare(b.time))
+    .reduce<
+      Array<{ time: string; label: string; items: string[]; amount: number }>
+    >((rows, expense) => {
+      const shopping = expense.category === "쇼핑"
+      const same = rows.find(
+        (row) =>
+          shopping && row.time === expense.time && row.label === expense.merchant,
+      )
+      if (same) {
+        same.items.push(expense.name)
+        same.amount += expense.amount
+      } else
+        rows.push({
+          time: expense.time,
+          label: shopping ? expense.merchant : expense.name,
+          items: shopping ? [expense.name] : [],
+          amount: expense.amount,
+        })
+      return rows
+    }, [])
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="오늘의 인사이트" />
@@ -403,7 +423,7 @@ export function DailyInsight({ tone, back }: { tone: Tone; back: () => void }) {
             {[
               [
                 "옷에 쓴 비중이 평소와 달랐어요",
-                `평소 하루 ${won(usualDaily.쇼핑)} 정도였던 쇼핑이 오늘은 ${won(todayByCategory.쇼핑)}이에요. 밤 11시 20분대부터 에이블리·무신사·지그재그에서 옷 5벌을 이어서 결제했어요.`,
+                `평소 하루 ${won(usualDaily.쇼핑)} 정도였던 쇼핑이 오늘은 ${won(todayByCategory.쇼핑)}이에요. 밤 11시 20분대부터 무신사·에이블리·지그재그에서 옷 5벌을 이어서 결제했어요.`,
               ],
               [
                 "이동이 평소보다 길었어요",
@@ -450,11 +470,13 @@ export function DailyInsight({ tone, back }: { tone: Tone; back: () => void }) {
             <span>평소와 다른 점</span>
           </div>
           <div className="insight-timeline">
-            {timeline.map((expense) => (
-              <div key={expense.name}>
-                <time>{expense.time}</time>
+            {timeline.map((row) => (
+              <div key={`${row.time}-${row.label}`}>
+                <time>{row.time}</time>
                 <span>
-                  {expense.name} · {won(expense.amount)}
+                  {row.label}
+                  {row.items.length > 0 && ` (${row.items.join(", ")})`} ·{" "}
+                  {won(row.amount)}
                 </span>
               </div>
             ))}
