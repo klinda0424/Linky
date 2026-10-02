@@ -15,113 +15,196 @@ import {
   cx,
 } from "@/components/common"
 import { MainHeader } from "@/components/layout"
-import { todayExpenses } from "@/lib/today"
+import { type TodayExpense, todayExpenses } from "@/lib/today"
 
-const restoredItem = "원피스 (블랙 · M)"
-const itemCandidates = [
-  restoredItem,
-  "원피스 (아이보리 · M)",
-  "블라우스 (블랙 · M)",
-]
+const won = (amount: number) => `${amount.toLocaleString("ko-KR")}원`
+
+// 홈 "오늘" 지출의 옷 결제를 구매처별로 묶는다. 따로 결제한 건들을 한 구매처 아래에 모은다.
+// 홈(home.tsx)의 오늘 지출 목록과 이 화면의 지출 상세가 같은 묶음을 쓴다.
+export function shoppingGroups() {
+  const groups: Array<{
+    merchant: string
+    items: TodayExpense[]
+    total: number
+  }> = []
+  for (const expense of todayExpenses) {
+    if (expense.category !== "쇼핑") continue
+    let group = groups.find((item) => item.merchant === expense.merchant)
+    if (!group) {
+      group = { merchant: expense.merchant, items: [], total: 0 }
+      groups.push(group)
+    }
+    group.items.push(expense)
+    group.total += expense.amount
+  }
+  return groups
+}
+
+// 같은 옷은 지출 상세와 옷장에서 같은 색으로 보인다.
+const closetVisuals = ["dress", "cardigan", "scarf", "coat"]
+const closetVisual = (name: string) => {
+  const index = todayExpenses
+    .filter((expense) => expense.category === "쇼핑")
+    .findIndex((expense) => expense.name === name)
+  return closetVisuals[Math.max(index, 0) % closetVisuals.length]
+}
+
+// U3-1 구매항목 복원: 결제 내역(구매처·금액)에서 찾아낸 상품명과 수정 후보
+const restoredNames: Record<string, string> = { 원피스: "원피스 (블랙 · M)" }
+const itemCandidates: Record<string, string[]> = {
+  원피스: ["원피스 (블랙 · M)", "원피스 (아이보리 · M)"],
+  블라우스: ["블라우스", "셔츠"],
+  "니트 가디건": ["니트 가디건", "니트 조끼"],
+  "플리츠 스커트": ["플리츠 스커트", "미니 스커트"],
+  "와이드 데님": ["와이드 데님", "스트레이트 데님"],
+}
+const travelItem = "원피스"
 
 // U3-1 분기(수락/거절)는 이 파일 안에서 옷장(U3-2)으로 넘어간다.
 export function ExpenseDetail({
   back,
+  merchant,
   onTag,
 }: {
   back: () => void
+  // 홈에서 누른 구매처. 없으면 U3-1 대상(원피스)이 있는 구매처를 연다.
+  merchant?: string
   // 여행 태그 수락(true)/거절(false) 알림 (UT 성공 지점 기록용)
   onTag?: (tagged: boolean) => void
 }) {
-  const [editing, setEditing] = useState(false)
-  const [edited, setEdited] = useState(false)
-  const [item, setItem] = useState(restoredItem)
-  const [draft, setDraft] = useState(restoredItem)
-  const [tagged, setTagged] = useState<boolean>()
-  if (tagged !== undefined)
-    return <ClosetPage added={{ name: item, tagged }} back={back} />
-  const finishEdit = () => {
-    setItem(draft.trim())
-    setEdited(true)
-    setEditing(false)
+  const groups = shoppingGroups()
+  const group =
+    groups.find((item) => item.merchant === merchant) ??
+    groups.find((item) =>
+      item.items.some((expense) => expense.name === travelItem),
+    ) ??
+    groups[0]
+  const [names, setNames] = useState<Record<string, string>>(() =>
+    Object.fromEntries(
+      group.items.map((expense) => [
+        expense.name,
+        restoredNames[expense.name] ?? expense.name,
+      ]),
+    ),
+  )
+  const [editing, setEditing] = useState<string>()
+  const [edited, setEdited] = useState<string[]>([])
+  const [draft, setDraft] = useState("")
+  const [done, setDone] = useState<{ tagged?: boolean }>()
+  const hasTravelItem = group.items.some(
+    (expense) => expense.name === travelItem,
+  )
+  if (done)
+    return (
+      <ClosetPage
+        added={{ merchant: group.merchant, names, tagged: done.tagged }}
+        back={back}
+      />
+    )
+  const finishEdit = (key: string) => {
+    setNames((current) => ({ ...current, [key]: draft.trim() }))
+    setEdited((current) => (current.includes(key) ? current : [...current, key]))
+    setEditing(undefined)
   }
+  const times = group.items
+    .map((expense) => expense.time)
+    .sort()
+    .join(" · ")
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="지출 상세" />
       <div className="detail-scroll">
         <div className="restored-product">
-          <p>에이블리 40,000원</p>
+          <p>
+            {group.merchant} {won(group.total)} · 결제 {group.items.length}건
+          </p>
           <ArrowDown size={18} strokeWidth={1.5} />
-          <div>
-            <div>
-              <strong>{editing ? draft || " " : item}</strong>
-              <span>
-                {editing
-                  ? "맞는 항목을 골라주세요"
-                  : edited
-                    ? "고친 이름으로 바꿨어요"
-                    : "구매 항목을 찾았어요"}
-                {!editing && (
+          <p className="restored-caption">
+            {edited.length
+              ? "고친 이름으로 바꿨어요"
+              : `구매 항목 ${group.items.length}개를 찾았어요`}
+          </p>
+        </div>
+        <div className="restored-list">
+          {group.items.map((expense) => (
+            <div className="restored-item" key={expense.name}>
+              <div className="restored-item-row">
+                <span
+                  className={cx("restored-thumb", closetVisual(expense.name))}
+                >
+                  <Shirt size={20} strokeWidth={1.4} />
+                </span>
+                <div className="restored-item-text">
+                  <strong>
+                    {editing === expense.name
+                      ? draft || " "
+                      : names[expense.name]}
+                  </strong>
+                  <span>
+                    {expense.time} · {won(expense.amount)}
+                  </span>
+                </div>
+                {editing !== expense.name && (
                   <Action
                     className="product-edit"
+                    disabled={editing !== undefined}
                     onClick={() => {
-                      setDraft(item)
-                      setEditing(true)
+                      setDraft(names[expense.name])
+                      setEditing(expense.name)
                     }}
                   >
                     수정
                   </Action>
                 )}
-              </span>
-            </div>
-            <span className="product-thumb">
-              <Shirt size={36} strokeWidth={1.3} />
-            </span>
-          </div>
-          {editing && (
-            <div className="product-editor">
-              <div className="suggestion-chips">
-                {itemCandidates.map((candidate) => (
-                  <Action
-                    className={cx(
-                      "suggestion-chip",
-                      draft === candidate && "selected",
+              </div>
+              {editing === expense.name && (
+                <div className="restored-editor">
+                  <div className="suggestion-chips">
+                    {(itemCandidates[expense.name] ?? [expense.name]).map(
+                      (candidate) => (
+                        <Action
+                          className={cx(
+                            "suggestion-chip",
+                            draft === candidate && "selected",
+                          )}
+                          key={candidate}
+                          onClick={() => setDraft(candidate)}
+                        >
+                          {candidate}
+                        </Action>
+                      ),
                     )}
-                    key={candidate}
-                    onClick={() => setDraft(candidate)}
-                  >
-                    {candidate}
-                  </Action>
-                ))}
-              </div>
-              <input
-                aria-label="구매 항목 이름"
-                className="product-input"
-                onChange={(event) => setDraft(event.target.value)}
-                placeholder="직접 입력"
-                value={draft}
-              />
-              <div className="product-editor-actions">
-                <Action
-                  className="mini-secondary"
-                  onClick={() => setEditing(false)}
-                >
-                  취소
-                </Action>
-                <Action
-                  className="mini-primary"
-                  disabled={!draft.trim()}
-                  onClick={finishEdit}
-                >
-                  완료
-                </Action>
-              </div>
+                  </div>
+                  <input
+                    aria-label={`${expense.name} 이름`}
+                    className="product-input"
+                    onChange={(event) => setDraft(event.target.value)}
+                    placeholder="직접 입력"
+                    value={draft}
+                  />
+                  <div className="restored-editor-actions">
+                    <Action
+                      className="mini-secondary"
+                      onClick={() => setEditing(undefined)}
+                    >
+                      취소
+                    </Action>
+                    <Action
+                      className="mini-primary"
+                      disabled={!draft.trim()}
+                      onClick={() => finishEdit(expense.name)}
+                    >
+                      완료
+                    </Action>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          ))}
         </div>
         <div className="detail-info">
           {[
-            ["결제일시", "12월 12일 23:41"],
+            ["결제일시", `12월 12일 ${times}`],
             ["카테고리", "쇼핑 > 의류"],
             ["결제수단", "토스카드"],
           ].map(([label, value]) => (
@@ -137,41 +220,55 @@ export function ExpenseDetail({
           </span>
           <div>
             <strong>온라인 결제</strong>
-            <span>에이블리 앱</span>
+            <span>{group.merchant} 앱</span>
           </div>
         </div>
-        <div className="tag-suggestion">
-          <span className="connect-icon">
-            <Sparkles size={18} strokeWidth={1.5} />
-          </span>
-          <p>제주 여행 준비로 묶어둘 수 있어요</p>
-          <span className="tag-reason">
-            12월 22일 제주 여행 열흘 전에 산 옷이에요
-          </span>
+        {hasTravelItem && (
+          <div className="tag-suggestion">
+            <span className="connect-icon">
+              <Sparkles size={18} strokeWidth={1.5} />
+            </span>
+            <p>제주 여행 준비로 묶어둘 수 있어요</p>
+            <span className="tag-reason">
+              {names[travelItem]} · 12월 22일 제주 여행 열흘 전에 산 옷이에요
+            </span>
+          </div>
+        )}
+      </div>
+      {hasTravelItem ? (
+        <div className="ai-bottom">
+          <Action
+            className="secondary-button"
+            disabled={editing !== undefined}
+            onClick={() => {
+              onTag?.(false)
+              setDone({ tagged: false })
+            }}
+          >
+            아니요
+          </Action>
+          <Action
+            className="primary-button"
+            disabled={editing !== undefined}
+            onClick={() => {
+              onTag?.(true)
+              setDone({ tagged: true })
+            }}
+          >
+            여행으로 묶기
+          </Action>
         </div>
-      </div>
-      <div className="ai-bottom">
-        <Action
-          className="secondary-button"
-          disabled={editing}
-          onClick={() => {
-            onTag?.(false)
-            setTagged(false)
-          }}
-        >
-          아니요
-        </Action>
-        <Action
-          className="primary-button"
-          disabled={editing}
-          onClick={() => {
-            onTag?.(true)
-            setTagged(true)
-          }}
-        >
-          여행으로 묶기
-        </Action>
-      </div>
+      ) : (
+        <div className="ai-bottom single">
+          <Action
+            className="primary-button"
+            disabled={editing !== undefined}
+            onClick={() => setDone({})}
+          >
+            옷장에 넣기
+          </Action>
+        </div>
+      )}
     </div>
   )
 }
@@ -217,22 +314,31 @@ export function ShoppingStorage({
   )
 }
 // 옷장은 홈 "오늘"(12월 12일) 지출의 옷 결제와 같은 데이터를 쓴다(lib/today.ts).
-// 첫 옷(원피스)은 U3-1에서 복원·태그를 정한 항목이고, 나머지는 시험기간 자동 묶음에 들어간다.
-const closetVisuals = ["dress", "cardigan", "scarf", "coat"]
+// 원피스는 U3-1에서 태그를 정한 항목이고, 나머지는 시험기간 자동 묶음에 들어간다.
+type ClosetAdded = {
+  merchant: string
+  // 지출 상세에서 복원·수정한 상품명 (원래 이름 → 보여줄 이름)
+  names: Record<string, string>
+  // 원피스 여행 태그 결정. 원피스가 없는 구매처면 undefined
+  tagged?: boolean
+}
 const earlierClothes = [{ name: "롱 코트", date: "11월 19일 구매" }]
 
-function closetItems(added?: { name: string; tagged: boolean }) {
+function closetItems(added?: ClosetAdded) {
   const today = todayExpenses
     .filter((expense) => expense.category === "쇼핑")
-    .map((expense, index) => {
-      const restored = index === 0
+    .map((expense) => {
+      const fromDetail = added?.merchant === expense.merchant
       return {
-        key: `today-${index}`,
-        name: restored && added ? added.name : expense.name,
+        key: `today-${expense.name}`,
+        name: (fromDetail && added?.names[expense.name]) || expense.name,
         date: `12월 12일 · ${expense.merchant}`,
-        tag: restored && (!added || added.tagged) ? "제주 여행" : "시험기간",
-        visual: closetVisuals[index % closetVisuals.length],
-        restored,
+        tag:
+          expense.name === travelItem && added?.tagged !== false
+            ? "제주 여행"
+            : "시험기간",
+        visual: closetVisual(expense.name),
+        isNew: added ? fromDetail : expense.name === travelItem,
       }
     })
   const earlier = earlierClothes.map((cloth, index) => ({
@@ -241,7 +347,7 @@ function closetItems(added?: { name: string; tagged: boolean }) {
     date: cloth.date,
     tag: "",
     visual: closetVisuals[(today.length + index) % closetVisuals.length],
-    restored: false,
+    isNew: false,
   }))
   return [...today, ...earlier]
 }
@@ -252,7 +358,7 @@ export function ClosetPage({
   added,
 }: {
   back: () => void
-  added?: { name: string; tagged: boolean }
+  added?: ClosetAdded
 }) {
   const [filter, setFilter] = useState("전체")
   const items = closetItems(added)
@@ -265,7 +371,7 @@ export function ClosetPage({
             <Check size={14} strokeWidth={2} />
             {added.tagged
               ? "옷장에 넣고 제주 여행으로 묶었어요"
-              : "옷장에 넣었어요"}
+              : `${added.merchant}에서 산 옷을 옷장에 넣었어요`}
           </div>
         )}
         <div className="filter-chips">
@@ -286,7 +392,7 @@ export function ClosetPage({
               <div className="closet-card" key={item.key}>
                 <div className={cx("closet-image", item.visual)}>
                   <Shirt size={38} strokeWidth={1.1} />
-                  {item.restored && <Badge>NEW</Badge>}
+                  {item.isNew && <Badge>NEW</Badge>}
                 </div>
                 <strong>{item.name}</strong>
                 <span>{item.date}</span>
