@@ -395,7 +395,7 @@ export function MainApp({
       <ExpenseDetail
         back={() => setView(expenseFrom === "home" ? "tabs" : "searchResults")}
         merchant={expenseMerchant}
-        onTag={(tagged) => ut?.milestone(tagged ? "u31_tag_yes" : "u31_tag_no")}
+        onAdd={() => ut?.milestone("u31_closet")}
       />
     )
   else if (view === "groupExpense")
