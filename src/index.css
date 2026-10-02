@@ -3231,6 +3231,11 @@ input.recognition-value {
   flex: 1;
 }
 
+/* 토글도 div라 위 규칙에 걸려 늘어나지 않도록 원래 크기(44px)로 고정 */
+.mode-card > .toggle {
+  flex: 0 0 auto;
+}
+
 .mode-card strong {
   font-size: 14px;
   font-weight: 600;
