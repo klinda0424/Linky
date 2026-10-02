@@ -1603,6 +1603,76 @@ p {
   color: var(--primary-strong);
 }
 
+/* 한 줄 기록: 찾은 결제 목록 (눌러서 빼기) */
+.connect-payments {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.connect-payment {
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--background);
+}
+
+.connect-payment.selected {
+  border-color: var(--primary-strong);
+}
+
+.connect-payment > i {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--border);
+  border-radius: 5px;
+}
+
+.connect-payment.selected > i {
+  border-color: var(--primary-strong);
+  background: var(--primary-strong);
+  color: var(--background);
+}
+
+.connect-payment > div {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.connect-payment strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.connect-payment > div span {
+  color: var(--sub);
+  font-size: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.connect-payment > b {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.confirm-buttons.single {
+  grid-template-columns: 1fr;
+}
+
 .confirm-buttons {
   margin-top: 15px;
   display: grid;
