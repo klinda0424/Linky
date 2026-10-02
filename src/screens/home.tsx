@@ -191,27 +191,27 @@ export function SpendingCard({
       status: false,
     },
   ]
-  // 여행 후(D+5, 12월 27일): 여행에서 돌아온 뒤의 일상 결제
+  // 여행 후(12월 27일, 귀가 사흘 뒤): 공항버스 같은 귀가 결제가 아니라 일상 결제
   const afterRows = [
     {
-      icon: <Car size={17} strokeWidth={1.5} />,
-      name: "공항버스",
-      merchant: "교통",
-      amount: "17,000원",
-      status: false,
-    },
-    {
       icon: <UtensilsCrossed size={17} strokeWidth={1.5} />,
-      name: "해장국",
-      merchant: "식비",
-      amount: "9,000원",
+      name: "분식",
+      merchant: "집 근처 분식",
+      amount: "7,000원",
       status: false,
     },
     {
       icon: <ShoppingBag size={17} strokeWidth={1.5} />,
-      name: "카페",
-      merchant: "스터디 카페",
-      amount: "5,500원",
+      name: "아메리카노",
+      merchant: "카페",
+      amount: "4,500원",
+      status: false,
+    },
+    {
+      icon: <CircleDollarSign size={17} strokeWidth={1.5} />,
+      name: "지하철",
+      merchant: "교통",
+      amount: "1,550원",
       status: false,
     },
   ]
@@ -300,7 +300,7 @@ export function SpendingCard({
             {confirmMode
               ? "3건 · 12,000원"
               : afterMode
-              ? "3건 · 31,500원"
+              ? "3건 · 13,050원"
               : monthLaterMode
               ? "3건 · 11,200원"
               : prepareMode
@@ -352,7 +352,17 @@ export function SpendingCard({
     </div>
   )
 }
-export function DietSummaryCard() {
+// 단계(그 주)별 식비·배달. 같은 주를 보여주는 여행 중/여행 후는 이어서 쌓인 값이다.
+const dietByStage: Record<UTMode, { delivery: number; food: number }> = {
+  confirm: { delivery: 2, food: 38000 },
+  exam: { delivery: 3, food: 54000 },
+  prepare: { delivery: 1, food: 22000 },
+  travel: { delivery: 0, food: 150000 },
+  after: { delivery: 0, food: 161500 },
+  monthLater: { delivery: 1, food: 19500 },
+}
+export function DietSummaryCard({ stage }: { stage: UTMode }) {
+  const { delivery, food } = dietByStage[stage]
   return (
     <div className="main-card diet-summary">
       <div className="block-heading">
@@ -362,12 +372,12 @@ export function DietSummaryCard() {
       <div className="diet-stats">
         <div>
           <span>배달</span>
-          <strong>2회</strong>
+          <strong>{delivery}회</strong>
         </div>
         <i />
         <div>
           <span>식비</span>
-          <strong>38,000원</strong>
+          <strong>{won(food)}</strong>
         </div>
       </div>
     </div>
@@ -409,18 +419,17 @@ const stageReports: Record<
       "“성산일출봉에 들렀고, 해녀 식당에서 식사했고, 제주 공항 편의점 결제도 있었어요.”",
     categories: [
       ["식비", 132000],
-      ["쇼핑", 18000],
+      ["간식", 18000],
       ["관광", 15000],
     ],
   },
-  // 여행 후(12월 27일): 돌아온 날의 일상 결제
+  // 여행 후(12월 27일): 귀가 사흘 뒤의 일상 결제
   after: {
-    quote:
-      "“공항버스를 타고 돌아왔고, 해장국을 먹은 뒤 스터디 카페 결제가 있었어요.”",
+    quote: "“분식과 카페, 지하철 결제가 한 건씩 있었어요.”",
     categories: [
-      ["교통", 17000],
-      ["식비", 9000],
-      ["카페", 5500],
+      ["식비", 7000],
+      ["카페", 4500],
+      ["교통", 1550],
     ],
   },
   // 한 달 뒤: 평소 하루
@@ -826,7 +835,7 @@ export function HomePage({
             {activeGoal}
           </span>
         )}
-        {dietMode && !monthLaterMode && <DietSummaryCard />}
+        {dietMode && !monthLaterMode && <DietSummaryCard stage={mode} />}
         {/* U0·U1: 여행 확정 단계의 시작점 */}
         {confirmMode && (
           <ScheduleEntry open={openCapture} registered={scheduleRegistered} />

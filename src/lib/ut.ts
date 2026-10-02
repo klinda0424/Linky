@@ -50,7 +50,7 @@ export const UT_TASKS: readonly UTTask[] = [
     id: "U7-1",
     label: "항공권 결제 처리",
     situation:
-      "12월 16일이에요. 친구들과 제주 항공권을 샀어요. 앱에서 이 결제가 어떻게 보이는지 확인하고 처리해 보세요.",
+      "12월 20일이에요. 친구들과 제주 항공권을 샀어요. 앱에서 이 결제가 어떻게 보이는지 확인하고 처리해 보세요.",
     mode: "prepare",
     success: ["u71_yes", "u71_no"],
   },
