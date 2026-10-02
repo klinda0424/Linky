@@ -266,7 +266,17 @@ export function SpendingCard({
     </div>
   )
 }
-export function DietSummaryCard() {
+// 단계(그 주)별 식비·배달. 같은 주를 보여주는 여행 중/여행 후는 이어서 쌓인 값이다.
+const dietByStage: Record<UTMode, { delivery: number; food: number }> = {
+  confirm: { delivery: 2, food: 38000 },
+  exam: { delivery: 3, food: 54000 },
+  prepare: { delivery: 1, food: 22000 },
+  travel: { delivery: 0, food: 150000 },
+  after: { delivery: 0, food: 161500 },
+  monthLater: { delivery: 1, food: 19500 },
+}
+export function DietSummaryCard({ stage }: { stage: UTMode }) {
+  const { delivery, food } = dietByStage[stage]
   return (
     <div className="main-card diet-summary">
       <div className="block-heading">
@@ -276,12 +286,12 @@ export function DietSummaryCard() {
       <div className="diet-stats">
         <div>
           <span>배달</span>
-          <strong>2회</strong>
+          <strong>{delivery}회</strong>
         </div>
         <i />
         <div>
           <span>식비</span>
-          <strong>38,000원</strong>
+          <strong>{won(food)}</strong>
         </div>
       </div>
     </div>
@@ -313,8 +323,7 @@ const stageQuotes: Record<UTMode, string> = {
   prepare: "“제주행 항공권을 결제했어요. 오늘 결제는 이 한 건이에요.”",
   travel:
     "“성산일출봉에 들렀고, 해녀 식당에서 식사했고, 제주 공항 편의점 결제도 있었어요.”",
-  after:
-    "“공항버스를 타고 돌아왔고, 해장국을 먹은 뒤 스터디 카페 결제가 있었어요.”",
+  after: "“분식과 카페, 지하철 결제가 한 건씩 있었어요.”",
   monthLater: "“스타벅스, 편의점, 지하철 결제가 한 건씩 있었어요.”",
 }
 
@@ -703,7 +712,7 @@ export function HomePage({
             {activeGoal}
           </span>
         )}
-        {dietMode && !monthLaterMode && <DietSummaryCard />}
+        {dietMode && !monthLaterMode && <DietSummaryCard stage={mode} />}
         {/* U0·U1: 여행 확정 단계의 시작점 */}
         {confirmMode && (
           <ScheduleEntry open={openCapture} registered={scheduleRegistered} />

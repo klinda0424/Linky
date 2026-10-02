@@ -66,17 +66,17 @@ export const days: Record<UTMode, Day> = {
     expenses: [
       { name: "해녀 식당", merchant: "제주 성산", category: "식비", narrative: "식사", amount: 132000, icon: "food", tripTag: true },
       { name: "성산일출봉 입장료", merchant: "관광", category: "관광", narrative: "관광", amount: 15000, icon: "pin", tripTag: true },
-      { name: "제주 공항 편의점", merchant: "제주 공항", category: "쇼핑", narrative: "편의점", amount: 18000, icon: "shop", tripTag: true },
+      { name: "제주 공항 편의점", merchant: "제주 공항", category: "간식", narrative: "편의점", amount: 18000, icon: "shop", tripTag: true },
     ],
   },
-  // 여행 후(12월 27일): 돌아온 날의 일상 결제
+  // 여행 후(12월 27일, 귀가 사흘 뒤): 공항버스 같은 귀가 결제가 아니라 일상 결제
   after: {
     date: "12월 27일",
     previousWeekTotal: 12000,
     expenses: [
-      { name: "공항버스", merchant: "교통", category: "교통", narrative: "공항버스", amount: 17000, icon: "car" },
-      { name: "해장국", merchant: "식비", category: "식비", narrative: "해장국", amount: 9000, icon: "food" },
-      { name: "카페", merchant: "스터디 카페", category: "카페", narrative: "카페", amount: 5500, icon: "shop" },
+      { name: "분식", merchant: "집 근처 분식", category: "식비", narrative: "분식", amount: 7000, icon: "food" },
+      { name: "아메리카노", merchant: "카페", category: "카페", narrative: "카페", amount: 4500, icon: "shop" },
+      { name: "지하철", merchant: "교통", category: "교통", narrative: "지하철", amount: 1550, icon: "won" },
     ],
   },
   // 한 달 뒤(1월 24일): 평소 하루
