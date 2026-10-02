@@ -16,6 +16,7 @@ import {
 } from "@/screens/archive"
 
 import { CoachChat, CoachHub, GoalAchievement } from "@/screens/coach"
+import { FunPage } from "@/screens/fun"
 
 import { FoodRecognition, FridgePage } from "@/screens/diet"
 
@@ -711,7 +712,9 @@ export function MainApp({
             openEmotion={() => setView("emotion")}
           />
         )}
-        {(tab === "fun" || tab === "community") && <EmptyTab tab={tab} />}
+        {/* 재미요소: 앱테크·운세·퀴즈·지난 리포트 (지금 홈 단계 날짜 기준) */}
+        {tab === "fun" && <FunPage stage={homeMode} />}
+        {tab === "community" && <EmptyTab tab={tab} />}
         <BottomTabs
           active={tab}
           change={changeTab}
