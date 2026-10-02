@@ -46,56 +46,24 @@ export function WeekCalendar({
   afterMode?: boolean
   monthLaterMode?: boolean
 }) {
-  // 여행 확정: 시험 3주 전(11월 18일 주). 일정은 아직 이 주에 걸리지 않는다.
-  const dates = confirmMode
-    ? [
-        ["월", "18"],
-        ["화", "19"],
-        ["수", "20"],
-        ["목", "21"],
-        ["금", "22"],
-        ["토", "23"],
-        ["일", "24"],
-      ]
+  // 모든 주는 일요일에 시작해 토요일에 끝난다. 각 단계의 "이번 주" 일요일 날짜와 그 달의 마지막 날.
+  // 여행 확정 11/17~23(오늘 21일) · 시험기간 12/8~14(12일) · 여행 준비 12/15~21(20일)
+  // 여행 중·여행 후 12/22~28(23일·27일) · 한 달 뒤 1/19~25(24일)
+  const [sunday, monthEnd, todayDate] = confirmMode
+    ? [17, 30, 21]
     : monthLaterMode
-    ? [
-        ["월", "20"],
-        ["화", "21"],
-        ["수", "22"],
-        ["목", "23"],
-        ["금", "24"],
-        ["토", "25"],
-        ["일", "26"],
-      ]
-    : travelMode || afterMode
-      ? [
-          ["일", "22"],
-          ["월", "23"],
-          ["화", "24"],
-          ["수", "25"],
-          ["목", "26"],
-          ["금", "27"],
-          ["토", "28"],
-        ]
-      : prepareMode
-        ? [
-            ["월", "16"],
-            ["화", "17"],
-            ["수", "18"],
-            ["목", "19"],
-            ["금", "20"],
-            ["토", "21"],
-            ["일", "22"],
-          ]
-        : [
-            ["월", "9"],
-            ["화", "10"],
-            ["수", "11"],
-            ["목", "12"],
-            ["금", "13"],
-            ["토", "14"],
-            ["일", "15"],
-          ]
+      ? [19, 31, 24]
+      : travelMode
+        ? [22, 31, 23]
+        : afterMode
+          ? [22, 31, 27]
+          : prepareMode
+            ? [15, 31, 20]
+            : [8, 31, 12]
+  const dates = ["일", "월", "화", "수", "목", "금", "토"].map((day, index) => [
+    day,
+    String(((sunday + index - 1) % monthEnd) + 1),
+  ])
   return (
     <div className="main-card calendar-strip">
       <div className="block-heading">
@@ -109,15 +77,7 @@ export function WeekCalendar({
           <div
             className={cx(
               "week-day",
-              (monthLaterMode
-                ? index === 4
-                : afterMode
-                  ? index === 5
-                  : travelMode
-                    ? index === 1
-                    : prepareMode
-                      ? index === 4
-                      : index === 3) && "today",
+              date === String(todayDate) && "today",
             )}
             key={date}
           >
@@ -135,14 +95,14 @@ export function WeekCalendar({
           </div>
         )
       ) : monthLaterMode ? null : afterMode ? (
+        // 여행 후(12/27)는 12/22~28 주: 시험기간(~12/20)은 이 주에 없고, 지난 제주 여행만 22~24일 칸에 표시
         <div className="after-event-lines">
-          <span className="past-exam">시험기간</span>
           <span className="past-travel">제주 여행 · 12/22~24</span>
         </div>
       ) : prepareMode ? (
+        // 여행 준비 주(12/15~21): 시험기간은 20일(금)에 끝나고, 제주 여행(22일)은 다음 주라 이 주에는 없다
         <div className="prepare-event-lines">
-          <span className="exam-ending">시험기간</span>
-          <span className="travel-start">제주 여행</span>
+          <span className="exam-ending">시험기간 · 12/20까지</span>
         </div>
       ) : (
         <div
@@ -432,68 +392,99 @@ export function GoalAchievementSummary() {
     </div>
   )
 }
+// 단계별 일간 리포트: 각 단계 홈의 "오늘 지출"(SpendingCard 행)과 같은 결제로 만든다.
+// 오늘 지출 금액을 바꾸면 여기도 같이 맞출 것. 시험기간은 lib/today.ts를 그대로 쓴다.
+const stageReports: Record<
+  Exclude<UTMode, "confirm" | "exam">,
+  { quote: string; categories: Array<[label: string, amount: number]> }
+> = {
+  // 여행 준비(12월 20일): 항공권 1건
+  prepare: {
+    quote: "“제주행 항공권을 결제했어요. 오늘 결제는 이 한 건이에요.”",
+    categories: [["교통", 360000]],
+  },
+  // 여행 중(12월 23일): 제주 위치 결제 3건
+  travel: {
+    quote:
+      "“성산일출봉에 들렀고, 해녀 식당에서 식사했고, 제주 공항 편의점 결제도 있었어요.”",
+    categories: [
+      ["식비", 132000],
+      ["쇼핑", 18000],
+      ["관광", 15000],
+    ],
+  },
+  // 여행 후(12월 27일): 돌아온 날의 일상 결제
+  after: {
+    quote:
+      "“공항버스를 타고 돌아왔고, 해장국을 먹은 뒤 스터디 카페 결제가 있었어요.”",
+    categories: [
+      ["교통", 17000],
+      ["식비", 9000],
+      ["카페", 5500],
+    ],
+  },
+  // 한 달 뒤: 평소 하루
+  monthLater: {
+    quote: "“스타벅스, 편의점, 지하철 결제가 한 건씩 있었어요.”",
+    categories: [
+      ["카페", 6500],
+      ["간식", 3200],
+      ["교통", 1500],
+    ],
+  },
+}
+
 export function HomeReport({
   tone,
-  daily,
+  stage,
   openInsight,
 }: {
   tone: Tone
-  // 시험기간(12월 12일)에는 일간 리포트, 그 밖의 시점은 기존 주간 리포트
-  daily: boolean
+  // 홈 단계. 모든 단계가 그날 "오늘 지출" 기준의 일간 리포트를 보여준다.
+  stage: UTMode
   openInsight: () => void
 }) {
-  const categories = Object.entries(todayByCategory).sort(
-    (a, b) => b[1] - a[1],
-  )
-  // 일간 리포트만 눌러서 인사이트로 이동. 주간 카드는 누를 수 있는 것처럼 보이지 않게 일반 박스로 둔다.
-  const Wrapper = daily ? Action : "div"
+  // 평소와 비교한 인사이트(DailyInsight)는 시험기간(12월 12일) 기준이라 시험기간에서만 연다.
+  const withInsight = stage === "exam"
+  const report =
+    stage === "exam" || stage === "confirm"
+      ? {
+          quote:
+            "“새벽에 택시를 탔고, 저녁에는 배달, 밤에는 옷 결제가 있었어요.”",
+          categories: Object.entries(todayByCategory),
+        }
+      : stageReports[stage]
+  const total = report.categories.reduce((sum, [, amount]) => sum + amount, 0)
+  const categories = [...report.categories].sort((a, b) => b[1] - a[1])
+  // 인사이트로 이어지지 않는 카드는 누를 수 있는 것처럼 보이지 않게 일반 박스로 둔다.
+  const Wrapper = withInsight ? Action : "div"
   return (
     <Wrapper
       className="main-card home-report"
-      {...(daily ? { onClick: openInsight } : {})}
+      {...(withInsight ? { onClick: openInsight } : {})}
     >
       <div className="block-heading">
-        <strong>{daily ? "린이의 일간 리포트" : "린이의 주간 리포트"}</strong>
+        <strong>린이의 일간 리포트</strong>
         <span className="linky-badge">
           <Sparkles size={12} strokeWidth={1.5} /> Linky
         </span>
       </div>
       {tone === "narrative" ? (
-        <div className="report-quote">
-          {daily
-            ? "“새벽에 택시를 탔고, 저녁에는 배달, 밤에는 옷 결제가 있었어요.”"
-            : "“시험을 준비한 날엔 카페 결제가 있었고, 일정이 끝난 저녁에는 배달 주문이 있었어요.”"}
-        </div>
-      ) : daily ? (
+        <div className="report-quote">{report.quote}</div>
+      ) : (
         <div className="home-bars">
           {categories.map(([label, amount]) => (
             <div className="home-bar" key={label}>
               <span>{label}</span>
               <i>
-                <b style={{ width: `${(amount / todayTotal) * 100}%` }} />
+                <b style={{ width: `${(amount / total) * 100}%` }} />
               </i>
-              <strong>{Math.round((amount / todayTotal) * 100)}%</strong>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="home-bars">
-          {[
-            ["식비", "48%", "bar-long"],
-            ["쇼핑", "35%", "bar-mid"],
-            ["교통", "17%", "bar-short"],
-          ].map(([label, value, width]) => (
-            <div className="home-bar" key={label}>
-              <span>{label}</span>
-              <i>
-                <b className={width} />
-              </i>
-              <strong>{value}</strong>
+              <strong>{Math.round((amount / total) * 100)}%</strong>
             </div>
           ))}
         </div>
       )}
-      {daily && (
+      {withInsight && (
         <span className="home-report-more">
           평소와 비교한 인사이트 보기 <ChevronRight size={13} strokeWidth={1.6} />
         </span>
@@ -907,7 +898,7 @@ export function HomePage({
         )}
         {examMode && healthEnabled && <HealthCard />}
         {!confirmMode && (
-          <HomeReport daily={examMode} openInsight={openInsight} tone={tone} />
+          <HomeReport openInsight={openInsight} stage={mode} tone={tone} />
         )}
       </div>
     </>

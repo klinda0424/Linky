@@ -1015,16 +1015,17 @@ p {
   margin-left: 0;
 }
 
-/* 시험기간은 이번 주를 지나 12/20까지 이어지므로 끝까지 채우고, '여행 준비' 주와 같은 하늘색을 쓴다 */
+/* 시험기간 주(12/8~14): 9일(월)에 시작해 이번 주를 지나 12/20까지 이어지므로 월요일 칸부터 끝까지 채우고,
+   '여행 준비' 주와 같은 하늘색을 쓴다 */
 .event-line.exam-event-line {
-  width: 100%;
-  margin-left: 0;
+  width: 85.71%;
+  margin-left: 14.29%;
   border-radius: 4px 0 0 4px;
   background: var(--blue);
 }
 
 .prepare-event-lines {
-  height: 34px;
+  height: 15px;
   position: relative;
   margin-top: 7px;
 }
@@ -1041,22 +1042,16 @@ p {
   white-space: nowrap;
 }
 
+/* 여행 준비 주(12/15~21): 일~금(15~20일) 여섯 칸 */
 .prepare-event-lines .exam-ending {
   top: 0;
   left: 0;
-  width: 71.42%;
+  width: 85.71%;
   background: var(--blue);
 }
 
-.prepare-event-lines .travel-start {
-  right: 0;
-  bottom: 0;
-  width: 14.28%;
-  background: var(--primary);
-}
-
 .after-event-lines {
-  height: 34px;
+  height: 15px;
   position: relative;
   margin-top: 7px;
 }
@@ -1075,15 +1070,10 @@ p {
   white-space: nowrap;
 }
 
-.after-event-lines .past-exam {
+/* 12/22(일)~24(화): 주의 첫 세 칸 */
+.after-event-lines .past-travel {
   top: 0;
   left: 0;
-  width: 50%;
-}
-
-.after-event-lines .past-travel {
-  right: 0;
-  bottom: 0;
   width: 42.85%;
 }
 
