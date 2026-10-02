@@ -15,7 +15,7 @@ import { MainHeader } from "@/components/layout"
 import { type Day, dayCategories, dayTotal, days } from "@/lib/days"
 import { type UTMode } from "@/lib/ut"
 
-// 재미요소 탭: 시간 날 때 가볍게 즐기는 것들. 무언가를 하라고 재촉하지 않는다.
+// 놀이터 탭: 시간 날 때 가볍게 즐기는 것들. 무언가를 하라고 재촉하지 않는다.
 // 날짜·결제는 지금 홈 단계(lib/days.ts)를 따른다.
 
 const stageOrder: UTMode[] = [
@@ -54,7 +54,7 @@ const missions = [
     key: "food",
     icon: <Utensils size={17} strokeWidth={1.6} />,
     title: "식단 사진 1장",
-    sub: "사진만 올리면 린이가 알아봐요",
+    sub: "사진만 올리면 링키가 알아봐요",
     points: 30,
   },
 ]
@@ -150,13 +150,13 @@ export function FunPage({ stage }: { stage: UTMode }) {
 
   return (
     <>
-      <MainHeader title="재미요소" />
+      <MainHeader title="놀이터" />
       <div className="fun-content">
-        {/* 1. 앱테크: 린이 포인트 */}
+        {/* 1. 앱테크: 링키 포인트 */}
         <div className="main-card fun-points">
           <div className="fun-heading">
             <span>
-              <Coins size={14} strokeWidth={1.7} /> 린이 포인트
+              <Coins size={14} strokeWidth={1.7} /> 링키 포인트
             </span>
             <small>기록하면 자동으로 쌓여요</small>
           </div>

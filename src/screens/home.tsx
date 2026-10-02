@@ -345,7 +345,7 @@ export function HomeReport({
       {...(withInsight ? { onClick: openInsight } : {})}
     >
       <div className="block-heading">
-        <strong>린이의 일간 리포트</strong>
+        <strong>링키의 일간 리포트</strong>
         <span className="linky-badge">
           <Sparkles size={12} strokeWidth={1.5} /> Linky
         </span>

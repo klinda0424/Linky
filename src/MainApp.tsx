@@ -712,7 +712,7 @@ export function MainApp({
             openEmotion={() => setView("emotion")}
           />
         )}
-        {/* 재미요소: 앱테크·운세·퀴즈·지난 리포트 (지금 홈 단계 날짜 기준) */}
+        {/* 놀이터: 앱테크·운세·퀴즈·지난 리포트 (지금 홈 단계 날짜 기준) */}
         {tab === "fun" && <FunPage stage={homeMode} />}
         {tab === "community" && <EmptyTab tab={tab} />}
         <BottomTabs

@@ -6295,7 +6295,7 @@ input.recognition-value {
   line-height: 1.6;
 }
 
-/* ===== 재미요소 탭 (screens/fun.tsx) ===== */
+/* ===== 놀이터 탭 (screens/fun.tsx) ===== */
 .fun-content {
   height: calc(100% - 56px - 70px);
   padding: 16px var(--page-padding) 28px;
