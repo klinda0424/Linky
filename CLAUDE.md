@@ -76,7 +76,7 @@ U0-2 일정 인식 → U1-1 목표 모드 ON → U3-1 구매항목 복원 → U4
 
 ## 분업 규칙
 - 담당 단위는 **`screens/` 파일(위 표의 단계)**. 자기 파일만 수정한다.
-- 브랜치: `feat/<단계>-<화면>` (예: `feat/settlement-table`). **main 직접 push 금지**, PR → 1명 이상 확인 후 머지.
+- 브랜치: `feat/<단계>-<화면>` (예: `feat/settlement-table`). **main 직접 push 금지**, PR을 올린 뒤 `pnpm build` 통과와 Vercel 프리뷰를 확인하고 **작성자가 바로 머지**한다(리뷰는 필요할 때만 요청).
 - PR마다 Vercel 프리뷰 URL이 생성됨 → PR 설명에 캡처 또는 URL 첨부.
 - 공통 요소(`components/`, `MainApp.tsx`)와 `:root` 토큰 변경은 팀 채팅에 먼저 공유.
 - 커밋 전: `pnpm build` 통과 + 375px 모바일 폭에서 눈으로 확인.
