@@ -2264,6 +2264,12 @@ p {
   display: flex;
   gap: 7px;
   overflow-x: auto;
+  /* 칩이 많아져 가로로 밀어 볼 때 스크롤바가 보이지 않게 */
+  scrollbar-width: none;
+}
+
+.filter-chips::-webkit-scrollbar {
+  display: none;
 }
 
 .filter-chip {
