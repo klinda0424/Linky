@@ -85,7 +85,7 @@ export function RecordSheet({
       >
         <div className="sheet-grip" />
         <p className="sheet-title">무엇을 남길까요?</p>
-        <p className="sheet-sub">올리기만 하면 린이가 정리해요</p>
+        <p className="sheet-sub">올리기만 하면 링키가 정리해요</p>
         <div className="record-tiles">
           {recordTiles.map((item) => (
             <Action
@@ -382,7 +382,7 @@ export function RecognitionSheet({
               ? "틀린 부분만 고쳐주세요"
               : edited
                 ? "고친 내용으로 바꿨어요"
-                : "린이가 인식한 내용이에요"}
+                : "링키가 인식한 내용이에요"}
           </p>
         </div>
         {!editing && (
@@ -517,7 +517,7 @@ export function CaptureUpload({
       <MainHeader back={back} title="캡처 업로드" />
       <div className="capture-content">
         <PageTitle
-          sub="날짜·장소·인원은 린이가 찾아둘게요"
+          sub="날짜·장소·인원은 링키가 찾아둘게요"
           title={"여행 약속을 캡처해서\n올려주세요"}
         />
         {recognizing ? (
