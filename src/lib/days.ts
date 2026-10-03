@@ -21,6 +21,8 @@ export type DayExpense = {
   tripTag?: boolean
   // 결제 시각 (있는 날만, 예: 시험기간 lib/today.ts)
   time?: string
+  // 그룹 지출로 나눠 내 몫만 남긴 경우의 원래 결제 금액
+  paidAmount?: number
 }
 
 export type Day = {
@@ -91,6 +93,27 @@ export const days: Record<UTMode, Day> = {
       { name: "지하철", merchant: "교통", category: "교통", narrative: "지하철", amount: 1500, icon: "won" },
     ],
   },
+}
+
+// 내 지출 기준의 그날: 여행 준비(12/20) 항공권을 U7-3에서 3명 그룹 지출로 확인했으면
+// 내 몫(1/3)만 남긴다. 홈 오늘 지출·하루 리포트·놀이터가 같은 값을 쓴다.
+export type DayOptions = { flightSplit?: boolean }
+export function myDay(stage: UTMode, options: DayOptions = {}): Day {
+  const day = days[stage]
+  if (stage !== "prepare" || !options.flightSplit) return day
+  return {
+    ...day,
+    expenses: day.expenses.map((expense) =>
+      expense.name === "항공권"
+        ? {
+            ...expense,
+            merchant: `${expense.merchant} · 내 몫`,
+            amount: Math.round(expense.amount / 3),
+            paidAmount: expense.amount,
+          }
+        : expense,
+    ),
+  }
 }
 
 export const dayTotal = (day: Day) =>
