@@ -2872,6 +2872,265 @@ p {
   color: var(--text);
 }
 
+.capture-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.capture-preview {
+  height: 250px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.capture-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.capture-preview > span {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  left: 10px;
+  padding: 7px 9px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--glass);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+.capture-import-question {
+  margin-top: 18px;
+}
+
+.capture-import-question strong {
+  font-size: 15px;
+}
+
+.capture-import-question p,
+.capture-import-complete p {
+  margin-top: 6px;
+  color: var(--sub);
+  font-size: 12px;
+}
+
+.capture-import-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.capture-import-complete {
+  min-height: 220px;
+  padding: 28px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: var(--primary-light);
+  text-align: center;
+}
+
+.capture-import-complete > span {
+  width: 52px;
+  height: 52px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+.capture-import-complete strong {
+  font-size: 16px;
+}
+
+.screen-recording-page {
+  background: var(--toast);
+  color: var(--background);
+}
+
+.screen-recording-top {
+  height: 62px;
+  padding: 0 var(--page-padding);
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  text-align: center;
+}
+
+.screen-recording-top > strong {
+  font-size: 14px;
+}
+
+.recording-close {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.recording-live {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--pending);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.recording-live i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pending);
+  animation: recording-pulse 1s infinite ease-in-out;
+}
+
+.screen-recording-content {
+  position: absolute;
+  top: 62px;
+  right: 28px;
+  bottom: 140px;
+  left: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.recording-visual {
+  width: 84px;
+  height: 84px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.recording-visual.active {
+  color: var(--pending);
+}
+
+.recording-visual.complete {
+  background: var(--primary);
+  color: var(--text);
+}
+
+.screen-recording-content h1 {
+  margin: 0;
+  font-size: 21px;
+  line-height: 1.35;
+}
+
+.screen-recording-content p {
+  max-width: 285px;
+  margin-top: 10px;
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.recording-duration {
+  margin-top: 18px;
+  padding: 7px 12px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 12px;
+}
+
+.screen-recording-controls {
+  position: absolute;
+  right: var(--page-padding);
+  bottom: 34px;
+  left: var(--page-padding);
+  display: flex;
+  justify-content: center;
+}
+
+.record-control {
+  width: 74px;
+  height: 74px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+}
+
+.record-control > span {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: var(--pending);
+}
+
+.record-control.recording {
+  color: var(--pending);
+}
+
+.recording-review-actions {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+
+.recording-secondary,
+.recording-primary {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.recording-secondary {
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.recording-primary {
+  background: var(--primary);
+  color: var(--text);
+}
+
+.recording-primary.wide {
+  width: 100%;
+}
+
+@keyframes recording-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
 .capture-link {
   margin-top: 10px;
   padding: 10px 12px;
