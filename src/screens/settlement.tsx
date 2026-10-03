@@ -52,12 +52,22 @@ export function GroupSplitSheet({
     </div>
   )
 }
+// 함께 나눈 사람별 몫 (360,000원 ÷ 3)
+const flightShares = [
+  { name: "나", note: "결제했어요 · 내 몫", amount: 120000 },
+  { name: "수현", note: "받을 예정", amount: 120000 },
+  { name: "민지", note: "받을 예정", amount: 120000 },
+] as const
+
 export function GroupExpenseDetail({
   back,
   confirm,
+  confirmed = false,
 }: {
   back: () => void
   confirm: () => void
+  // 이미 그룹 지출로 확인한 뒤 홈의 항공권 줄에서 다시 열었을 때: 누구와 나눴는지 보여주고 확인만
+  confirmed?: boolean
 }) {
   return (
     <div className="main-page sub-page">
@@ -70,7 +80,9 @@ export function GroupExpenseDetail({
           <div>
             <span>결제 총액</span>
             <strong>360,000원</strong>
-            <p>제주행 항공권 · 3명</p>
+            <p>
+              {confirmed ? "12월 20일 · " : ""}제주행 항공권 · 3명
+            </p>
           </div>
         </div>
         <div className="split-result">
@@ -84,26 +96,53 @@ export function GroupExpenseDetail({
             <strong>240,000원</strong>
           </div>
         </div>
-        <div className="participant-summary">
-          <p>함께 나눈 사람</p>
-          <div>
-            {(["나", "수현", "민지"] as const).map((name) => (
-              <div key={name}>
-                <PersonAvatar name={name} size="small" />
-                <span>{name}</span>
+        {confirmed ? (
+          <div className="share-list">
+            <p>함께 나눈 사람</p>
+            {flightShares.map((share) => (
+              <div className="share-row" key={share.name}>
+                <PersonAvatar name={share.name} size="small" />
+                <div>
+                  <strong>{share.name}</strong>
+                  <span>{share.note}</span>
+                </div>
+                <b>{share.amount.toLocaleString("ko-KR")}원</b>
               </div>
             ))}
+            <span className="share-note">
+              여행에서 돌아오면 정산 대기함에서 함께 정리해요
+            </span>
           </div>
+        ) : (
+          <div className="participant-summary">
+            <p>함께 나눈 사람</p>
+            <div>
+              {(["나", "수현", "민지"] as const).map((name) => (
+                <div key={name}>
+                  <PersonAvatar name={name} size="small" />
+                  <span>{name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      {confirmed ? (
+        <div className="ai-bottom single">
+          <Action className="primary-button" onClick={back}>
+            확인
+          </Action>
         </div>
-      </div>
-      <div className="ai-bottom">
-        <Action className="secondary-button" onClick={back}>
-          수정
-        </Action>
-        <Action className="primary-button" onClick={confirm}>
-          맞아요
-        </Action>
-      </div>
+      ) : (
+        <div className="ai-bottom">
+          <Action className="secondary-button" onClick={back}>
+            수정
+          </Action>
+          <Action className="primary-button" onClick={confirm}>
+            맞아요
+          </Action>
+        </div>
+      )}
     </div>
   )
 }

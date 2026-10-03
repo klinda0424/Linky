@@ -12,7 +12,7 @@ import {
 } from "lucide-react"
 import { Action, cx } from "@/components/common"
 import { MainHeader } from "@/components/layout"
-import { type Day, dayCategories, dayTotal, days } from "@/lib/days"
+import { type Day, dayCategories, dayTotal, myDay } from "@/lib/days"
 import { type UTMode } from "@/lib/ut"
 
 // 놀이터 탭: 시간 날 때 가볍게 즐기는 것들. 무언가를 하라고 재촉하지 않는다.
@@ -109,7 +109,14 @@ const fortunes: Record<
   },
 }
 
-export function FunPage({ stage }: { stage: UTMode }) {
+export function FunPage({
+  stage,
+  flightSplit = false,
+}: {
+  stage: UTMode
+  // 여행 준비 항공권을 그룹 지출로 확인했으면 내 몫 기준
+  flightSplit?: boolean
+}) {
   const [points, setPoints] = useState(funState.points)
   const [stamped, setStamped] = useState(funState.stamped)
   const [claimed, setClaimed] = useState<string[]>(funState.claimed)
@@ -134,7 +141,7 @@ export function FunPage({ stage }: { stage: UTMode }) {
     addPoints(amount)
   }
 
-  const today = days[stage]
+  const today = myDay(stage, { flightSplit })
   const weekdays = ["일", "월", "화", "수", "목", "금", "토"]
   // 출석 스탬프: 이번 주 오늘 전까지는 출석한 것으로 (목업)
   const todayWeekday = weekdayOf(today.date)
@@ -306,7 +313,7 @@ export function FunPage({ stage }: { stage: UTMode }) {
             <div className="fun-history-list">
               {[...pastStages].reverse().map((past) => (
                 <PastDay
-                  day={days[past]}
+                  day={myDay(past, { flightSplit })}
                   key={past}
                   open={openReport === past}
                   toggle={() =>

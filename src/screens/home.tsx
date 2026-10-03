@@ -30,7 +30,13 @@ import {
   won,
 } from "@/lib/today"
 import { MainHeader } from "@/components/layout"
-import { type DayIcon, dayCategories, dayTotal, days } from "@/lib/days"
+import {
+  type DayIcon,
+  dayCategories,
+  dayTotal,
+  days,
+  myDay,
+} from "@/lib/days"
 import { type UTMode } from "@/lib/ut"
 import { type Tone } from "@/types"
 
@@ -127,6 +133,8 @@ export function SpendingCard({
   confirmMode,
   pendingCount,
   flightPersonal,
+  flightSplit = false,
+  openGroupExpense,
   openExpense,
   travelMode,
   prepareMode,
@@ -137,6 +145,10 @@ export function SpendingCard({
   confirmMode: boolean
   pendingCount: number
   flightPersonal: boolean
+  // U7-3에서 그룹 지출(3명)로 확인한 경우: 항공권은 내 몫만 오늘 지출로
+  flightSplit?: boolean
+  // 그룹 지출로 나눈 항공권 줄을 누르면 누구와 나눴는지(U7-3 확인 완료) 연다
+  openGroupExpense?: () => void
   // 구매처를 누르면 그 구매처의 지출 상세(U3-1)를 연다
   openExpense: (merchant?: string) => void
   travelMode: boolean
@@ -184,7 +196,8 @@ export function SpendingCard({
           : prepareMode
             ? "prepare"
             : "exam"
-  const day = days[stage]
+  // 여행 준비: 그룹 지출로 확인한 항공권은 3명이 나눈 내 몫만 내 지출 (lib/days.ts myDay)
+  const day = myDay(stage, { flightSplit: flightSplit && !flightPersonal })
   const rows: Array<{
     icon: ReactNode
     name: string
@@ -192,6 +205,10 @@ export function SpendingCard({
     note?: string
     tripTag?: boolean
     amount: string
+    // 나누기 전 결제 금액 (취소선으로 함께 보여줌)
+    paidAmount?: string
+    // 줄을 눌렀을 때 (그룹 지출 상세 등)
+    open?: () => void
     status: boolean
     expenseMerchant?: string
   }> =
@@ -208,7 +225,10 @@ export function SpendingCard({
           note: expense.note,
           tripTag: expense.tripTag,
           amount: won(expense.amount),
-          status: stage === "prepare" && !flightPersonal,
+          paidAmount: expense.paidAmount ? won(expense.paidAmount) : undefined,
+          open: expense.paidAmount ? openGroupExpense : undefined,
+          // 그룹/개인 결정 전까지만 '확인 필요'
+          status: stage === "prepare" && !flightPersonal && !flightSplit,
         }))
   return (
     <div className="main-card spending-card">
@@ -233,12 +253,13 @@ export function SpendingCard({
       <div className="spending-list">
         {rows.map((row) => (
           <Action
-            className="spending-row"
+            className={cx("spending-row", row.open && "clickable")}
             key={row.name}
             onClick={
-              row.expenseMerchant
+              row.open ??
+              (row.expenseMerchant
                 ? () => openExpense(row.expenseMerchant)
-                : undefined
+                : undefined)
             }
           >
             <span className="expense-icon">{row.icon}</span>
@@ -254,7 +275,17 @@ export function SpendingCard({
               <span className="trip-tag">📍 제주 여행</span>
             )}
             {row.status && <StatusChip type="check" />}
-            <p className={cx(row.tripTag && "with-trip-tag")}>{row.amount}</p>
+            <p className={cx(row.tripTag && "with-trip-tag")}>
+              {row.paidAmount && <s>{row.paidAmount}</s>}
+              {row.amount}
+            </p>
+            {row.open && (
+              <ChevronRight
+                className="row-chevron"
+                size={15}
+                strokeWidth={1.6}
+              />
+            )}
           </Action>
         ))}
       </div>
@@ -653,6 +684,8 @@ export function HomePage({
   prepareMode,
   afterMode,
   flightPersonal,
+  flightSplit,
+  openGroupExpense,
   nudgeOn,
   monthLaterMode,
   selectMode,
@@ -685,6 +718,8 @@ export function HomePage({
   prepareMode: boolean
   afterMode: boolean
   flightPersonal: boolean
+  flightSplit: boolean
+  openGroupExpense: () => void
   nudgeOn: boolean
   monthLaterMode: boolean
   selectMode: (mode: UTMode) => void
@@ -792,8 +827,10 @@ export function HomePage({
           afterMode={afterMode}
           confirmMode={confirmMode}
           flightPersonal={flightPersonal}
+          flightSplit={flightSplit}
           monthLaterMode={monthLaterMode}
           openExpense={openExpense}
+          openGroupExpense={openGroupExpense}
           openSettlement={openSettlement}
           pendingCount={pendingCount}
           prepareMode={prepareMode}

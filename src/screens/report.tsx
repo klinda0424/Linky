@@ -2,7 +2,7 @@ import { useState, type TouchEvent } from "react"
 import { Bell, ShoppingBag } from "lucide-react"
 import { Action, cx } from "@/components/common"
 import { MainHeader } from "@/components/layout"
-import { dayCategories, dayTotal, days } from "@/lib/days"
+import { dayCategories, dayTotal, myDay } from "@/lib/days"
 import { type UTMode } from "@/lib/ut"
 import { type Tone } from "@/types"
 
@@ -85,6 +85,7 @@ export function DailyReport({
   tone,
   stage,
   mood = "😩",
+  flightSplit = false,
   back,
   notify,
   decline,
@@ -94,12 +95,14 @@ export function DailyReport({
   stage: UTMode
   // 고른 기분 (기록하지 않고 열면 "지친 날")
   mood?: MoodEmoji
+  // 여행 준비 항공권을 그룹 지출로 확인했으면 내 몫(120,000원) 기준
+  flightSplit?: boolean
   back: () => void
   notify: () => void
   // "아니요" 선택 (없으면 back과 동일하게 동작)
   decline?: () => void
 }) {
-  const day = days[stage]
+  const day = myDay(stage, { flightSplit })
   const dailyTotal = dayTotal(day)
   const categoryTotals = dayCategories(day)
   const largestCategory = Math.max(
