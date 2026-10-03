@@ -229,7 +229,7 @@ export function CaptureImport({ back }: { back: () => void }) {
             </div>
             <div className="capture-import-question">
               <strong>이 캡처를 기록으로 가져올까요?</strong>
-              <p>확인하면 린이가 필요한 내용을 찾아볼게요</p>
+              <p>확인하면 링키가 필요한 내용을 찾아볼게요</p>
             </div>
           </>
         ) : (
