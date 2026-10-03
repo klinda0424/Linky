@@ -9,7 +9,6 @@ import { MainHeader } from "@/components/layout"
 
 export function CoachHub({
   back,
-  mood,
   goals,
 }: {
   back: () => void
@@ -24,17 +23,9 @@ export function CoachHub({
           <span className="large-rini">L</span>
           <div>
             <strong>필요한 순간에만 함께할게요</strong>
-            <p>오늘 기록하거나 확인할 내용을 골라주세요</p>
+            <p>목표의 흐름을 함께 확인해요</p>
           </div>
         </div>
-        <Action className="coach-menu-card" onClick={mood}>
-          <span className="icon-box pink">😩</span>
-          <div>
-            <strong>오늘 기분 기록</strong>
-            <p>한 번 눌러 오늘 결제와 연결해요</p>
-          </div>
-          <ChevronRight size={18} strokeWidth={1.5} />
-        </Action>
         <Action className="coach-menu-card" onClick={goals}>
           <span className="icon-box green">
             <Sparkles size={20} strokeWidth={1.5} />
