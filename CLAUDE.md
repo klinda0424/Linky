@@ -23,12 +23,21 @@ src/
 ├─ types.ts             Tone, MainTab, MainView 등 공용 타입
 ├─ components/
 │  ├─ common.tsx        Action, Toggle, Badge, Screen, StatusBar 등 공용 UI
-│  └─ layout.tsx        MainHeader, BottomTabs, HomeSegments
+│  ├─ layout.tsx        MainHeader, BottomTabs, HomeSegments(홈 6단계 드롭다운)
+│  └─ ut.tsx            사용성 테스트(UT) 모드 UI·기록 (?ut=1 일 때만)
+├─ lib/                 ← 여러 화면이 같은 숫자를 쓰도록 모아 둔 목업 데이터·계산
+│  ├─ days.ts           홈 단계별 "오늘" 날짜·결제 (홈 지출·하루 리포트·기분 연결)
+│  ├─ today.ts          시험기간(12/12) 오늘 지출·평소 하루 평균
+│  ├─ settlement.ts     정산 항목·1인당·받을 돈·여행 비용 계산
+│  ├─ archive.ts        일정·감정 보관함 데이터(단계별 오늘, 이벤트, 기분 기록)
+│  └─ ut.ts             UT 과제 정의·자동 기록·CSV
 ├─ screens/             ← 플로우 단계별 담당 파일
-│  ├─ onboarding.tsx  home.tsx  report.tsx  coach.tsx  record.tsx
+│  ├─ onboarding.tsx  home.tsx  report.tsx  record.tsx  profile.tsx
 │  ├─ shopping.tsx  diet.tsx  health.tsx  settlement.tsx  travel.tsx
-│  └─ archive.tsx  profile.tsx
-└─ index.css            디자인 토큰(:root) + 화면별 클래스 (아직 1파일, ~76KB)
+│  ├─ coach.tsx(AI 코치 허브·목표 달성)  coachTools.tsx(대화하기·맞춤 리포트·지출 조언)
+│  ├─ archive.tsx(검색·보관함 홈)  archives.tsx(일정·감정 보관함)
+│  └─ fun.tsx(놀이터)
+└─ index.css            디자인 토큰(:root) + 화면별 클래스 (아직 1파일, ~120KB)
 ```
 - import는 `@/` 별칭 사용 (예: `import { Action } from "@/components/common"`).
 - 화면 컴포넌트는 named export. `App`만 default export.
@@ -52,9 +61,12 @@ src/
 
 ## IA (하단 탭 5개)
 `홈 · 놀이터 · [+] · 보관함 · 커뮤니티` — 중앙 +는 탭바 통합형(플로팅 아님).
-- 홈: 캘린더 → 지출 요약(정산 대기 뱃지) → 리포트. 우측 상단: AI 코치 / 프로필. 목표모드 뱃지는 있을 때만.
-- 보관함: 상단 비정형 검색 + 일정/감정/건강/쇼핑 보관함.
+- 홈: 상단 드롭다운(여행 확정 · 시험기간 · 여행 준비 · 여행 중 · 여행 후 · 한 달 뒤)으로 플로우 시점을 옮긴다. 캘린더 → 지출 요약(정산 대기 뱃지) → 일간 리포트. 우측 상단: AI 코치 / 프로필. 목표모드 뱃지는 있을 때만. 단계별 구성은 `docs/user-flows.md`의 "홈 단계" 표 참고.
+- +: 기록 입력(사진·캡처·웹 링크·텍스트·영상·화면 녹화)과 "오늘 기분은요?" 원탭 기분 입력.
+- 보관함: 상단 비정형 검색 + 일정/감정/건강/쇼핑 보관함 (모두 눌러서 열린다).
+- AI 코치: 대화하기 · 맞춤 리포트 · 지출 조언 · 목표 달성 관리.
 - 놀이터(`screens/fun.tsx`): 링키 포인트(출석·미션), 오늘의 운세, 기록 퀴즈, 지난 하루 다시 보기. 커뮤니티는 프로토타입에서 빈 탭(`EmptyTab`).
+- 시점 데이터: 홈 단계(`homeMode`)에 따라 날짜·오늘 지출·보관함 기록·AI 코치 응답이 모두 바뀐다. 새 화면을 만들 때는 `lib/days.ts`의 단계별 날짜와 숫자를 쓴다.
 
 ## 시연 시나리오 (프로토타입 범위)
 "제주 가서 예쁜 원피스 입으려고 버티는 한 달" — 주인공 김소연, 29화면. **★ 핵심 시연 10개**를 끝까지 끊김 없이 탈 수 있어야 함:
@@ -63,16 +75,20 @@ U0-2 일정 인식 → U1-1 목표 모드 ON → U3-1 구매항목 복원 → U4
 화면 ID ↔ 현재 컴포넌트 (함수명 기준 매핑, 어긋나면 수정할 것)
 | 단계 | ID | 컴포넌트 (파일) |
 |---|---|---|
-| 0 여행 확정 | U0-1 / U0-2 / U0-3 | `CaptureUpload` / `RecognitionSheet` / `ImportedCalendar` (`screens/record.tsx`) |
+| 0 여행 확정 | U0-1 / U0-2 / U0-3 | `CaptureUpload`·`CaptureImport` / `RecognitionSheet` / `ImportedCalendar` (`screens/record.tsx`) |
 | 1 다이어트 | U1-1 | `GoalModeSettings` (`screens/profile.tsx`) |
 | 3 쇼핑 | U3-1 / U3-2 | `ExpenseDetail` / `ClosetPage` (`screens/shopping.tsx`) |
-| 4 식단 | U4-1 / U4-2 / U4-3 | `FridgePage`, `FoodRecognition` (`screens/diet.tsx`) / `CoachChat` (`screens/coach.tsx`) |
-| 5 리포트 | U5-1 / U5-2 | `MoodPrompt` / `DailyReport` (`screens/report.tsx`) |
+| 4 식단 | U4-1 / U4-2 / U4-3 | `FridgePage`, `FoodRecognition` (`screens/diet.tsx`) / `CoachChat`(냉장고에서), `CoachTalk`(AI 코치) (`screens/coach.tsx`, `screens/coachTools.tsx`) |
+| 5 리포트 | U5-1 / U5-2 / U5-3 | `MoodPrompt`, `RecordSheet`의 기분 행 / `DailyReport` (`screens/report.tsx`) / `DailyInsight` (`screens/home.tsx`) |
 | 6 건강 | U6-1 / U6-2 | `HealthConsent` / `HealthCard` (`screens/health.tsx`) |
 | 7 그룹 지출 | U7-1 / U7-2 / U7-3 | `GroupSuggestion` (`screens/home.tsx`) / `GroupSplitSheet`, `GroupExpenseDetail` (`screens/settlement.tsx`) |
 | 8~9 정산 | U8-2 / U9-1~4 | `SettlementInbox` `SettlementTable` `SettlementEdit` `SettlementConfirm` `SettlementResult` (`screens/settlement.tsx`) |
 | 10 회고 | U10-1A / 1B / U10-2 | `TravelStory`, `TravelCostReport` (`screens/travel.tsx`) / `GoalAchievement` (`screens/coach.tsx`) |
 | 11 재방문 | U11-1 / U11-2 | `ArchiveSearch`, `ArchiveSearchResults` (`screens/archive.tsx`) |
+| 상시 | 일정·감정 보관함 | `ScheduleArchive`, `EmotionArchive` (`screens/archives.tsx`) |
+| 상시 | 건강·쇼핑 보관함 | `HealthArchive` (`screens/health.tsx`), `ShoppingStorage` (`screens/shopping.tsx`) |
+| 상시 | AI 코치 | `CoachHub` (`screens/coach.tsx`), `CoachTalk`·`CoachReport`·`CoachAdvice` (`screens/coachTools.tsx`) |
+| 상시 | 놀이터 | `FunPage` (`screens/fun.tsx`) |
 
 ## 분업 규칙
 - 담당 단위는 **`screens/` 파일(위 표의 단계)**. 자기 파일만 수정한다.
@@ -80,8 +96,10 @@ U0-2 일정 인식 → U1-1 목표 모드 ON → U3-1 구매항목 복원 → U4
 - PR마다 Vercel 프리뷰 URL이 생성됨 → PR 설명에 캡처 또는 URL 첨부.
 - 공통 요소(`components/`, `MainApp.tsx`)와 `:root` 토큰 변경은 팀 채팅에 먼저 공유.
 - 커밋 전: `pnpm build` 통과 + 375px 모바일 폭에서 눈으로 확인.
-- 데이터는 전부 **목업**(하드코딩). 실제 API/백엔드 연동 없음. 시연 스토리(김소연, 제주, 금액 등)와 숫자가 어긋나지 않게 유지.
+- 데이터는 전부 **목업**(하드코딩). 실제 API/백엔드 연동 없음. 시연 스토리(김소연, 제주, 금액 등)와 숫자가 어긋나지 않게 유지. 여러 화면이 쓰는 숫자는 `lib/`에 한 곳으로 두고(오늘 지출 `lib/today.ts`·`lib/days.ts`, 정산 `lib/settlement.ts`), 화면에 숫자를 직접 적지 않는다.
+- 사용성 테스트(UT) 모드: 주소에 `?ut=1`을 붙이면 켜진다. 화면을 바꿀 때 UT 과제(`lib/ut.ts`의 `UT_TASKS`)의 성공 지점이 깨지지 않는지 확인한다. 자세한 사용법은 `docs/ut-guide.md`.
 
 ## 기획 문서
 - `docs/user-flows.md` — **통합 유저플로우 (화면별 사용자 액션 / 시스템 반응 / 분기).** 화면 동작의 기준 문서. 화면을 수정하기 전에 담당 ID 부분을 반드시 읽는다.
+- `docs/ut-guide.md` — 사용성 테스트(UT) 진행 가이드 (주소 파라미터, 과제, 진행자 패널, 자동 기록).
 - 페르소나·멘탈모델·IA 원문은 Claude 프로젝트 "KHUX AXZ 산학"에 있음 (요약은 이 파일의 "제품 원칙", "IA" 참고).

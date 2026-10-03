@@ -101,6 +101,8 @@ AI는 아래 순서를 지킨다.
 | **C. 홈·설정·통합** | `screens/home.tsx` `onboarding.tsx` `profile.tsx` + 공용 (`components/` `MainApp.tsx` `types.ts` `index.css`의 `:root`) | 홈, 온보딩, 목표 모드·톤 설정, U7-1 그룹 지출 알림, 화면 연결·통합 점검, PR 머지 | U1-1, U7-1 |
 
 - 공용 파일(`components/`, `MainApp.tsx`, `types.ts`, `:root` 토큰)은 **C 담당**. A·B가 수정이 필요하면 직접 고치지 말고 C에게 요청.
+- 새로 생긴 파일: `lib/*`(여러 화면이 같이 쓰는 목업 데이터·계산)는 공용(C), `screens/archives.tsx`(일정·감정 보관함)는 보관함 담당, `screens/coachTools.tsx`는 AI 코치(`coach.tsx`) 담당, `screens/fun.tsx`(놀이터)는 해당 화면 작성자가 담당. 담당이 애매하면 팀 채팅에서 정한다.
+- `lib/`의 숫자(오늘 지출, 정산 등)를 바꾸면 홈·리포트·보관함·AI 코치·UT가 같이 바뀐다. 바꿀 때는 `pnpm build` 후 핵심 시연 10개를 한 번 훑어본다.
 - 다른 역할 파일이 export한 컴포넌트의 props 형태를 바꿀 때는 사전 공유 (예: `home.tsx`가 `health.tsx`의 `HealthCard`를 사용, `profile.tsx`가 `onboarding.tsx`의 `ToneOptions`를 사용).
 - 화면 동작의 기준은 `docs/user-flows.md`. 담당 ID의 "사용자 액션 / 시스템 반응 / 분기"가 실제로 동작해야 한다.
 
