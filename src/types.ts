@@ -6,7 +6,7 @@ export type Tone = "narrative" | "numeric"
 
 export type MainTab = "home" | "fun" | "archive" | "community"
 
-export type MainView = "tabs" | "coachHub" | "goalAchievement" | "mood" | "dailyReport" | "dailyInsight" | "schedule" | "emotion" | "quick" | "link" | "capture" | "captureImport" | "screenRecording" | "calendar" | "expense" | "groupExpense" | "settlement" | "settlementTable" | "settlementEdit" | "settlementConfirm" | "settlementResult" | "travelStory" | "travelCost" | "shopping" | "closet" | "fridge" | "coach" | "food" | "health" | "search" | "searchResults" | "profile" | "profileInfo" | "connections" | "notifications" | "tone" | "goals"
+export type MainView = "tabs" | "coachHub" | "goalAchievement" | "mood" | "dailyReport" | "dailyInsight" | "schedule" | "emotion" | "coachTalk" | "coachReport" | "coachAdvice" | "quick" | "link" | "capture" | "captureImport" | "screenRecording" | "calendar" | "expense" | "groupExpense" | "settlement" | "settlementTable" | "settlementEdit" | "settlementConfirm" | "settlementResult" | "travelStory" | "travelCost" | "shopping" | "closet" | "fridge" | "coach" | "food" | "health" | "search" | "searchResults" | "profile" | "profileInfo" | "connections" | "notifications" | "tone" | "goals"
 
 export type GoalModeKey = "diet" | "saving" | "exercise"
 

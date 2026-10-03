@@ -19,6 +19,8 @@ export type DayExpense = {
   icon: DayIcon
   // U8-1: 제주 위치 결제는 여행 태그로 자동 묶임
   tripTag?: boolean
+  // 결제 시각 (있는 날만, 예: 시험기간 lib/today.ts)
+  time?: string
 }
 
 export type Day = {

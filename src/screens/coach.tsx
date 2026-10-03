@@ -9,12 +9,24 @@ import { MainHeader } from "@/components/layout"
 
 export function CoachHub({
   back,
+  talk,
+  report,
+  advice,
   goals,
 }: {
   back: () => void
-  mood: () => void
+  talk: () => void
+  report: () => void
+  advice: () => void
   goals: () => void
 }) {
+  // IA의 AI 코치: 대화하기 · 맞춤 리포트 · 지출 조언 · 목표 달성 관리
+  const menus = [
+    [talk, "💬", "pink", "대화하기", "궁금한 걸 링키에게 물어봐요"],
+    [report, "📋", "blue", "맞춤 리포트", "나에게 맞춘 요약을 봐요"],
+    [advice, "💡", "green", "지출 조언", "필요한 순간의 조언을 확인해요"],
+    [goals, "🎯", "purple", "목표 달성 관리", "목표 모드의 진행 상황을 봐요"],
+  ] as const
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="AI 코치" />
@@ -23,19 +35,19 @@ export function CoachHub({
           <span className="large-rini">L</span>
           <div>
             <strong>필요한 순간에만 함께할게요</strong>
-            <p>목표의 흐름을 함께 확인해요</p>
+            <p>궁금한 것을 골라주세요</p>
           </div>
         </div>
-        <Action className="coach-menu-card" onClick={goals}>
-          <span className="icon-box green">
-            <Sparkles size={20} strokeWidth={1.5} />
-          </span>
-          <div>
-            <strong>목표 달성 관리</strong>
-            <p>다이어트 모드의 이번 주 흐름을 봐요</p>
-          </div>
-          <ChevronRight size={18} strokeWidth={1.5} />
-        </Action>
+        {menus.map(([onClick, emoji, color, title, copy]) => (
+          <Action className="coach-menu-card" key={title} onClick={onClick}>
+            <span className={cx("icon-box", color)}>{emoji}</span>
+            <div>
+              <strong>{title}</strong>
+              <p>{copy}</p>
+            </div>
+            <ChevronRight size={18} strokeWidth={1.5} />
+          </Action>
+        ))}
       </div>
     </div>
   )
