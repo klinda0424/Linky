@@ -397,6 +397,7 @@ export function MainApp({
     page = (
       <DailyReport
         back={() => setView("tabs")}
+        flightSplit={flightSplit && !flightPersonal}
         mood={mood}
         stage={homeMode}
         decline={() => {
@@ -761,7 +762,12 @@ export function MainApp({
           />
         )}
         {/* 놀이터: 앱테크·운세·퀴즈·지난 리포트 (지금 홈 단계 날짜 기준) */}
-        {tab === "fun" && <FunPage stage={homeMode} />}
+        {tab === "fun" && (
+          <FunPage
+            flightSplit={flightSplit && !flightPersonal}
+            stage={homeMode}
+          />
+        )}
         {tab === "community" && <EmptyTab tab={tab} />}
         <BottomTabs
           active={tab}

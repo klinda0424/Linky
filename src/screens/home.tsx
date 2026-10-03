@@ -30,7 +30,13 @@ import {
   won,
 } from "@/lib/today"
 import { MainHeader } from "@/components/layout"
-import { type DayIcon, dayCategories, dayTotal, days } from "@/lib/days"
+import {
+  type DayIcon,
+  dayCategories,
+  dayTotal,
+  days,
+  myDay,
+} from "@/lib/days"
 import { type UTMode } from "@/lib/ut"
 import { type Tone } from "@/types"
 
@@ -187,16 +193,8 @@ export function SpendingCard({
           : prepareMode
             ? "prepare"
             : "exam"
-  const day = days[stage]
-  // 여행 준비: 그룹 지출로 확인한 항공권은 3명이 나눈 내 몫(1/3)만 내 지출
-  const splitFlight = (name: string) =>
-    stage === "prepare" && name === "항공권" && flightSplit && !flightPersonal
-  const myAmount = (expense: { name: string; amount: number }) =>
-    splitFlight(expense.name) ? Math.round(expense.amount / 3) : expense.amount
-  const myTotal = day.expenses.reduce(
-    (sum, expense) => sum + myAmount(expense),
-    0,
-  )
+  // 여행 준비: 그룹 지출로 확인한 항공권은 3명이 나눈 내 몫만 내 지출 (lib/days.ts myDay)
+  const day = myDay(stage, { flightSplit: flightSplit && !flightPersonal })
   const rows: Array<{
     icon: ReactNode
     name: string
@@ -218,13 +216,11 @@ export function SpendingCard({
           merchant:
             stage === "prepare" && flightPersonal
               ? "개인 지출"
-              : splitFlight(expense.name)
-                ? `${expense.merchant} · 내 몫`
-                : expense.merchant,
+              : expense.merchant,
           note: expense.note,
           tripTag: expense.tripTag,
-          amount: won(myAmount(expense)),
-          paidAmount: splitFlight(expense.name) ? won(expense.amount) : undefined,
+          amount: won(expense.amount),
+          paidAmount: expense.paidAmount ? won(expense.paidAmount) : undefined,
           // 그룹/개인 결정 전까지만 '확인 필요'
           status: stage === "prepare" && !flightPersonal && !flightSplit,
         }))
@@ -234,7 +230,7 @@ export function SpendingCard({
         <div>
           <span>오늘 지출</span>
           <p>
-            오늘 {day.expenses.length}건 · {won(myTotal)}
+            오늘 {day.expenses.length}건 · {won(dayTotal(day))}
           </p>
         </div>
         <Action
