@@ -136,7 +136,7 @@ export function CoachTalk({ back, mode }: { back: () => void; mode: UTMode }) {
   const rest = script.filter((item) => !asked.includes(item.q))
   return (
     <div className="main-page sub-page chat-page">
-      <MainHeader back={back} title="린이와 대화" />
+      <MainHeader back={back} title="링키와 대화" />
       <div className="chat-content">
         <div className="rini-message">
           <span className="rini-avatar">L</span>
@@ -199,12 +199,12 @@ export function CoachTalk({ back, mode }: { back: () => void; mode: UTMode }) {
           <Camera size={19} strokeWidth={1.5} />
         </Action>
         <input
-          aria-label="린이에게 물어보기"
+          aria-label="링키에게 물어보기"
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Enter" && !event.nativeEvent.isComposing) send()
           }}
-          placeholder="린이에게 물어보기"
+          placeholder="링키에게 물어보기"
           value={draft}
         />
         <Action className="chat-send" label="보내기" onClick={send}>

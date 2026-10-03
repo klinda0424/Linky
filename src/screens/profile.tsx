@@ -87,7 +87,7 @@ export function ProfilePage({
         <span>{name.slice(0, 1)}</span>
         <div>
           <strong>{name}</strong>
-          <p>린이가 기록을 연결하고 있어요</p>
+          <p>링키가 기록을 연결하고 있어요</p>
         </div>
       </div>
       <div className="profile-list">

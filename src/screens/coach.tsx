@@ -22,7 +22,7 @@ export function CoachHub({
 }) {
   // IA의 AI 코치: 대화하기 · 맞춤 리포트 · 지출 조언 · 목표 달성 관리
   const menus = [
-    [talk, "💬", "pink", "대화하기", "궁금한 걸 린이에게 물어봐요"],
+    [talk, "💬", "pink", "대화하기", "궁금한 걸 링키에게 물어봐요"],
     [report, "📋", "blue", "맞춤 리포트", "나에게 맞춘 요약을 봐요"],
     [advice, "💡", "green", "지출 조언", "필요한 순간의 조언을 확인해요"],
     [goals, "🎯", "purple", "목표 달성 관리", "목표 모드의 진행 상황을 봐요"],
@@ -114,7 +114,7 @@ export function CoachChat({ back }: { back: () => void }) {
   ]
   return (
     <div className="main-page sub-page chat-page">
-      <MainHeader back={back} title="린이와 대화" />
+      <MainHeader back={back} title="링키와 대화" />
       <div className="chat-content">
         <div className="user-bubble">냉장고 있는 걸로 뭐 해먹지?</div>
         <div className="rini-message">
@@ -144,7 +144,7 @@ export function CoachChat({ back }: { back: () => void }) {
         <Action className="chat-photo" label="사진 추가">
           <Camera size={19} strokeWidth={1.5} />
         </Action>
-        <div>린이에게 물어보기</div>
+        <div>링키에게 물어보기</div>
       </div>
     </div>
   )

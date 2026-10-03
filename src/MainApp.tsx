@@ -16,6 +16,7 @@ import {
 } from "@/screens/archive"
 
 import { CoachChat, CoachHub, GoalAchievement } from "@/screens/coach"
+import { FunPage } from "@/screens/fun"
 
 import { FoodRecognition, FridgePage } from "@/screens/diet"
 
@@ -35,11 +36,13 @@ import {
 } from "@/screens/profile"
 
 import {
+  CaptureImport,
   CaptureUpload,
   ImportedCalendar,
   LinkRecord,
   QuickRecord,
   RecordSheet,
+  ScreenRecording,
   type ScheduleKind,
 } from "@/screens/record"
 import { DailyReport, MoodPrompt, type MoodEmoji } from "@/screens/report"
@@ -265,7 +268,9 @@ export function MainApp({
     setView("tabs")
   }
 
-  const openInput = (next: "quick" | "link" | "capture" | "food") => {
+  const openInput = (
+    next: "quick" | "link" | "captureImport" | "food" | "screenRecording",
+  ) => {
     setSheet(false)
 
     setView(next)
@@ -428,6 +433,10 @@ export function MainApp({
         confirm={() => registerSchedule("travel")}
       />
     )
+  else if (view === "captureImport")
+    page = <CaptureImport back={() => setView("tabs")} />
+  else if (view === "screenRecording")
+    page = <ScreenRecording back={() => setView("tabs")} />
   else if (view === "calendar")
     page = (
       <ImportedCalendar
@@ -743,7 +752,9 @@ export function MainApp({
             openEmotion={() => setView("emotion")}
           />
         )}
-        {(tab === "fun" || tab === "community") && <EmptyTab tab={tab} />}
+        {/* 놀이터: 앱테크·운세·퀴즈·지난 리포트 (지금 홈 단계 날짜 기준) */}
+        {tab === "fun" && <FunPage stage={homeMode} />}
+        {tab === "community" && <EmptyTab tab={tab} />}
         <BottomTabs
           active={tab}
           change={changeTab}
