@@ -1178,6 +1178,14 @@ p {
   font-size: 10px;
 }
 
+/* 그룹 지출로 나눈 결제: 원래 금액은 취소선, 내 몫을 굵게 */
+.spending-row > p s {
+  margin-right: 6px;
+  color: var(--disabled);
+  font-size: 11px;
+  font-weight: 500;
+}
+
 .spending-row .row-note {
   color: var(--text);
   font-size: 10px;

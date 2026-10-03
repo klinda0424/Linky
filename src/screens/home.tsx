@@ -127,6 +127,7 @@ export function SpendingCard({
   confirmMode,
   pendingCount,
   flightPersonal,
+  flightSplit = false,
   openExpense,
   travelMode,
   prepareMode,
@@ -137,6 +138,8 @@ export function SpendingCard({
   confirmMode: boolean
   pendingCount: number
   flightPersonal: boolean
+  // U7-3에서 그룹 지출(3명)로 확인한 경우: 항공권은 내 몫만 오늘 지출로
+  flightSplit?: boolean
   // 구매처를 누르면 그 구매처의 지출 상세(U3-1)를 연다
   openExpense: (merchant?: string) => void
   travelMode: boolean
@@ -185,6 +188,15 @@ export function SpendingCard({
             ? "prepare"
             : "exam"
   const day = days[stage]
+  // 여행 준비: 그룹 지출로 확인한 항공권은 3명이 나눈 내 몫(1/3)만 내 지출
+  const splitFlight = (name: string) =>
+    stage === "prepare" && name === "항공권" && flightSplit && !flightPersonal
+  const myAmount = (expense: { name: string; amount: number }) =>
+    splitFlight(expense.name) ? Math.round(expense.amount / 3) : expense.amount
+  const myTotal = day.expenses.reduce(
+    (sum, expense) => sum + myAmount(expense),
+    0,
+  )
   const rows: Array<{
     icon: ReactNode
     name: string
@@ -192,6 +204,8 @@ export function SpendingCard({
     note?: string
     tripTag?: boolean
     amount: string
+    // 나누기 전 결제 금액 (취소선으로 함께 보여줌)
+    paidAmount?: string
     status: boolean
     expenseMerchant?: string
   }> =
@@ -204,11 +218,15 @@ export function SpendingCard({
           merchant:
             stage === "prepare" && flightPersonal
               ? "개인 지출"
-              : expense.merchant,
+              : splitFlight(expense.name)
+                ? `${expense.merchant} · 내 몫`
+                : expense.merchant,
           note: expense.note,
           tripTag: expense.tripTag,
-          amount: won(expense.amount),
-          status: stage === "prepare" && !flightPersonal,
+          amount: won(myAmount(expense)),
+          paidAmount: splitFlight(expense.name) ? won(expense.amount) : undefined,
+          // 그룹/개인 결정 전까지만 '확인 필요'
+          status: stage === "prepare" && !flightPersonal && !flightSplit,
         }))
   return (
     <div className="main-card spending-card">
@@ -216,7 +234,7 @@ export function SpendingCard({
         <div>
           <span>오늘 지출</span>
           <p>
-            오늘 {day.expenses.length}건 · {won(dayTotal(day))}
+            오늘 {day.expenses.length}건 · {won(myTotal)}
           </p>
         </div>
         <Action
@@ -254,7 +272,10 @@ export function SpendingCard({
               <span className="trip-tag">📍 제주 여행</span>
             )}
             {row.status && <StatusChip type="check" />}
-            <p className={cx(row.tripTag && "with-trip-tag")}>{row.amount}</p>
+            <p className={cx(row.tripTag && "with-trip-tag")}>
+              {row.paidAmount && <s>{row.paidAmount}</s>}
+              {row.amount}
+            </p>
           </Action>
         ))}
       </div>
@@ -653,6 +674,7 @@ export function HomePage({
   prepareMode,
   afterMode,
   flightPersonal,
+  flightSplit,
   nudgeOn,
   monthLaterMode,
   selectMode,
@@ -685,6 +707,7 @@ export function HomePage({
   prepareMode: boolean
   afterMode: boolean
   flightPersonal: boolean
+  flightSplit: boolean
   nudgeOn: boolean
   monthLaterMode: boolean
   selectMode: (mode: UTMode) => void
@@ -792,6 +815,7 @@ export function HomePage({
           afterMode={afterMode}
           confirmMode={confirmMode}
           flightPersonal={flightPersonal}
+          flightSplit={flightSplit}
           monthLaterMode={monthLaterMode}
           openExpense={openExpense}
           openSettlement={openSettlement}

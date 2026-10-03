@@ -174,6 +174,8 @@ export function MainApp({
   // U7-1에서 "아니요"를 고르면 항공권은 그룹이 아닌 개인 지출로 남음
 
   const [flightPersonal, setFlightPersonal] = useState(false)
+  // U7-3에서 항공권을 3명 그룹 지출로 확인함 → 여행 준비 홈에 내 몫(120,000원)만 반영
+  const [flightSplit, setFlightSplit] = useState(false)
 
   // 온보딩에서 켠 넛지 + 하루 리포트 옵트인("네")으로 켜지는 넛지
 
@@ -466,9 +468,13 @@ export function MainApp({
       <GroupExpenseDetail
         back={() => setView("tabs")}
         confirm={() => {
-          setHomeMode("travel")
-
+          // 여행 중으로 넘어가지 않고 여행 준비 홈에 머물며, 오늘 지출을 내 몫으로 바꾼다
+          setFlightSplit(true)
+          setHomeMode("prepare")
+          setTab("home")
           setView("tabs")
+          setToast("항공권을 3명이 나눴어요 · 내 지출 120,000원")
+          window.setTimeout(() => setToast(""), 2200)
         }}
       />
     )
@@ -700,6 +706,7 @@ export function MainApp({
             afterMode={afterMode}
             confirmMode={confirmMode}
             flightPersonal={flightPersonal}
+            flightSplit={flightSplit}
             nudgeOn={nudgeOn}
             dietMode={goalModes.diet}
             groupSuggestion={groupSuggestion}
