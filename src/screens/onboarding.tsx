@@ -74,17 +74,17 @@ export function BasicInfo({
         <div className="field">
           <p className="field-label">닉네임</p>
           <div className="text-field">
-            <div
-              className="editable"
-              contentEditable
-              data-placeholder="예: 지은이"
-              onInput={(event) =>
-                setNickname(
-                  (event.currentTarget.textContent || "").slice(0, 10),
-                )
-              }
-              role="textbox"
-              suppressContentEditableWarning
+            {/* 한 줄 입력칸: Enter로 줄이 바뀌지 않고, 화면에서도 10자까지만 써진다 (프로필 회원 정보와 같은 방식) */}
+            <input
+              aria-label="닉네임"
+              enterKeyHint="done"
+              maxLength={10}
+              onChange={(event) => setNickname(event.currentTarget.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") event.currentTarget.blur()
+              }}
+              placeholder="예: 지은이"
+              value={nickname}
             />
             <span>{nickname.length}/10</span>
           </div>
