@@ -32,6 +32,8 @@ import {
   cx,
 } from "@/components/common"
 import { MainHeader } from "@/components/layout"
+import { type DayExpense, days } from "@/lib/days"
+import { type UTMode } from "@/lib/ut"
 import { type MoodEmoji, moods } from "@/screens/report"
 
 export const recordTiles: Array<{
@@ -411,9 +413,109 @@ export function ScreenRecording({ back }: { back: () => void }) {
   )
 }
 
-export function QuickRecord({ back }: { back: () => void }) {
+// 한 줄 기록: 쓴 내용과 겹치는 그날 결제를 찾아 연결을 제안한다 (지출을 앵커로 기록 연결).
+// 결제는 지금 홈 단계 날짜(lib/days.ts)에서 찾는다.
+const quickChips: Record<UTMode, string[]> = {
+  confirm: ["학식 먹음", "카페에서 공부", "지하철로 등교"],
+  exam: ["친구랑 저녁", "병원 다녀옴", "밤에 옷 쇼핑"],
+  prepare: ["항공권 예매", "여행 준비"],
+  travel: ["성산일출봉 다녀옴", "해녀 식당에서 식사", "공항 편의점"],
+  after: ["분식 먹음", "카페에서 쉼", "지하철 타고 이동"],
+  monthLater: ["스타벅스", "편의점 간식", "지하철 출근"],
+}
+// 쓴 말 → 관련 카테고리 (결제 이름·메모에 직접 나오지 않는 말을 이어 준다)
+const quickSynonyms: Record<string, string[]> = {
+  저녁: ["식비", "배달"],
+  점심: ["식비"],
+  밥: ["식비", "배달"],
+  식사: ["식비", "배달"],
+  먹: ["식비", "배달", "간식"],
+  배달: ["배달"],
+  공부: ["카페"],
+  커피: ["카페"],
+  쉼: ["카페"],
+  등교: ["교통"],
+  출근: ["교통"],
+  이동: ["교통"],
+  귀가: ["교통"],
+  예매: ["교통"],
+  쇼핑: ["쇼핑"],
+  옷: ["쇼핑"],
+  간식: ["간식"],
+}
+// 시험기간 내과 결제는 건강 기록(U6)과 이어진 결제라 lib/days.ts 목록 밖에 있다
+const hospitalPayment: DayExpense = {
+  name: "OO내과",
+  merchant: "진료비",
+  category: "병원",
+  narrative: "병원",
+  amount: 45000,
+  icon: "pin",
+}
+const particle = /(이랑|랑|하고|에서|으로|로|와|과|을|를|이|가|은|는|도|함|음|함)$/
+
+function findPayments(text: string, stage: UTMode) {
+  const payments = [
+    ...days[stage].expenses,
+    ...(stage === "exam" ? [hospitalPayment] : []),
+  ]
+  const words = text
+    .split(/[\s,.!?·]+/)
+    .map((word) => word.replace(particle, ""))
+    .filter((word) => word.length >= 1)
+  const categories = new Set(
+    Object.entries(quickSynonyms)
+      .filter(([key]) => text.includes(key))
+      .flatMap(([, value]) => value),
+  )
+  return payments.filter((payment) => {
+    const haystack = [
+      payment.name,
+      payment.merchant,
+      payment.note ?? "",
+      payment.category,
+      payment.narrative,
+    ].join(" ")
+    if (categories.has(payment.category)) return true
+    if (/병원|내과|진료|수액/.test(text) && payment.category === "병원")
+      return true
+    return words.some((word) => word.length >= 2 && haystack.includes(word))
+  })
+}
+
+export function QuickRecord({
+  back,
+  stage,
+}: {
+  back: () => void
+  // 지금 홈 단계. 그날 결제에서 관련 지출을 찾는다.
+  stage: UTMode
+}) {
   const [value, setValue] = useState("")
-  const [saved, setSaved] = useState(false)
+  const [found, setFound] = useState<DayExpense[]>()
+  const [selected, setSelected] = useState<string[]>([])
+  const [result, setResult] = useState<string>()
+  const save = () => {
+    const payments = findPayments(value.trim(), stage)
+    setFound(payments)
+    setSelected(payments.map((payment) => payment.name))
+    if (!payments.length) setResult("기록을 저장했어요")
+  }
+  const toggle = (name: string) =>
+    setSelected((current) =>
+      current.includes(name)
+        ? current.filter((item) => item !== name)
+        : [...current, name],
+    )
+  const connect = () => {
+    const first = selected[0]
+    setResult(
+      selected.length > 1
+        ? `${first} 외 ${selected.length - 1}건과 연결했어요`
+        : `${first} 결제와 연결했어요`,
+    )
+  }
+  const saved = found !== undefined
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="한 줄 기록" />
@@ -421,35 +523,97 @@ export function QuickRecord({ back }: { back: () => void }) {
         <p className="sub-heading">오늘 있었던 일을 알려주세요</p>
         <EditableLine
           placeholder="예: 시험 끝나고 친구랑 저녁 먹었어요"
-          setValue={setValue}
+          setValue={(next) => {
+            setValue(next)
+            if (saved && !result) setFound(undefined)
+          }}
           value={value}
         />
-        <div className="suggestion-chips">
-          {["시험 끝남", "친구랑 저녁", "병원 다녀옴"].map((item) => (
-            <Action
-              className={cx("suggestion-chip", value === item && "selected")}
-              key={item}
-              onClick={() => setValue(item)}
-            >
-              {item}
-            </Action>
-          ))}
-        </div>
+        {!saved && (
+          <div className="suggestion-chips">
+            {quickChips[stage].map((item) => (
+              <Action
+                className={cx("suggestion-chip", value === item && "selected")}
+                key={item}
+                onClick={() => setValue(item)}
+              >
+                {item}
+              </Action>
+            ))}
+          </div>
+        )}
         {saved && (
           <div className="connect-card">
             <span className="connect-icon">
-              <Link2 size={19} strokeWidth={1.5} />
+              {result ? (
+                <Check size={19} strokeWidth={2} />
+              ) : (
+                <Link2 size={19} strokeWidth={1.5} />
+              )}
             </span>
-            <p>관련 지출 2건과 연결할까요?</p>
-            <span>같은 시간대의 결제를 찾았어요</span>
-            <div className="confirm-buttons">
-              <Action className="secondary-button" onClick={back}>
-                아니요
-              </Action>
-              <Action className="primary-button" onClick={back}>
-                연결하기
-              </Action>
-            </div>
+            {result ? (
+              <>
+                <p>{result}</p>
+                <span>
+                  {found.length && selected.length && result.includes("연결")
+                    ? `${days[stage].date} 기록에서 함께 볼 수 있어요`
+                    : found.length
+                      ? "결제와는 연결하지 않았어요"
+                      : `${days[stage].date} 결제 중 겹치는 건 없었어요`}
+                </span>
+                <div className="confirm-buttons single">
+                  <Action className="primary-button" onClick={back}>
+                    확인
+                  </Action>
+                </div>
+              </>
+            ) : (
+              <>
+                <p>같은 날 관련 결제 {found.length}건을 찾았어요</p>
+                <span>연결하지 않을 결제는 눌러서 빼면 돼요</span>
+                <div className="connect-payments">
+                  {found.map((payment) => {
+                    const on = selected.includes(payment.name)
+                    return (
+                      <Action
+                        className={cx("connect-payment", on && "selected")}
+                        key={payment.name}
+                        onClick={() => toggle(payment.name)}
+                      >
+                        <i>{on && <Check size={12} strokeWidth={2.6} />}</i>
+                        <div>
+                          <strong>{payment.name}</strong>
+                          <span>
+                            {[payment.time, payment.merchant]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </span>
+                        </div>
+                        <b>{payment.amount.toLocaleString("ko-KR")}원</b>
+                      </Action>
+                    )
+                  })}
+                </div>
+                <div className="confirm-buttons">
+                  <Action
+                    className="secondary-button"
+                    onClick={() => {
+                      setSelected([])
+                      setResult("기록만 저장했어요")
+                    }}
+                  >
+                    기록만 저장
+                  </Action>
+                  <Action
+                    className="primary-button"
+                    disabled={!selected.length}
+                    onClick={connect}
+                  >
+                    {selected.length}건 연결하기
+                  </Action>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -457,8 +621,8 @@ export function QuickRecord({ back }: { back: () => void }) {
         <div className="main-footer">
           <Action
             className="primary-button"
-            disabled={!value}
-            onClick={() => setSaved(true)}
+            disabled={!value.trim()}
+            onClick={save}
           >
             저장
           </Action>

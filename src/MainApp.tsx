@@ -386,7 +386,8 @@ export function MainApp({
         tone={tone}
       />
     )
-  else if (view === "quick") page = <QuickRecord back={() => setView("tabs")} />
+  else if (view === "quick")
+    page = <QuickRecord back={() => setView("tabs")} stage={homeMode} />
   else if (view === "link")
     page = (
       <LinkRecord
