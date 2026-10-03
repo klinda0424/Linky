@@ -201,7 +201,7 @@ export function DailyReport({
           )}
           {page === 2 && (
             <div className="optin-slide">
-              <span className="report-step">3 · 린이의 제안</span>
+              <span className="report-step">3 · 링키의 제안</span>
               <span className="optin-icon">
                 <Bell size={26} strokeWidth={1.5} />
               </span>

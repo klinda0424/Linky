@@ -111,7 +111,7 @@ export function CoachChat({ back }: { back: () => void }) {
   ]
   return (
     <div className="main-page sub-page chat-page">
-      <MainHeader back={back} title="린이와 대화" />
+      <MainHeader back={back} title="링키와 대화" />
       <div className="chat-content">
         <div className="user-bubble">냉장고 있는 걸로 뭐 해먹지?</div>
         <div className="rini-message">
@@ -141,7 +141,7 @@ export function CoachChat({ back }: { back: () => void }) {
         <Action className="chat-photo" label="사진 추가">
           <Camera size={19} strokeWidth={1.5} />
         </Action>
-        <div>린이에게 물어보기</div>
+        <div>링키에게 물어보기</div>
       </div>
     </div>
   )

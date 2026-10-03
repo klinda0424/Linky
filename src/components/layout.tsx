@@ -91,7 +91,7 @@ export function BottomTabs({
 }) {
   const tabs: Array<[MainTab, string, ReactNode]> = [
     ["home", "홈", <HomeIcon size={21} strokeWidth={1.5} />],
-    ["fun", "재미요소", <Gift size={21} strokeWidth={1.5} />],
+    ["fun", "놀이터", <Gift size={21} strokeWidth={1.5} />],
     ["archive", "보관함", <Archive size={21} strokeWidth={1.5} />],
     ["community", "커뮤니티", <Users size={21} strokeWidth={1.5} />],
   ]

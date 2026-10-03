@@ -1,4 +1,10 @@
-import { useEffect, useState, type ReactNode } from "react"
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type ReactNode,
+} from "react"
 import {
   CalendarDays,
   Camera,
@@ -10,10 +16,14 @@ import {
   Info,
   Link2,
   MapPin,
+  MonitorUp,
+  RotateCcw,
   ScanLine,
+  Square,
   Upload,
   Users,
   Video,
+  X,
 } from "lucide-react"
 import {
   Action,
@@ -22,9 +32,9 @@ import {
   cx,
 } from "@/components/common"
 import { MainHeader } from "@/components/layout"
-import { type MoodEmoji, moods } from "@/screens/report"
 import { type DayExpense, days } from "@/lib/days"
 import { type UTMode } from "@/lib/ut"
+import { type MoodEmoji, moods } from "@/screens/report"
 
 export const recordTiles: Array<{
   key: string
@@ -75,7 +85,9 @@ export function RecordSheet({
   mood,
 }: {
   close: () => void
-  openInput: (view: "quick" | "link" | "capture" | "food") => void
+  openInput: (
+    view: "quick" | "link" | "captureImport" | "food" | "screenRecording",
+  ) => void
   // 고른 기분을 지금 홈 단계의 오늘 결제와 연결한다 (U5-1, 하루 리포트와 같은 다섯 가지)
   mood: (mood: MoodEmoji) => void
 }) {
@@ -87,7 +99,7 @@ export function RecordSheet({
       >
         <div className="sheet-grip" />
         <p className="sheet-title">무엇을 남길까요?</p>
-        <p className="sheet-sub">올리기만 하면 린이가 정리해요</p>
+        <p className="sheet-sub">올리기만 하면 링키가 정리해요</p>
         <div className="record-tiles">
           {recordTiles.map((item) => (
             <Action
@@ -99,10 +111,12 @@ export function RecordSheet({
                   : item.key === "link"
                     ? () => openInput("link")
                     : item.key === "capture"
-                      ? () => openInput("capture")
+                      ? () => openInput("captureImport")
                       : item.key === "photo"
                         ? () => openInput("food")
-                        : undefined
+                        : item.key === "record"
+                          ? () => openInput("screenRecording")
+                          : undefined
               }
             >
               <span className="record-icon">{item.icon}</span>
@@ -130,6 +144,275 @@ export function RecordSheet({
     </div>
   )
 }
+
+export function CaptureImport({ back }: { back: () => void }) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [preview, setPreview] = useState("")
+  const [fileName, setFileName] = useState("")
+  const [state, setState] = useState<"select" | "loading" | "complete">(
+    "select",
+  )
+
+  useEffect(
+    () => () => {
+      if (preview) URL.revokeObjectURL(preview)
+    },
+    [preview],
+  )
+
+  useEffect(() => {
+    if (state !== "loading") return
+
+    const timer = window.setTimeout(() => setState("complete"), 1200)
+
+    return () => window.clearTimeout(timer)
+  }, [state])
+
+  const openPicker = () => {
+    if (inputRef.current) inputRef.current.value = ""
+    inputRef.current?.click()
+  }
+
+  const selectFile = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.currentTarget.files?.[0]
+
+    if (!file) return
+
+    if (preview) URL.revokeObjectURL(preview)
+
+    setPreview(URL.createObjectURL(file))
+    setFileName(file.name)
+    setState("select")
+  }
+
+  return (
+    <div className="main-page sub-page">
+      <MainHeader back={back} title="캡처 가져오기" />
+      <div className="capture-content capture-import-content">
+        <PageTitle
+          sub="결제 내역이나 일정, 주문 화면 등의 캡처를 올려주세요"
+          title="캡처에서 기록을 가져올게요"
+        />
+        <input
+          accept="image/jpeg,image/png,image/webp"
+          aria-label="캡처 파일 선택"
+          className="capture-file-input"
+          onChange={selectFile}
+          ref={inputRef}
+          type="file"
+        />
+        {state === "loading" ? (
+          <div className="capture-zone recognizing">
+            <span className="capture-icon">
+              <ScanLine size={24} strokeWidth={1.5} />
+            </span>
+            <strong>캡처 내용을 살펴보고 있어요...</strong>
+            <span className="loading-dots">
+              <i />
+              <i />
+              <i />
+            </span>
+          </div>
+        ) : state === "complete" ? (
+          <div className="capture-import-complete">
+            <span>
+              <Check size={25} strokeWidth={2} />
+            </span>
+            <strong>캡처에서 기록을 가져왔어요</strong>
+            <p>찾은 내용은 보관함에서 다시 확인할 수 있어요</p>
+          </div>
+        ) : preview ? (
+          <>
+            <div className="capture-preview">
+              <img alt="선택한 캡처 미리보기" src={preview} />
+              <span>{fileName}</span>
+            </div>
+            <div className="capture-import-question">
+              <strong>이 캡처를 기록으로 가져올까요?</strong>
+              <p>확인하면 린이가 필요한 내용을 찾아볼게요</p>
+            </div>
+          </>
+        ) : (
+          <Action className="capture-zone" onClick={openPicker}>
+            <span className="capture-icon">
+              <Upload size={24} strokeWidth={1.5} />
+            </span>
+            <strong>캡처 선택하기</strong>
+            <span>JPG · PNG · WEBP</span>
+          </Action>
+        )}
+      </div>
+      {state === "select" && preview && (
+        <div className="main-footer capture-import-actions">
+          <Action className="secondary-button" onClick={openPicker}>
+            다시 선택
+          </Action>
+          <Action className="primary-button" onClick={() => setState("loading")}>
+            가져오기
+          </Action>
+        </div>
+      )}
+      {state === "complete" && (
+        <div className="main-footer">
+          <Action className="primary-button" onClick={back}>
+            홈으로 돌아가기
+          </Action>
+        </div>
+      )}
+    </div>
+  )
+}
+
+const recordingTime = (seconds: number) => {
+  const minutes = Math.floor(seconds / 60)
+  const remainder = seconds % 60
+
+  return `${String(minutes).padStart(2, "0")}:${String(remainder).padStart(2, "0")}`
+}
+
+export function ScreenRecording({ back }: { back: () => void }) {
+  const [state, setState] = useState<
+    "ready" | "recording" | "review" | "processing" | "complete"
+  >("ready")
+  const [seconds, setSeconds] = useState(0)
+
+  useEffect(() => {
+    if (state !== "recording") return
+
+    const timer = window.setInterval(
+      () => setSeconds((current) => current + 1),
+      1000,
+    )
+
+    return () => window.clearInterval(timer)
+  }, [state])
+
+  useEffect(() => {
+    if (state !== "processing") return
+
+    const timer = window.setTimeout(() => setState("complete"), 1200)
+
+    return () => window.clearTimeout(timer)
+  }, [state])
+
+  const start = () => {
+    setSeconds(0)
+    setState("recording")
+  }
+
+  return (
+    <div className="main-page screen-recording-page">
+      <div className="screen-recording-top">
+        <Action
+          className="recording-close"
+          label="화면 녹화 취소"
+          onClick={back}
+        >
+          <X size={21} strokeWidth={1.7} />
+        </Action>
+        {state === "recording" ? (
+          <span className="recording-live">
+            <i /> REC {recordingTime(seconds)}
+          </span>
+        ) : (
+          <strong>화면 녹화</strong>
+        )}
+        <span className="recording-top-spacer" />
+      </div>
+
+      <div className="screen-recording-content">
+        {state === "ready" && (
+          <>
+            <span className="recording-visual">
+              <MonitorUp size={38} strokeWidth={1.3} />
+            </span>
+            <h1>화면을 기록해볼까요?</h1>
+            <p>
+              앱이나 웹을 사용하는 과정을 남기면 Linky가 필요한 기록을
+              찾아드려요
+            </p>
+          </>
+        )}
+        {state === "recording" && (
+          <>
+            <span className="recording-visual active">
+              <ScanLine size={38} strokeWidth={1.3} />
+            </span>
+            <h1>지금 화면을 기록하고 있어요</h1>
+            <p>필요한 장면을 모두 담았다면 아래 버튼으로 멈춰주세요</p>
+          </>
+        )}
+        {state === "review" && (
+          <>
+            <span className="recording-visual complete">
+              <Check size={38} strokeWidth={1.7} />
+            </span>
+            <h1>화면 녹화를 완료했어요</h1>
+            <p>Linky가 기록할 내용을 살펴볼게요</p>
+            <span className="recording-duration">
+              녹화 시간 {recordingTime(seconds)}
+            </span>
+          </>
+        )}
+        {state === "processing" && (
+          <>
+            <span className="recording-visual active">
+              <ScanLine size={38} strokeWidth={1.3} />
+            </span>
+            <h1>녹화 내용을 살펴보고 있어요...</h1>
+            <p>필요한 기록을 찾는 중이에요</p>
+          </>
+        )}
+        {state === "complete" && (
+          <>
+            <span className="recording-visual complete">
+              <Check size={38} strokeWidth={1.7} />
+            </span>
+            <h1>화면 녹화를 기록으로 가져왔어요</h1>
+            <p>찾은 내용은 보관함에서 다시 확인할 수 있어요</p>
+          </>
+        )}
+      </div>
+
+      <div className="screen-recording-controls">
+        {state === "ready" && (
+          <Action className="record-control" label="녹화 시작" onClick={start}>
+            <span />
+          </Action>
+        )}
+        {state === "recording" && (
+          <Action
+            className="record-control recording"
+            label="녹화 종료"
+            onClick={() => setState("review")}
+          >
+            <Square size={24} fill="currentColor" strokeWidth={0} />
+          </Action>
+        )}
+        {state === "review" && (
+          <div className="recording-review-actions">
+            <Action className="recording-secondary" onClick={start}>
+              <RotateCcw size={17} strokeWidth={1.7} />
+              다시 녹화
+            </Action>
+            <Action
+              className="recording-primary"
+              onClick={() => setState("processing")}
+            >
+              사용하기
+            </Action>
+          </div>
+        )}
+        {state === "complete" && (
+          <Action className="recording-primary wide" onClick={back}>
+            홈으로 돌아가기
+          </Action>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // 한 줄 기록: 쓴 내용과 겹치는 그날 결제를 찾아 연결을 제안한다 (지출을 앵커로 기록 연결).
 // 결제는 지금 홈 단계 날짜(lib/days.ts)에서 찾는다.
 const quickChips: Record<UTMode, string[]> = {
@@ -546,7 +829,7 @@ export function RecognitionSheet({
               ? "틀린 부분만 고쳐주세요"
               : edited
                 ? "고친 내용으로 바꿨어요"
-                : "린이가 인식한 내용이에요"}
+                : "링키가 인식한 내용이에요"}
           </p>
         </div>
         {!editing && (
@@ -681,7 +964,7 @@ export function CaptureUpload({
       <MainHeader back={back} title="캡처 업로드" />
       <div className="capture-content">
         <PageTitle
-          sub="날짜·장소·인원은 린이가 찾아둘게요"
+          sub="날짜·장소·인원은 링키가 찾아둘게요"
           title={"여행 약속을 캡처해서\n올려주세요"}
         />
         {recognizing ? (

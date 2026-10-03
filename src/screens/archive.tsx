@@ -543,7 +543,7 @@ export function EmptyTab({ tab }: { tab: "fun" | "community" }) {
   const fun = tab === "fun"
   return (
     <>
-      <MainHeader title={fun ? "재미요소" : "커뮤니티"} />
+      <MainHeader title={fun ? "놀이터" : "커뮤니티"} />
       <div className="tab-content">
         <p className="section-title">
           {fun ? "나의 발견" : "함께 나누는 기록"}
