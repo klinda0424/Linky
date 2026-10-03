@@ -518,6 +518,13 @@ p {
   transition: background 0.2s ease;
 }
 
+/* 토글은 Action(div)이라 '카드 > div { flex: 1 }' 같은 규칙에 걸려 늘어나기 쉽다.
+   어느 카드에 넣어도 44px로 유지되도록 더 구체적인 선택자로 한 번 더 고정한다. */
+.action.toggle {
+  width: 44px;
+  flex: 0 0 auto;
+}
+
 .toggle span {
   width: 22px;
   height: 22px;
