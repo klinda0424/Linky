@@ -186,6 +186,10 @@ export function EditableLine({
       contentEditable
       data-placeholder={placeholder}
       onInput={(event) => setValue(event.currentTarget.textContent || "")}
+      // 한 줄 입력이라 Enter로 줄이 바뀌지 않게 한다
+      onKeyDown={(event) => {
+        if (event.key === "Enter") event.preventDefault()
+      }}
       ref={ref}
       role="textbox"
       suppressContentEditableWarning

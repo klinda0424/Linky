@@ -35,11 +35,13 @@ import {
 } from "@/screens/profile"
 
 import {
+  CaptureImport,
   CaptureUpload,
   ImportedCalendar,
   LinkRecord,
   QuickRecord,
   RecordSheet,
+  ScreenRecording,
   type ScheduleKind,
 } from "@/screens/record"
 import { DailyReport, MoodPrompt, type MoodEmoji } from "@/screens/report"
@@ -265,7 +267,9 @@ export function MainApp({
     setView("tabs")
   }
 
-  const openInput = (next: "quick" | "link" | "capture" | "food") => {
+  const openInput = (
+    next: "quick" | "link" | "captureImport" | "food" | "screenRecording",
+  ) => {
     setSheet(false)
 
     setView(next)
@@ -397,6 +401,10 @@ export function MainApp({
         confirm={() => registerSchedule("travel")}
       />
     )
+  else if (view === "captureImport")
+    page = <CaptureImport back={() => setView("tabs")} />
+  else if (view === "screenRecording")
+    page = <ScreenRecording back={() => setView("tabs")} />
   else if (view === "calendar")
     page = (
       <ImportedCalendar
