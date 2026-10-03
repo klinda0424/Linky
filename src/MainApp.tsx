@@ -214,6 +214,8 @@ export function MainApp({
     setSchedules((current) => ({ ...current, [kind]: true }))
     setLastSchedule(kind)
     setView("calendar")
+    // UT U0-2 성공 지점: 학사일정 링크 → 인식 확인 "맞아요" → 캘린더에 '시험기간' 태그 생성
+    if (kind === "exam") ut?.milestone("u02_exam")
   }
 
   const [goalModes, setGoalModes] = useState<Record<GoalModeKey, boolean>>({
@@ -240,6 +242,8 @@ export function MainApp({
   const showMoodToast = (mood?: MoodEmoji) => {
     setSheet(false)
     setMood(mood)
+    // UT U5-1 성공 지점: 기분 1개 선택 → 감정 보관함에 저장
+    ut?.milestone("u51_mood")
     setToast(moodToast())
     // U5-1 → U5-2: 결제 연결 안내 후 하루 리포트로 이어짐
 
@@ -361,6 +365,7 @@ export function MainApp({
       <MoodPrompt
         select={(selected) => {
           setMood(selected)
+          ut?.milestone("u51_mood")
           setToast(moodToast())
           window.setTimeout(() => setView("dailyReport"), 700)
 
