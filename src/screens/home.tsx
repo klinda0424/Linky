@@ -134,6 +134,7 @@ export function SpendingCard({
   pendingCount,
   flightPersonal,
   flightSplit = false,
+  openGroupExpense,
   openExpense,
   travelMode,
   prepareMode,
@@ -146,6 +147,8 @@ export function SpendingCard({
   flightPersonal: boolean
   // U7-3에서 그룹 지출(3명)로 확인한 경우: 항공권은 내 몫만 오늘 지출로
   flightSplit?: boolean
+  // 그룹 지출로 나눈 항공권 줄을 누르면 누구와 나눴는지(U7-3 확인 완료) 연다
+  openGroupExpense?: () => void
   // 구매처를 누르면 그 구매처의 지출 상세(U3-1)를 연다
   openExpense: (merchant?: string) => void
   travelMode: boolean
@@ -204,6 +207,8 @@ export function SpendingCard({
     amount: string
     // 나누기 전 결제 금액 (취소선으로 함께 보여줌)
     paidAmount?: string
+    // 줄을 눌렀을 때 (그룹 지출 상세 등)
+    open?: () => void
     status: boolean
     expenseMerchant?: string
   }> =
@@ -221,6 +226,7 @@ export function SpendingCard({
           tripTag: expense.tripTag,
           amount: won(expense.amount),
           paidAmount: expense.paidAmount ? won(expense.paidAmount) : undefined,
+          open: expense.paidAmount ? openGroupExpense : undefined,
           // 그룹/개인 결정 전까지만 '확인 필요'
           status: stage === "prepare" && !flightPersonal && !flightSplit,
         }))
@@ -247,12 +253,13 @@ export function SpendingCard({
       <div className="spending-list">
         {rows.map((row) => (
           <Action
-            className="spending-row"
+            className={cx("spending-row", row.open && "clickable")}
             key={row.name}
             onClick={
-              row.expenseMerchant
+              row.open ??
+              (row.expenseMerchant
                 ? () => openExpense(row.expenseMerchant)
-                : undefined
+                : undefined)
             }
           >
             <span className="expense-icon">{row.icon}</span>
@@ -272,6 +279,13 @@ export function SpendingCard({
               {row.paidAmount && <s>{row.paidAmount}</s>}
               {row.amount}
             </p>
+            {row.open && (
+              <ChevronRight
+                className="row-chevron"
+                size={15}
+                strokeWidth={1.6}
+              />
+            )}
           </Action>
         ))}
       </div>
@@ -671,6 +685,7 @@ export function HomePage({
   afterMode,
   flightPersonal,
   flightSplit,
+  openGroupExpense,
   nudgeOn,
   monthLaterMode,
   selectMode,
@@ -704,6 +719,7 @@ export function HomePage({
   afterMode: boolean
   flightPersonal: boolean
   flightSplit: boolean
+  openGroupExpense: () => void
   nudgeOn: boolean
   monthLaterMode: boolean
   selectMode: (mode: UTMode) => void
@@ -814,6 +830,7 @@ export function HomePage({
           flightSplit={flightSplit}
           monthLaterMode={monthLaterMode}
           openExpense={openExpense}
+          openGroupExpense={openGroupExpense}
           openSettlement={openSettlement}
           pendingCount={pendingCount}
           prepareMode={prepareMode}

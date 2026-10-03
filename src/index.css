@@ -1178,6 +1178,12 @@ p {
   font-size: 10px;
 }
 
+.spending-row .row-chevron {
+  flex: 0 0 auto;
+  margin-left: -4px;
+  color: var(--disabled);
+}
+
 /* 그룹 지출로 나눈 결제: 원래 금액은 취소선, 내 몫을 굵게 */
 .spending-row > p s {
   margin-right: 6px;
@@ -3862,6 +3868,59 @@ input.recognition-value {
 .group-total strong {
   font-size: 22px;
   font-weight: 700;
+}
+
+/* U7-3 확인 완료: 함께 나눈 사람별 몫 */
+.share-list {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.share-list > p {
+  margin-bottom: 2px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.share-row {
+  padding: 11px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.share-row > div {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.share-row strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.share-row > div span {
+  color: var(--sub);
+  font-size: 10px;
+}
+
+.share-row > b {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.share-note {
+  margin-top: 4px;
+  color: var(--sub);
+  font-size: 10px;
+  text-align: center;
 }
 
 .split-result {

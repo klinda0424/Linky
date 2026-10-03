@@ -468,6 +468,7 @@ export function MainApp({
     page = (
       <GroupExpenseDetail
         back={() => setView("tabs")}
+        confirmed={flightSplit}
         confirm={() => {
           // 여행 중으로 넘어가지 않고 여행 준비 홈에 머물며, 오늘 지출을 내 몫으로 바꾼다
           setFlightSplit(true)
@@ -708,6 +709,7 @@ export function MainApp({
             confirmMode={confirmMode}
             flightPersonal={flightPersonal}
             flightSplit={flightSplit}
+            openGroupExpense={() => setView("groupExpense")}
             nudgeOn={nudgeOn}
             dietMode={goalModes.diet}
             groupSuggestion={groupSuggestion}
