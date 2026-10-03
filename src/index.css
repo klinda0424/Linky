@@ -6985,3 +6985,72 @@ input.recognition-value {
   font-size: 10px;
   line-height: 1.5;
 }
+
+/* ===== AI 코치: 대화하기 · 맞춤 리포트 · 지출 조언 ===== */
+.chat-gap {
+  margin-top: 14px;
+}
+
+.chat-chips {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.chat-input > input {
+  height: 42px;
+  min-width: 0;
+  flex: 1;
+  padding: 0 13px;
+  border-radius: 11px;
+  background: var(--surface);
+  font-size: 12px;
+}
+
+.chat-send {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  background: var(--primary);
+}
+
+.insight-card p {
+  white-space: pre-line;
+}
+
+.advice-optin {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.advice-optin > div {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.advice-optin strong {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.advice-optin p {
+  color: var(--sub);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.advice-link {
+  margin-top: 4px;
+  align-self: flex-start;
+  padding: 0 12px;
+}

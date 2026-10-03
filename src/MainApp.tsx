@@ -23,6 +23,7 @@ import { FoodRecognition, FridgePage } from "@/screens/diet"
 import { HealthArchive, HealthConsent } from "@/screens/health"
 
 import { EmotionArchive, ScheduleArchive } from "@/screens/archives"
+import { CoachAdvice, CoachReport, CoachTalk } from "@/screens/coachTools"
 import { DailyInsight, HomePage } from "@/screens/home"
 
 import {
@@ -307,9 +308,40 @@ export function MainApp({
   if (view === "coachHub")
     page = (
       <CoachHub
+        advice={() => setView("coachAdvice")}
         back={() => setView("tabs")}
         goals={() => openGoalAchievement("coachHub")}
-        mood={() => setView("mood")}
+        report={() => setView("coachReport")}
+        talk={() => setView("coachTalk")}
+      />
+    )
+  else if (view === "coachTalk")
+    page = <CoachTalk back={() => setView("coachHub")} mode={homeMode} />
+  else if (view === "coachReport")
+    page = (
+      <CoachReport
+        back={() => setView("coachHub")}
+        dietMode={goalModes.diet}
+        mode={homeMode}
+        tone={tone}
+      />
+    )
+  else if (view === "coachAdvice")
+    page = (
+      <CoachAdvice
+        back={() => setView("coachHub")}
+        mode={homeMode}
+        nudgeOn={nudgeOn}
+        open={(target) =>
+          setView(
+            target === "fridge"
+              ? "fridge"
+              : target === "closet"
+                ? "closet"
+                : "settlement",
+          )
+        }
+        toggleNudge={() => toggleNotification("pattern")}
       />
     )
   else if (view === "goalAchievement")
