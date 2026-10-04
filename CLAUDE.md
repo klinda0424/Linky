@@ -1,11 +1,11 @@
 # Linky (링키) — 프로토타입 코드베이스
 
-> 지출을 앵커로 감정·일정·건강·쇼핑 기록을 자동 연결해 주는 AI 라이프 아카이빙 앱의 **모바일 웹 프로토타입**.
-> KHUX 산학 팀프로젝트. Figma Make에서 시작해 GitHub + Vercel + Claude Code로 팀 협업 중.
+> 내 캘린더·사진·위치 기록으로 **잊은 결제를 복원**해 주는 앱의 모바일 웹 프로토타입.
+> 지출과 일정(캘린더) 두 축만 연결한다. KHUX 산학 팀프로젝트. GitHub + Vercel + Claude Code로 협업.
 
 @AGENTS.md
 @HANDOFF.md
-> ⚠️ AGENTS.md는 Figma Make 환경 기준 문서다. "dev 서버가 이미 실행 중"이라는 내용은 **로컬에서는 해당 없음** → `pnpm dev`로 직접 실행한다. 스택·스타일 규칙(Tailwind v4, default export 등)만 참고.
+> ⚠️ AGENTS.md는 Figma Make 환경 기준 문서다. "dev 서버가 이미 실행 중"이라는 내용은 **로컬에서는 해당 없음** → `pnpm dev`로 직접 실행한다. 스택·스타일 규칙(Tailwind v4 등)만 참고.
 
 ## 실행
 ```bash
@@ -15,91 +15,70 @@ pnpm build       # Vercel과 동일한 빌드. PR 올리기 전 반드시 통과
 ```
 - `.figma/`, `vite.config.ts` 안의 `figma*` 플러그인은 Figma Make 연동용. **수정·삭제하지 않는다.**
 
+## 제품 개념
+- 결제 내역을 앵커로 삼아, **사용자 자신의 기록**(내 일정, 내 사진, 결제 당시 내 위치)에서 그 결제의 근거를 찾아 붙인다.
+- 근거가 하나라도 붙으면 "복원", 없으면 **"기록 없음"**. AI가 추측해서 채우지 않는다.
+- 연결 대상은 지출 + 일정 두 가지뿐이다. 감정·건강·쇼핑 인벤토리·목표·코치·커뮤니티 같은 확장 축은 이 프로토타입의 범위가 아니다.
+
+## 카피·인터랙션 규칙 (반드시 지킬 것)
+1. **AI 추론 금지** — 감정·의도·성향을 추측하는 문장을 쓰지 않는다. 근거는 사용자 기록뿐.
+2. **비교 금지** — 또래 평균·통계 대비 같은 비교 문구를 쓰지 않는다.
+3. **빈 칸 대신 "기록 없음"** — 데이터가 없으면 공백이 아니라 이 문구로 명시한다.
+4. **서사형 리포트도 사실 나열** — 예: "토요일, 성수. 지은이랑 약속, 사진 3장, 4.5만원."
+5. **지도의 결제 핀은 "결제 당시 내 위치" 라벨 필수** — 상점 위치가 아니라 내 위치임을 항상 밝힌다.
+6. 평가·훈계 톤 금지, 질문·강요 대신 관찰형("~했어요"), 건너뛸 수 있게.
+7. 서비스명은 "Linky"(L만 대문자) / 한글 "링키".
+
+## IA
+하단 탭 4개: **캘린더(홈) · 지도 · 앨범 · 마이페이지** (중앙 + 없음). 기록 입력은 탭이 아니라 시트(결제 캡처 / 사진 / 웹 링크 / 단톡 캡처)로, 캘린더 상단 "기록" 버튼과 빈 결제 카드의 "캡처·사진 추가"에서 연다.
+- **캘린더**: 상단 검색 / 연월 / 기록 버튼, "총 지출 · 복원 N일/전체". 날짜 셀은 3상태(복원 완료 = 진한 채움, 부분 = 옅은 채움, 미복원 = 회색). 날짜를 누르면 바텀시트(좌우 화살표·스와이프로 날짜 이동, "이날 동선 지도로 보기", 이날의 내 기록 칩, 시간순 결제 카드, 하루 리포트). 결제 카드는 원본 행 → 점선 → 근거(위치·일정·사진) → 근거 점 ●●● / "수정". 그룹 결제는 인원 분할 후 "결제 42,000 / 내 몫 14,000" 형태로 표시.
+- **지도**: 하루/주/월, 필터(결제·사진·일정), 번호 결제 핀 + 사진 핀 + 점선 동선, 근거 없는 결제는 점선 핀. 핀을 누르면 미리보기 카드 → 결제 카드(캘린더 날짜 시트)로 이동. 자주 간 장소.
+- **앨범**: 결제와 연결된 사진만, 일정 단위로 묶음. 사진 상세(연결 해제), 이벤트 리포트.
+- **마이페이지**: 회원 정보 / 연동 서비스 관리 / 개인정보·권한(소스별 수집 범위·개별 해제) / 정산 내역 / 리포트 톤 설정 / 알림 설정.
+- **온보딩 6단계**: 개인 정보 → 권한 연동(캘린더·갤러리·위치 개별 토글) → 개인정보 고지 → 지출 내역 가져오기 → 지난달 일괄 복원 결과 → 리포트 톤 선택.
+- 정산(그룹 지출 나누기)은 기능을 유지한다. 마이페이지 > 정산 내역에서 진입.
+
 ## 코드 구조
 ```
 src/
-├─ App.tsx              온보딩 ↔ 메인 앱 전환 (최상위 상태)
-├─ MainApp.tsx          탭/화면 라우팅 + 공유 상태 (화면 추가 시 여기에 연결)
-├─ types.ts             Tone, MainTab, MainView 등 공용 타입
+├─ App.tsx              온보딩 6단계 ↔ 메인 앱 (프로필·권한·톤 상태 보유)
+├─ MainApp.tsx          탭/화면 라우팅 + 공유 상태 (원장 상태, 시트, 정산 흐름)
+├─ types.ts             Tone, MainTab, MainView, PermissionKey 등 공용 타입
 ├─ components/
 │  ├─ common.tsx        Action, Toggle, Badge, Screen, StatusBar 등 공용 UI
-│  ├─ layout.tsx        MainHeader, BottomTabs, HomeSegments(홈 6단계 드롭다운)
-│  └─ ut.tsx            사용성 테스트(UT) 모드 UI·기록 (?ut=1 일 때만)
-├─ lib/                 ← 여러 화면이 같은 숫자를 쓰도록 모아 둔 목업 데이터·계산
-│  ├─ days.ts           홈 단계별 "오늘" 날짜·결제 (홈 지출·하루 리포트·기분 연결)
-│  ├─ today.ts          시험기간(12/12) 오늘 지출·평소 하루 평균
-│  ├─ settlement.ts     정산 항목·1인당·받을 돈·여행 비용 계산
-│  ├─ archive.ts        일정·감정 보관함 데이터(단계별 오늘, 이벤트, 기분 기록)
-│  └─ ut.ts             UT 과제 정의·자동 기록·CSV
-├─ screens/             ← 플로우 단계별 담당 파일
-│  ├─ onboarding.tsx  home.tsx  report.tsx  record.tsx  profile.tsx
-│  ├─ shopping.tsx  diet.tsx  health.tsx  settlement.tsx  travel.tsx
-│  ├─ coach.tsx(AI 코치 허브·목표 달성)  coachTools.tsx(대화하기·맞춤 리포트·지출 조언)
-│  ├─ archive.tsx(검색·보관함 홈)  archives.tsx(일정·감정 보관함)
-│  └─ fun.tsx(놀이터)
-└─ index.css            디자인 토큰(:root) + 화면별 클래스 (아직 1파일, ~120KB)
+│  └─ layout.tsx        MainHeader, BottomTabs
+├─ lib/
+│  ├─ ledger.ts         ★ 단일 데이터 원천: 결제·일정·사진 목업, 근거 계산, 복원 상태, 하루 사실, 검색
+│  └─ settlement.ts     정산 항목·1인당·받을 돈 계산
+├─ screens/
+│  ├─ calendar.tsx      캘린더 홈, 날짜 바텀시트, 결제 카드, 하루 리포트
+│  ├─ map.tsx           지도 탭(목업 SVG)
+│  ├─ album.tsx         앨범 탭, 사진 상세, 이벤트 리포트
+│  ├─ record.tsx        기록 입력 시트, 결제에 연결
+│  ├─ search.tsx        비정형 검색
+│  ├─ profile.tsx       마이페이지와 설정 화면들
+│  ├─ onboarding.tsx    온보딩 6단계, 권한 정의
+│  └─ settlement.tsx    인원 분할 시트, 정산 대기함~결과
+└─ index.css            디자인 토큰(:root) + 화면별 클래스 (1파일)
 ```
-- import는 `@/` 별칭 사용 (예: `import { Action } from "@/components/common"`).
-- 화면 컴포넌트는 named export. `App`만 default export.
-- **새 화면**은 담당 `screens/*.tsx`에 추가하거나 새 파일을 만들고, `MainApp.tsx`에는 연결 코드만 최소로 추가한다.
-- `index.css` 수정은 자기 화면 클래스 블록에만 한다(충돌 방지). 토큰(`:root`) 변경은 팀 공유 후.
+- import는 `@/` 별칭. 화면 컴포넌트는 named export, `App`만 default export.
+- **여러 화면이 쓰는 숫자는 `lib/ledger.ts`(정산은 `lib/settlement.ts`)에만 둔다.** 캘린더·지도·앨범·검색·리포트가 모두 같은 원천에서 계산한다. 화면에 금액·건수를 직접 적지 않는다.
+- 근거 규칙(`ledger.ts`): 내 위치(결제의 `place`), 내 일정(결제 시각이 일정 시간대 ±60분 안), 내 사진(결제 시각 ±30분), 사용자가 직접 붙인 기록. 연동을 끈 소스는 근거에서 빠진다.
+- 새 화면은 담당 `screens/*.tsx`에 추가하고 `MainApp.tsx`에는 연결 코드만 최소로 넣는다. 화면 목록에 없는 화면은 만들지 않는다(사용자 플로우 확정 전).
+- 데드 라우트·링크·버튼 금지: 눌러서 갈 곳이 없는 요소를 만들지 않는다.
 
-## 디자인 시스템 (확정)
-- 포인트 컬러: **라임** (`--primary: #d6f07a`, strong `#8aa824`). 밝은 베이스 + 포인트 1개.
-- 폰트: **Pretendard** (`--font-sans`). 아이콘: **lucide-react** (아웃라인).
-- 모바일 기준 폭 375px, 좌우 패딩 `--page-padding: 20px`. 색상·간격은 하드코딩하지 말고 `src/index.css`의 CSS 변수를 사용.
-- 서비스명 표기: "Linky" (L만 대문자) / 한글 "링키". 앱 안에서 AI가 말하는 주체도 "링키"로 부른다 (예: "링키가 정리해요", "링키의 일간 리포트"). "린이"는 쓰지 않는다.
+## 디자인 시스템
+- 포인트 컬러(토큰): `--primary #0084FF`, `--primary-hover #006FD6`, `--primary-text #006FD6`, `--primary-soft #E6F3FF`, `--primary-border #99CEFF`, 파란 배경 위 글자 `--on-primary`(흰색).
+- 14px 이하의 포인트색 글자는 `--primary-text`. 큰 버튼은 `--primary` 배경 + 흰 글자.
+- 사진 핀만 별도 초록(`--photo-pin`). 색은 하드코딩하지 말고 `src/index.css`의 CSS 변수를 쓴다.
+- 폰트 Pretendard(`--font-sans`), 아이콘 lucide-react(아웃라인), 모바일 기준 폭 375px, 좌우 패딩 `--page-padding: 20px`.
 
-## 제품 원칙 (UX 카피·인터랙션 작성 시 반드시 지킬 것)
-멘탈모델 **"동반자"**: 나를 평가하는 가계부가 아니라, 내가 놓치는 순간을 대신 알아채고 필요한 순간에만 말을 거는 동반자.
-1. **판단 없는 사실부터** — 초기 톤은 평가·훈계 금지. ("지출이 많아요!" ✕ / "오늘 3건, 4.8만원이에요" ○)
-2. **관찰 문장, 답 요구 없음** — 질문·강요 대신 "~했어요" 관찰형. 건너뛰기 항상 가능.
-3. **넛지는 옵트인** — 신뢰가 쌓인 뒤에만, 사용자가 켠 경우에만 노출.
-4. **톤 분기는 렌더링만** — 같은 데이터를 Persona A(서사/코칭 카드) vs Persona B(리포트/수치 카드)로 다르게 보여줌. 앱 내 `Tone` 값으로 분기.
-5. **개인 데이터는 개인 전용** — 건강·감정 데이터 수집은 항상 동의 모달 선행, 공유 기능 없음.
-6. **입력 부담 최소화** — 추가 입력을 요구하는 화면을 만들지 않는다(원탭, 자동 인식 후 "맞나요?" 확인).
+## 분업·협업 규칙
+- 브랜치: `feat/<화면>-<내용>`. **main 직접 push 금지**, PR을 올리고 `pnpm build` 통과와 Vercel 프리뷰 확인 후 작성자가 머지한다.
+- 공통 요소(`components/`, `MainApp.tsx`, `types.ts`, `lib/ledger.ts`)와 `:root` 토큰 변경은 팀 채팅에 먼저 공유한다.
+- 커밋 전 `pnpm build` 통과 + 375px 폭에서 눈으로 확인. 새 라이브러리는 설치하기 전에 팀과 상의한다.
+- 데이터는 전부 목업(하드코딩). 실제 API·백엔드 연동 없음.
+- 목업 시나리오(주인공 김소연, 2026년 9~10월)를 바꿀 때는 `lib/ledger.ts` 한 곳만 고치고 화면 동작이 일관되는지 확인한다.
 
-## IA (하단 탭 5개)
-`홈 · 놀이터 · [+] · 보관함 · 커뮤니티` — 중앙 +는 탭바 통합형(플로팅 아님).
-- 홈: 상단 드롭다운(여행 확정 · 시험기간 · 여행 준비 · 여행 중 · 여행 후 · 한 달 뒤)으로 플로우 시점을 옮긴다. 캘린더 → 지출 요약(정산 대기 뱃지) → 일간 리포트. 우측 상단: AI 코치 / 프로필. 목표모드 뱃지는 있을 때만. 단계별 구성은 `docs/user-flows.md`의 "홈 단계" 표 참고.
-- +: 기록 입력(사진·캡처·웹 링크·텍스트·영상·화면 녹화)과 "오늘 기분은요?" 원탭 기분 입력.
-- 보관함: 상단 비정형 검색 + 일정/감정/건강/쇼핑 보관함 (모두 눌러서 열린다).
-- AI 코치: 대화하기 · 맞춤 리포트 · 지출 조언 · 목표 달성 관리.
-- 놀이터(`screens/fun.tsx`): 링키 포인트(출석·미션), 오늘의 운세, 기록 퀴즈, 지난 하루 다시 보기. 커뮤니티는 프로토타입에서 빈 탭(`EmptyTab`).
-- 시점 데이터: 홈 단계(`homeMode`)에 따라 날짜·오늘 지출·보관함 기록·AI 코치 응답이 모두 바뀐다. 새 화면을 만들 때는 `lib/days.ts`의 단계별 날짜와 숫자를 쓴다.
-
-## 시연 시나리오 (프로토타입 범위)
-"제주 가서 예쁜 원피스 입으려고 버티는 한 달" — 주인공 김소연, 29화면. **★ 핵심 시연 10개**를 끝까지 끊김 없이 탈 수 있어야 함:
-U0-2 일정 인식 → U1-1 목표 모드 ON → U3-1 구매항목 복원 → U4-3 식단 사진 인식 → U5-2 하루 리포트 → U6-1 건강 동의 모달 → U7-1 그룹 지출 제안 → U9-4 정산 결과 → U10-1A 여행 이야기 카드 → U11-1 비정형 검색
-
-화면 ID ↔ 현재 컴포넌트 (함수명 기준 매핑, 어긋나면 수정할 것)
-| 단계 | ID | 컴포넌트 (파일) |
-|---|---|---|
-| 0 여행 확정 | U0-1 / U0-2 / U0-3 | `CaptureUpload`·`CaptureImport` / `RecognitionSheet` / `ImportedCalendar` (`screens/record.tsx`) |
-| 1 다이어트 | U1-1 | `GoalModeSettings` (`screens/profile.tsx`) |
-| 3 쇼핑 | U3-1 / U3-2 | `ExpenseDetail` / `ClosetPage` (`screens/shopping.tsx`) |
-| 4 식단 | U4-1 / U4-2 / U4-3 | `FridgePage`, `FoodRecognition` (`screens/diet.tsx`) / `CoachChat`(냉장고에서), `CoachTalk`(AI 코치) (`screens/coach.tsx`, `screens/coachTools.tsx`) |
-| 5 리포트 | U5-1 / U5-2 / U5-3 | `MoodPrompt`, `RecordSheet`의 기분 행 / `DailyReport` (`screens/report.tsx`) / `DailyInsight` (`screens/home.tsx`) |
-| 6 건강 | U6-1 / U6-2 | `HealthConsent` / `HealthCard` (`screens/health.tsx`) |
-| 7 그룹 지출 | U7-1 / U7-2 / U7-3 | `GroupSuggestion` (`screens/home.tsx`) / `GroupSplitSheet`, `GroupExpenseDetail` (`screens/settlement.tsx`) |
-| 8~9 정산 | U8-2 / U9-1~4 | `SettlementInbox` `SettlementTable` `SettlementEdit` `SettlementConfirm` `SettlementResult` (`screens/settlement.tsx`) |
-| 10 회고 | U10-1A / 1B / U10-2 | `TravelStory`, `TravelCostReport` (`screens/travel.tsx`) / `GoalAchievement` (`screens/coach.tsx`) |
-| 11 재방문 | U11-1 / U11-2 | `ArchiveSearch`, `ArchiveSearchResults` (`screens/archive.tsx`) |
-| 상시 | 일정·감정 보관함 | `ScheduleArchive`, `EmotionArchive` (`screens/archives.tsx`) |
-| 상시 | 건강·쇼핑 보관함 | `HealthArchive` (`screens/health.tsx`), `ShoppingStorage` (`screens/shopping.tsx`) |
-| 상시 | AI 코치 | `CoachHub` (`screens/coach.tsx`), `CoachTalk`·`CoachReport`·`CoachAdvice` (`screens/coachTools.tsx`) |
-| 상시 | 놀이터 | `FunPage` (`screens/fun.tsx`) |
-
-## 분업 규칙
-- 담당 단위는 **`screens/` 파일(위 표의 단계)**. 자기 파일만 수정한다.
-- 브랜치: `feat/<단계>-<화면>` (예: `feat/settlement-table`). **main 직접 push 금지**, PR을 올린 뒤 `pnpm build` 통과와 Vercel 프리뷰를 확인하고 **작성자가 바로 머지**한다(리뷰는 필요할 때만 요청).
-- PR마다 Vercel 프리뷰 URL이 생성됨 → PR 설명에 캡처 또는 URL 첨부.
-- 공통 요소(`components/`, `MainApp.tsx`)와 `:root` 토큰 변경은 팀 채팅에 먼저 공유.
-- 커밋 전: `pnpm build` 통과 + 375px 모바일 폭에서 눈으로 확인.
-- 데이터는 전부 **목업**(하드코딩). 실제 API/백엔드 연동 없음. 시연 스토리(김소연, 제주, 금액 등)와 숫자가 어긋나지 않게 유지. 여러 화면이 쓰는 숫자는 `lib/`에 한 곳으로 두고(오늘 지출 `lib/today.ts`·`lib/days.ts`, 정산 `lib/settlement.ts`), 화면에 숫자를 직접 적지 않는다.
-- 사용성 테스트(UT) 모드: 주소에 `?ut=1`을 붙이면 켜진다. 화면을 바꿀 때 UT 과제(`lib/ut.ts`의 `UT_TASKS`)의 성공 지점이 깨지지 않는지 확인한다. 자세한 사용법은 `docs/ut-guide.md`.
-
-## 기획 문서
-- `docs/user-flows.md` — **통합 유저플로우 (화면별 사용자 액션 / 시스템 반응 / 분기).** 화면 동작의 기준 문서. 화면을 수정하기 전에 담당 ID 부분을 반드시 읽는다.
-- `docs/ut-guide.md` — 사용성 테스트(UT) 진행 가이드 (주소 파라미터, 과제, 진행자 패널, 자동 기록).
-- 페르소나·멘탈모델·IA 원문은 Claude 프로젝트 "KHUX AXZ 산학"에 있음 (요약은 이 파일의 "제품 원칙", "IA" 참고).
+## 기록 문서 (참고용·레거시)
+- `docs/user-flows.md`, `docs/ut-guide.md`는 **이전 구조(5탭·시연 시나리오) 기준의 옛 문서**다. 현재 구조와 맞지 않으며 이번 개편에서 수정하지 않았다. 새 유저플로우가 확정되면 다시 작성한다.

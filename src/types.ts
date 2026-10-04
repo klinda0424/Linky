@@ -1,21 +1,35 @@
-export type DomainKey = "spend" | "emotion" | "schedule" | "health" | "shopping"
-
-export type PermissionKey = "payment" | "calendar" | "location" | "photos" | "health"
-
 export type Tone = "narrative" | "numeric"
 
-export type MainTab = "home" | "fun" | "archive" | "community"
+// 하단 탭 4개
+export type MainTab = "calendar" | "map" | "album" | "mypage"
 
-export type MainView = "tabs" | "coachHub" | "goalAchievement" | "mood" | "dailyReport" | "dailyInsight" | "schedule" | "emotion" | "coachTalk" | "coachReport" | "coachAdvice" | "quick" | "link" | "capture" | "captureImport" | "screenRecording" | "calendar" | "expense" | "groupExpense" | "settlement" | "settlementTable" | "settlementEdit" | "settlementConfirm" | "settlementResult" | "travelStory" | "travelCost" | "shopping" | "closet" | "fridge" | "coach" | "food" | "health" | "search" | "searchResults" | "profile" | "profileInfo" | "connections" | "notifications" | "tone" | "goals"
+// 탭 위에 쌓이는 전체 화면
+export type MainView =
+  | "tabs"
+  | "search"
+  | "record"
+  | "recordAttach"
+  | "photo"
+  | "eventReport"
+  | "profileInfo"
+  | "connections"
+  | "privacy"
+  | "notifications"
+  | "tone"
+  | "settlementList"
+  | "settlement"
+  | "settlementTable"
+  | "settlementEdit"
+  | "settlementConfirm"
+  | "settlementResult"
 
-export type GoalModeKey = "diet" | "saving" | "exercise"
+// 연동 권한: 카드·계좌는 필수, 나머지는 개별 토글
+export type PermissionKey = "payment" | "calendar" | "photos" | "location"
+
+export type NotificationKey = "restore" | "report" | "settlement"
 
 export type ProfileDetails = {
   nickname: string
-
   birthYear: string
-
   job: string
 }
-
-export type NotificationKey = "pattern" | "schedule" | "health" | "report"

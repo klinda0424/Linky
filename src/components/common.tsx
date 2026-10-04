@@ -1,4 +1,10 @@
-import { useEffect, useRef, type KeyboardEvent, type ReactNode } from "react"
+import {
+  useEffect,
+  useRef,
+  type CSSProperties,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react"
 import { ChevronLeft } from "lucide-react"
 
 export const cx = (...classes: Array<string | false | undefined>) =>
@@ -9,12 +15,15 @@ export function Action({
   onClick,
   disabled,
   label,
+  style,
 }: {
   children?: ReactNode
   className?: string
   onClick?: () => void
   disabled?: boolean
   label?: string
+  // 지도 핀처럼 위치를 직접 지정해야 하는 경우
+  style?: CSSProperties
 }) {
   const activate = () => {
     if (!disabled) onClick?.()
@@ -30,8 +39,7 @@ export function Action({
       aria-disabled={disabled}
       aria-label={label}
       className={cx("action", className, disabled && "disabled")}
-      // onClick이 없는 버튼은 UT 모드에서 '준비 중' 탭으로 집계
-      data-dead={!onClick && !disabled ? "true" : undefined}
+      style={style}
       onClick={activate}
       onKeyDown={onKeyDown}
       role="button"
@@ -75,11 +83,11 @@ export function OnboardingHeader({
           <div className="back-placeholder" />
         )}
         <div className="progress-bars">
-          {Array.from({ length: 7 }, (_, index) => (
+          {Array.from({ length: 6 }, (_, index) => (
             <span className={index < step ? "complete" : ""} key={index} />
           ))}
         </div>
-        <span className="step-count">{step}/7</span>
+        <span className="step-count">{step}/6</span>
       </div>
     </div>
   )
@@ -200,7 +208,7 @@ export function PersonAvatar({
   name,
   size = "normal",
 }: {
-  name: "나" | "수현" | "민지"
+  name: "나" | "지은" | "민지"
   size?: "normal" | "small"
 }) {
   return (
@@ -208,7 +216,7 @@ export function PersonAvatar({
       className={cx(
         "person-avatar",
         name === "나" && "me",
-        name === "수현" && "su",
+        name === "지은" && "su",
         name === "민지" && "min",
         size === "small" && "small",
       )}
