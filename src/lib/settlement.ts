@@ -1,26 +1,22 @@
-// 정산 목업 데이터와 계산 로직. 정산표·확정·결과·여행 리포트가 같은 숫자를 쓰도록 한 곳에서 계산한다.
-export type Member = "나" | "수현" | "민지"
-export type SettlementCategory = "교통" | "숙박" | "식비" | "관광" | "간식"
+// 정산 목업 데이터와 계산 로직. 정산 대기함·정산표·확정·결과가 같은 숫자를 쓰도록 한 곳에서 계산한다.
+export type Member = "나" | "지은" | "민지"
+export type SettlementCategory = "식비" | "교통"
 export type SettlementItem = {
   name: string
   category: SettlementCategory
   amount: number
   payer: Member
-  // 출발 전에 결제한 항목 (여행 비용 리포트의 "준비" vs "현지" 구분)
-  prep: boolean
 }
 
-export const MEMBERS: readonly Member[] = ["나", "수현", "민지"]
+export const MEMBERS: readonly Member[] = ["나", "지은", "민지"]
 
-// 홈 여행 모드의 결제(해녀 식당·입장료·공항 편의점)는 내가 낸 것으로 맞춰 둠
+// 정산 대상 모임: 10월 3일 수진이 생일 (합정). 내가 낸 고깃집은 캘린더의 같은 결제(lib/ledger.ts)다.
+export const settlementTitle = "수진이 생일 모임"
+export const settlementPeriod = "10월 3일 · 합정 · 3명"
 export const settlementItems: readonly SettlementItem[] = [
-  { name: "항공권", category: "교통", amount: 360000, payer: "나", prep: true },
-  { name: "숙소 에어비앤비", category: "숙박", amount: 420000, payer: "나", prep: true },
-  { name: "렌터카", category: "교통", amount: 150000, payer: "수현", prep: false },
-  { name: "해녀 식당", category: "식비", amount: 132000, payer: "나", prep: false },
-  { name: "성산일출봉 입장료", category: "관광", amount: 15000, payer: "나", prep: false },
-  { name: "제주 공항 편의점", category: "간식", amount: 18000, payer: "나", prep: false },
-  { name: "편의점 야식", category: "간식", amount: 24000, payer: "민지", prep: false },
+  { name: "합정 고깃집", category: "식비", amount: 120000, payer: "나" },
+  { name: "합정 호프", category: "식비", amount: 45000, payer: "지은" },
+  { name: "카카오T 택시", category: "교통", amount: 21000, payer: "민지" },
 ]
 
 export const won = (value: number) => `${value.toLocaleString()}원`
@@ -42,28 +38,7 @@ export function summarize(excluded: readonly string[]) {
   const owes = Object.fromEntries(
     MEMBERS.map((member) => [member, Math.max(0, perPerson - paid[member])]),
   ) as Record<Member, number>
-  const share = (list: readonly SettlementItem[]) =>
-    Math.round(sum(list) / MEMBERS.length)
-  // 식비·간식은 리포트에서 식비로 합침
-  const byCategory = {
-    교통: share(items.filter((item) => item.category === "교통")),
-    숙박: share(items.filter((item) => item.category === "숙박")),
-    식비: share(
-      items.filter((item) => item.category === "식비" || item.category === "간식"),
-    ),
-    관광: share(items.filter((item) => item.category === "관광")),
-  }
-  return {
-    items,
-    total,
-    perPerson,
-    paid,
-    receive,
-    owes,
-    byCategory,
-    prepShare: share(items.filter((item) => item.prep)),
-    localShare: share(items.filter((item) => !item.prep)),
-  }
+  return { items, total, perPerson, paid, receive, owes }
 }
 
 export type SettlementSummary = ReturnType<typeof summarize>

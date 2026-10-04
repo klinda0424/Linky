@@ -1,11 +1,4 @@
-import {
-  ArrowDown,
-  Check,
-  Info,
-  Plane,
-  Plus,
-  ReceiptText,
-} from "lucide-react"
+import { ArrowDown, Check, ChevronRight, Info, ReceiptText } from "lucide-react"
 import { useState, type TouchEvent } from "react"
 import {
   Action,
@@ -15,35 +8,45 @@ import {
   cx,
 } from "@/components/common"
 import { MainHeader } from "@/components/layout"
-import { settlementItems, summarize, won } from "@/lib/settlement"
+import { won as wonFull, type Payment } from "@/lib/ledger"
+import {
+  settlementItems,
+  settlementPeriod,
+  settlementTitle,
+  summarize,
+  won,
+} from "@/lib/settlement"
 
+// 그룹 결제 카드의 뱃지를 누르면 뜨는 인원 분할 시트: 결제 → 1인당 금액
 export function GroupSplitSheet({
+  payment,
   close,
   confirm,
 }: {
+  payment: Payment
   close: () => void
   confirm: () => void
 }) {
+  const people = payment.group ?? ["나"]
   return (
     <div className="main-overlay" onClick={close}>
       <div className="split-sheet" onClick={(event) => event.stopPropagation()}>
         <div className="sheet-grip" />
         <p className="sheet-title">몇 명이서 나눌까요?</p>
-        <p className="sheet-sub">여행 일정에서 함께한 사람을 불러왔어요</p>
+        <p className="sheet-sub">
+          {payment.merchant} · {wonFull(payment.amount)}
+        </p>
         <div className="split-people">
-          {(["나", "수현", "민지"] as const).map((name) => (
+          {people.map((name) => (
             <div key={name}>
-              <PersonAvatar name={name} />
+              <PersonAvatar name={name as "나" | "지은" | "민지"} />
               <span>{name}</span>
             </div>
           ))}
-          <Action className="add-person">
-            <Plus size={20} strokeWidth={1.5} />
-          </Action>
         </div>
         <div className="per-person">
           <span>1인당</span>
-          <strong>120,000원</strong>
+          <strong>{wonFull(Math.round(payment.amount / people.length))}</strong>
         </div>
         <Action className="primary-button" onClick={confirm}>
           확인
@@ -52,100 +55,39 @@ export function GroupSplitSheet({
     </div>
   )
 }
-// 함께 나눈 사람별 몫 (360,000원 ÷ 3)
-const flightShares = [
-  { name: "나", note: "결제했어요 · 내 몫", amount: 120000 },
-  { name: "수현", note: "받을 예정", amount: 120000 },
-  { name: "민지", note: "받을 예정", amount: 120000 },
-] as const
 
-export function GroupExpenseDetail({
+// 마이페이지 > 정산 내역
+export function SettlementList({
   back,
-  confirm,
-  confirmed = false,
+  open,
+  completed,
 }: {
   back: () => void
-  confirm: () => void
-  // 이미 그룹 지출로 확인한 뒤 홈의 항공권 줄에서 다시 열었을 때: 누구와 나눴는지 보여주고 확인만
-  confirmed?: boolean
+  open: () => void
+  completed: boolean
 }) {
+  const summary = summarize([])
   return (
     <div className="main-page sub-page">
-      <MainHeader back={back} title="지출 상세" />
-      <div className="group-detail-content">
-        <div className="group-total">
-          <span className="icon-box blue">
-            <Plane size={21} strokeWidth={1.5} />
-          </span>
+      <MainHeader back={back} title="정산 내역" />
+      <div className="settlement-scroll">
+        <p className="section-title settlement-list-title">그룹 지출 정산</p>
+        <Action className="main-card settlement-history" onClick={open}>
           <div>
-            <span>결제 총액</span>
-            <strong>360,000원</strong>
+            <strong>{settlementTitle}</strong>
+            <span>{settlementPeriod}</span>
             <p>
-              {confirmed ? "12월 20일 · " : ""}제주행 항공권 · 3명
+              결제 {summary.items.length}건 · {won(summary.total)}
             </p>
           </div>
-        </div>
-        <div className="split-result">
-          <div>
-            <span>내 지출</span>
-            <strong>120,000원</strong>
-          </div>
-          <i />
-          <div>
-            <span>받을 돈</span>
-            <strong>240,000원</strong>
-          </div>
-        </div>
-        {confirmed ? (
-          <div className="share-list">
-            <p>함께 나눈 사람</p>
-            {flightShares.map((share) => (
-              <div className="share-row" key={share.name}>
-                <PersonAvatar name={share.name} size="small" />
-                <div>
-                  <strong>{share.name}</strong>
-                  <span>{share.note}</span>
-                </div>
-                <b>{share.amount.toLocaleString("ko-KR")}원</b>
-              </div>
-            ))}
-            <span className="share-note">
-              여행에서 돌아오면 정산 대기함에서 함께 정리해요
-            </span>
-          </div>
-        ) : (
-          <div className="participant-summary">
-            <p>함께 나눈 사람</p>
-            <div>
-              {(["나", "수현", "민지"] as const).map((name) => (
-                <div key={name}>
-                  <PersonAvatar name={name} size="small" />
-                  <span>{name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+          <StatusChip type={completed ? "done" : "waiting"} />
+          <ChevronRight size={17} strokeWidth={1.5} />
+        </Action>
       </div>
-      {confirmed ? (
-        <div className="ai-bottom single">
-          <Action className="primary-button" onClick={back}>
-            확인
-          </Action>
-        </div>
-      ) : (
-        <div className="ai-bottom">
-          <Action className="secondary-button" onClick={back}>
-            수정
-          </Action>
-          <Action className="primary-button" onClick={confirm}>
-            맞아요
-          </Action>
-        </div>
-      )}
     </div>
   )
 }
+
 export function SettlementInbox({
   back,
   openTable,
@@ -161,8 +103,8 @@ export function SettlementInbox({
       <MainHeader back={back} title="정산 대기함" />
       <div className="settlement-scroll">
         <PageTitle
-          sub="12월 22일~24일 · 2박 3일"
-          title={"제주 여행 정산을\n시작할게요"}
+          sub={settlementPeriod}
+          title={`${settlementTitle} 정산을\n시작할게요`}
         />
         <div className="settlement-summary">
           <div>
@@ -171,23 +113,24 @@ export function SettlementInbox({
             <p>{summary.items.length}건의 결제 · 3명</p>
           </div>
           <div className="stacked-avatars">
-            {(["나", "수현", "민지"] as const).map((name) => (
+            {(["나", "지은", "민지"] as const).map((name) => (
               <PersonAvatar key={name} name={name} />
             ))}
           </div>
         </div>
         <p className="section-title settlement-list-title">포함된 결제</p>
         <div className="settlement-items">
-          {summary.items.map(({ name, category, amount }) => (
+          {summary.items.map(({ name, category, amount, payer }) => (
             <div className="settlement-item" key={name}>
               <span className="expense-icon">
                 <ReceiptText size={17} strokeWidth={1.5} />
               </span>
               <div>
                 <strong>{name}</strong>
-                <span className="category-chip">{category}</span>
+                <span className="category-chip">
+                  {category} · {payer} 결제
+                </span>
               </div>
-              {name === "숙소 에어비앤비" && <StatusChip type="check" />}
               <p>{won(amount)}</p>
             </div>
           ))}
@@ -201,6 +144,7 @@ export function SettlementInbox({
     </div>
   )
 }
+
 export function SettlementTable({
   back,
   edit,
@@ -215,7 +159,7 @@ export function SettlementTable({
   const summary = summarize(excluded)
   const people = [
     ["나", won(summary.paid["나"]), "done"],
-    ["수현", won(summary.paid["수현"]), "done"],
+    ["지은", won(summary.paid["지은"]), "done"],
     ["민지", won(summary.paid["민지"]), "waiting"],
   ] as const
   return (
@@ -249,7 +193,7 @@ export function SettlementTable({
           <p>
             {excluded.length > 0
               ? `${excluded.length}건을 제외하고 다시 계산했어요`
-              : "잘못 묶인 항목이 있나요? 숙소 결제 항목이 실제 3명인지 확인해보세요"}
+              : "잘못 묶인 항목이 있나요? 모임과 상관없는 결제는 제외할 수 있어요"}
           </p>
           <Action onClick={edit}>수정</Action>
         </div>
@@ -262,6 +206,7 @@ export function SettlementTable({
     </div>
   )
 }
+
 export function SettlementEdit({
   back,
   done,
@@ -345,6 +290,7 @@ export function SettlementEdit({
     </div>
   )
 }
+
 export function SettlementConfirm({
   back,
   result,
@@ -381,8 +327,8 @@ export function SettlementConfirm({
         </div>
         <div className="deposit-list">
           <div>
-            <PersonAvatar name="수현" />
-            <strong>수현 · {won(summary.owes["수현"])}</strong>
+            <PersonAvatar name="지은" />
+            <strong>지은 · {won(summary.owes["지은"])}</strong>
             <span className="deposit-done">✓ 입금 확인</span>
           </div>
           <div>
@@ -411,6 +357,7 @@ export function SettlementConfirm({
     </div>
   )
 }
+
 export function SettlementResult({
   finish,
   excluded,
@@ -431,11 +378,11 @@ export function SettlementResult({
         <ArrowDown size={20} strokeWidth={1.5} />
         <p>내가 실제로 쓴 돈</p>
         <strong className="actual-total">{won(summary.perPerson)}</strong>
-        <span>여행 지출은 내 몫만 가계에 반영했어요</span>
+        <span>모임 지출은 내 몫만 가계에 반영했어요</span>
       </div>
       <div className="main-footer">
         <Action className="primary-button" onClick={finish}>
-          여행 돌아보기
+          정산 내역으로
         </Action>
       </div>
     </div>
