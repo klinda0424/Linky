@@ -84,6 +84,8 @@ export type UTConfig = {
   participant: string
   tone: Tone
   startIndex: number
+  // 끝난 화면에서 참가자가 기록 파일을 직접 받게 할지 (원격 진행 기본값). 한 기기를 돌려 쓸 때는 &share=0
+  share: boolean
 }
 
 export function parseUT(search: string): UTConfig {
@@ -113,6 +115,7 @@ export function parseUT(search: string): UTConfig {
     participant,
     tone: toneParam === "numeric" ? "numeric" : "narrative",
     startIndex: index >= 0 ? index : 0,
+    share: params.get("share") !== "0",
   }
 }
 

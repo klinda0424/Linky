@@ -193,7 +193,18 @@ export function useUTSession(config: UTConfig): UTSession {
 export function UTLayer({ session }: { session: UTSession }) {
   const { task, index, phase } = session
   const [taps, setTaps] = useState(0)
+  const [copied, setCopied] = useState(false)
   const total = UT_TASKS.length
+  // 다운로드가 막히는 앱 안 브라우저를 위해 요약을 복사해서 메시지로 보낼 수 있게 한다
+  const copySummary = async () => {
+    const text = summaryCsv(session.config.tone)
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+    } catch {
+      window.prompt("아래 내용을 복사해서 보내 주세요", text)
+    }
+  }
   const openFacilitatorByTaps = () => {
     // 참가자 모르게 진행자 패널 열기: 칩을 빠르게 5번 탭
     const next = taps + 1
@@ -287,6 +298,47 @@ export function UTLayer({ session }: { session: UTSession }) {
           <div className="ut-card">
             <strong>수고하셨어요!</strong>
             <p className="ut-situation">참여해 주셔서 감사합니다.</p>
+            {session.config.share && (
+              <>
+                <p className="ut-intro">
+                  마지막으로 아래 두 파일을 받아 진행자에게 보내 주세요. 이름·연락처
+                  없이 어떤 버튼을 얼마나 눌렀는지만 담겨 있어요.
+                </p>
+                <button
+                  className="ut-primary"
+                  onClick={() =>
+                    downloadText(
+                      `ut-summary-${session.config.participant}.csv`,
+                      summaryCsv(session.config.tone),
+                    )
+                  }
+                  type="button"
+                >
+                  요약 파일 받기
+                </button>
+                <button
+                  className="ut-secondary"
+                  onClick={() =>
+                    downloadText(
+                      `ut-events-${session.config.participant}.csv`,
+                      eventsCsv(),
+                    )
+                  }
+                  type="button"
+                >
+                  상세 기록 파일 받기
+                </button>
+                <button
+                  className="ut-secondary"
+                  onClick={copySummary}
+                  type="button"
+                >
+                  {copied
+                    ? "복사했어요 · 메시지에 붙여넣기"
+                    : "파일이 안 받아지면 내용 복사하기"}
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
