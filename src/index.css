@@ -1283,7 +1283,7 @@ p {
   left: 0;
   z-index: 5;
   display: grid;
-  grid-template-columns: 1fr 1fr 70px 1fr 1fr;
+  grid-template-columns: repeat(4, 1fr);
   align-items: center;
   border-top: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.98);
