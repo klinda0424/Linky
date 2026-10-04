@@ -2,14 +2,14 @@
 @import "tailwindcss";
 
 :root {
-  --primary: #d6f07a;
-  --primary-disabled: #eef8c8;
-  --primary-light: #f5fbe3;
-  --primary-strong: #8aa824;
-  --primary-hover: #b6d34f;
-  --primary-text: #8aa824;
-  --primary-soft: #f5fbe3;
-  --primary-border: #d6f07a;
+  --primary: #0084FF;
+  --primary-hover: #006FD6;
+  --primary-text: #006FD6;
+  --primary-soft: #E6F3FF;
+  --primary-border: #99CEFF;
+  --primary-disabled: #99CEFF;
+  --on-primary: #ffffff;
+
   --background: #ffffff;
   --surface: #f6f6f7;
   --border: #ececee;
@@ -146,6 +146,7 @@ p {
   justify-content: center;
   border-radius: 6px;
   background: var(--primary);
+  color: var(--on-primary);
   font-size: 11px;
   font-weight: 800;
 }
@@ -298,7 +299,7 @@ p {
 .list-card.selected,
 .tone-card.selected {
   border-color: var(--primary);
-  background: var(--primary-light);
+  background: var(--primary-soft);
 }
 
 .footer {
@@ -328,15 +329,19 @@ p {
   justify-content: center;
   border-radius: 12px;
   background: var(--primary);
-  color: var(--text);
+  color: var(--on-primary);
   font-size: 14px;
   font-weight: 600;
+}
+
+.primary-button:hover {
+  background: var(--primary-hover);
 }
 
 .primary-button.disabled {
   cursor: default;
   background: var(--primary-disabled);
-  color: var(--disabled);
+  color: var(--on-primary);
 }
 
 .skip-link {
@@ -481,6 +486,7 @@ p {
   justify-content: center;
   border-radius: 50%;
   background: var(--primary);
+  color: var(--on-primary);
 }
 
 .complete-title {
@@ -525,7 +531,7 @@ p {
   align-items: center;
   gap: 8px;
   border-radius: 10px;
-  background: var(--primary-light);
+  background: var(--primary-soft);
   color: var(--sub);
   text-align: left;
   font-size: 11px;
@@ -822,7 +828,7 @@ p {
   align-items: center;
   gap: 12px;
   border-radius: 14px;
-  background: var(--primary-light);
+  background: var(--primary-soft);
 }
 
 .profile-top > span {
@@ -910,7 +916,7 @@ p {
   align-items: center;
   gap: 8px;
   border-radius: 10px;
-  background: var(--primary-light);
+  background: var(--primary-soft);
   color: var(--sub);
   font-size: 10px;
   line-height: 1.45;
@@ -962,6 +968,11 @@ p {
 
 .mini-primary {
   background: var(--primary);
+  color: var(--on-primary);
+}
+
+.mini-primary:hover {
+  background: var(--primary-hover);
 }
 
 .filter-chip {
@@ -974,8 +985,8 @@ p {
 }
 
 .filter-chip.selected {
-  background: var(--primary);
-  color: var(--text);
+  background: var(--primary-soft);
+  color: var(--primary-text);
   font-weight: 600;
 }
 
@@ -993,7 +1004,7 @@ p {
 
 .capture-zone.recognizing {
   border-color: var(--primary);
-  background: var(--primary-light);
+  background: var(--primary-soft);
 }
 
 .capture-icon {
@@ -1078,7 +1089,7 @@ p {
   align-items: center;
   justify-content: space-between;
   border-radius: 12px;
-  background: var(--primary-light);
+  background: var(--primary-soft);
 }
 
 .per-person span {
@@ -1087,7 +1098,7 @@ p {
 }
 
 .per-person strong {
-  color: var(--primary-strong);
+  color: var(--primary-text);
   font-size: 20px;
   font-weight: 700;
 }
@@ -1109,7 +1120,7 @@ p {
   align-items: center;
   justify-content: space-between;
   border-radius: 14px;
-  background: var(--primary-light);
+  background: var(--primary-soft);
 }
 
 .settlement-summary > div:first-child {
@@ -1196,8 +1207,8 @@ p {
 }
 
 .status-chip.done {
-  background: var(--primary);
-  color: var(--text);
+  background: var(--primary-soft);
+  color: var(--primary-text);
 }
 
 .status-chip.waiting {
@@ -1240,7 +1251,7 @@ p {
 }
 
 .table-total > div:last-child strong {
-  color: var(--primary-strong);
+  color: var(--primary-text);
 }
 
 .people-settlement {
@@ -1312,7 +1323,7 @@ p {
   justify-content: space-between;
   gap: 10px;
   border-radius: 12px;
-  background: var(--primary-light);
+  background: var(--primary-soft);
 }
 
 .edit-banner span {
@@ -1402,7 +1413,7 @@ p {
   align-items: center;
   gap: 8px;
   border-radius: 12px;
-  background: var(--primary-light);
+  background: var(--primary-soft);
   font-size: 10px;
   line-height: 1.45;
 }
@@ -1423,7 +1434,7 @@ p {
 .receive-card > strong {
   margin-top: 6px;
   display: block;
-  color: var(--primary-strong);
+  color: var(--primary-text);
   font-size: 24px;
   font-weight: 700;
 }
@@ -1485,7 +1496,8 @@ p {
 }
 
 .deposit-done {
-  background: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary-text);
 }
 
 .deposit-waiting {
@@ -1534,7 +1546,7 @@ p {
 .actual-total {
   margin-top: 7px;
   padding: 4px 10px;
-  background: linear-gradient(transparent 48%, var(--primary) 49%);
+  background: linear-gradient(transparent 48%, var(--primary-border) 49%);
   font-size: 28px;
   font-weight: 700;
 }
@@ -1738,7 +1750,6 @@ p {
    ===================================================================== */
 
 :root {
-  --on-primary: #111111;
   --photo-pin: #2fb36d;
 }
 
@@ -2271,10 +2282,6 @@ p {
   flex: none;
 }
 
-.evidence-editor .mini-primary {
-  color: var(--on-primary);
-}
-
 /* ---------- 하루 리포트 ---------- */
 .day-report {
   margin-top: 18px;
@@ -2544,7 +2551,6 @@ p {
 .map-preview .mini-primary {
   padding: 0 12px;
   flex: none;
-  color: var(--on-primary);
 }
 
 .map-places {
