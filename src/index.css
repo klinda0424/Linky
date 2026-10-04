@@ -1627,7 +1627,7 @@ p {
   }
 }
 
-/* ===== 일정 보관함 · 감정 보관함 ===== */
+/* ===== 앨범 이벤트 리포트 · 검색 결과 공용 카드 ===== */
 .arc-content {
   height: calc(100% - 56px);
   padding: 8px var(--page-padding) 32px;

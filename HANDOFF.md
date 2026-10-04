@@ -55,7 +55,7 @@ AI는 아래 순서를 지킨다.
 ## 3. 작업 끝낼 때
 
 1. `pnpm build` 통과 확인. 실패하면 고치고 다시.
-2. `pnpm dev`로 375px 모바일 폭에서 수정 화면 + 핵심 시연 흐름이 끊기지 않는지 확인.
+2. `pnpm dev`로 375px 모바일 폭에서 수정 화면과 연결된 화면(캘린더 -> 날짜 시트 -> 지도 등)이 끊기지 않는지 확인.
 3. main 최신 반영 후 push
    ```bash
    git fetch origin
@@ -64,7 +64,7 @@ AI는 아래 순서를 지킨다.
    ```
 4. GitHub `klinda0424/Linky`에서 **Compare & pull request** → PR 생성.
    - 제목: 무엇을 바꿨는지 한 줄
-   - 본문: 바꾼 화면 ID(U3-1 등), 변경 요약, Vercel 프리뷰 URL 또는 캡처
+   - 본문: 바꾼 화면, 변경 요약, Vercel 프리뷰 URL 또는 캡처
 5. `pnpm build` 통과와 Vercel 프리뷰 확인이 끝나면 **작성자가 바로 머지**한다 (Merge pull request).
    - 리뷰는 필수가 아니다. 막히거나 공용 파일(`components/`, `MainApp.tsx`, `types.ts`, `:root`)을 크게 바꿨다면 팀 채팅에 알린다.
    - 머지 전에 `git merge origin/main`으로 최신 main을 반영해 충돌이 없는지 확인한다.
@@ -76,7 +76,7 @@ AI는 아래 순서를 지킨다.
 
 - `main`에 직접 push / commit
 - 남의 `screens/` 파일 수정 (필요하면 팀 채팅에 먼저 공유)
-- `components/`, `MainApp.tsx`, `types.ts`, `index.css`의 `:root` 토큰을 말없이 변경
+- `components/`, `MainApp.tsx`, `types.ts`, `lib/ledger.ts`, `index.css`의 `:root` 토큰을 말없이 변경
 - `.figma/`, `vite.config.ts`의 figma 플러그인 수정·삭제
 - `git push --force`, `git reset --hard` (복구 불가)
 - 새 라이브러리 설치 (필요하면 팀에 먼저 공유)
@@ -92,22 +92,26 @@ AI는 아래 순서를 지킨다.
 
 ---
 
-## 6. 역할별 담당 (3명)
+## 6. 담당 구분 (개편 후)
 
-| 역할 | 담당 파일 | 담당 화면 (docs/user-flows.md의 ID) | ★ 핵심 시연 |
-|---|---|---|---|
-| **A. 입력·인식** | `screens/record.tsx` `shopping.tsx` `diet.tsx` `health.tsx` | U0 일정 인식·캡처 업로드, U3 구매항목 복원·옷장, U4-1 냉장고·U4-3 식단 사진 인식, U6 건강 동의·카드 | U0-2, U3-1, U4-3, U6-1 |
-| **B. 돈·정산·회고** | `screens/settlement.tsx` `report.tsx` `travel.tsx` `coach.tsx` `archive.tsx` | U5 기분 입력·하루 리포트, U7-2/3 인원 분할·지출 상세, U8~U9 정산, U10 여행 이야기·비용 리포트·목표 달성, U4-2 코치 대화, U11 비정형 검색 | U5-2, U9-4, U10-1A, U11-1 |
-| **C. 홈·설정·통합** | `screens/home.tsx` `onboarding.tsx` `profile.tsx` + 공용 (`components/` `MainApp.tsx` `types.ts` `index.css`의 `:root`) | 홈, 온보딩, 목표 모드·톤 설정, U7-1 그룹 지출 알림, 화면 연결·통합 점검, PR 머지 | U1-1, U7-1 |
+개편으로 화면 구조가 바뀌어 이전의 A/B/C 파일 분담표는 폐기했다. 담당은 팀 채팅에서 새로 정한다. 그 전까지는 아래 단위로 나눠 작업하고, 한 PR은 한 단위만 건드린다.
 
-- 공용 파일(`components/`, `MainApp.tsx`, `types.ts`, `:root` 토큰)은 **C 담당**. A·B가 수정이 필요하면 직접 고치지 말고 C에게 요청.
-- 새로 생긴 파일: `lib/*`(여러 화면이 같이 쓰는 목업 데이터·계산)는 공용(C), `screens/archives.tsx`(일정·감정 보관함)는 보관함 담당, `screens/coachTools.tsx`는 AI 코치(`coach.tsx`) 담당, `screens/fun.tsx`(놀이터)는 해당 화면 작성자가 담당. 담당이 애매하면 팀 채팅에서 정한다.
-- `lib/`의 숫자(오늘 지출, 정산 등)를 바꾸면 홈·리포트·보관함·AI 코치·UT가 같이 바뀐다. 바꿀 때는 `pnpm build` 후 핵심 시연 10개를 한 번 훑어본다.
-- 다른 역할 파일이 export한 컴포넌트의 props 형태를 바꿀 때는 사전 공유 (예: `home.tsx`가 `health.tsx`의 `HealthCard`를 사용, `profile.tsx`가 `onboarding.tsx`의 `ToneOptions`를 사용).
-- 화면 동작의 기준은 `docs/user-flows.md`. 담당 ID의 "사용자 액션 / 시스템 반응 / 분기"가 실제로 동작해야 한다.
+| 단위 | 파일 |
+|---|---|
+| 캘린더·날짜 시트 | `screens/calendar.tsx` `screens/search.tsx` |
+| 지도 | `screens/map.tsx` |
+| 앨범·기록 입력 | `screens/album.tsx` `screens/record.tsx` |
+| 온보딩·마이페이지 | `screens/onboarding.tsx` `screens/profile.tsx` |
+| 정산 | `screens/settlement.tsx` `lib/settlement.ts` |
+| 공용 | `components/` `MainApp.tsx` `App.tsx` `types.ts` `lib/ledger.ts` `index.css`의 `:root` |
+
+- 공용 파일은 수정이 필요하면 직접 고치지 말고 팀 채팅에 먼저 공유한다.
+- `lib/ledger.ts`의 숫자를 바꾸면 캘린더·지도·앨범·검색·리포트가 같이 바뀐다. 바꾼 뒤에는 `pnpm build`와 화면 확인을 한다.
+- 다른 파일이 export한 컴포넌트의 props 형태를 바꿀 때는 사전 공유 (예: `profile.tsx`가 `onboarding.tsx`의 `permissions`, `ToneOptions`를 사용).
+- 화면 동작의 기준은 `CLAUDE.md`의 IA와 카피 규칙이다. `docs/`의 옛 유저플로우는 참고만 한다.
 
 ## 7. 막혔을 때
 
 - 빌드 에러: 에러 메시지 전체를 읽고 담당 파일 안에서 먼저 해결. 공용 파일 문제면 사용자에게 보고.
-- 화면 흐름·카피가 헷갈리면: `CLAUDE.md`의 "제품 원칙"과 "시연 시나리오"를 기준으로 판단.
+- 화면 흐름·카피가 헷갈리면: `CLAUDE.md`의 "카피·인터랙션 규칙"과 "IA"를 기준으로 판단.
 - 규칙과 요청이 충돌하면: 진행하지 말고 사용자에게 확인.
