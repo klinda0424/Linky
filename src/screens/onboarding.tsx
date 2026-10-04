@@ -376,7 +376,7 @@ export function ToneOptions({
           {tone === "numeric" && <Check size={15} strokeWidth={2.2} />}
         </div>
         <div className="tone-preview numeric-preview">
-          <strong>결제 2건 · 45,000원 · 근거 4개</strong>
+          <strong>결제 3건 · 45,000원 · 복원 3건</strong>
         </div>
         <p>건수와 금액 중심으로 간결하게 보여줘요</p>
       </Action>
