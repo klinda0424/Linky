@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useRef, useState, type CSSProperties, type MouseEvent, type TouchEvent } from "react"
 import { Camera, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react"
 import { Action, cx } from "@/components/common"
 import {
@@ -27,6 +27,19 @@ import {
 } from "@/lib/ledger"
 
 type Period = "day" | "week" | "month"
+
+// 지도 확대: 두 손가락으로 확대·축소, 확대한 뒤에는 한 손가락으로 이동
+const MIN_ZOOM = 1
+const MAX_ZOOM = 4
+type MapView = { k: number; x: number; y: number }
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
+// 확대한 지도가 영역 밖으로 벗어나 빈 곳이 보이지 않게 이동 범위를 제한한다
+const keepInside = (k: number, x: number, y: number, width: number, height: number) => ({
+  x: clamp(x, width * (1 - k), 0),
+  y: clamp(y, height * (1 - k), 0),
+})
+const distance = (a: { clientX: number; clientY: number }, b: { clientX: number; clientY: number }) =>
+  Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY)
 type Selected =
   | { kind: "payment"; id: string }
   | { kind: "photo"; id: string }
@@ -72,6 +85,104 @@ export function MapTab({
   const [date, setDate] = useState<YMD>(initialDay ?? TODAY)
   const [show, setShow] = useState({ payment: true, photo: true, event: true })
   const [selected, setSelected] = useState<Selected>()
+  const [view, setView] = useState<MapView>({ k: 1, x: 0, y: 0 })
+  const canvasRef = useRef<HTMLDivElement>(null)
+  const gesture = useRef<{
+    mode: "pinch" | "pan"
+    startDistance: number
+    k: number
+    x: number
+    y: number
+    fromX: number
+    fromY: number
+    moved: boolean
+  }>(undefined)
+  const resetView = () => setView({ k: 1, x: 0, y: 0 })
+
+  // 트랙패드·마우스: Ctrl(또는 ⌘) + 휠로 커서 위치 기준 확대·축소
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const onWheel = (event: WheelEvent) => {
+      if (!event.ctrlKey && !event.metaKey) return
+      event.preventDefault()
+      const rect = canvas.getBoundingClientRect()
+      const cx = event.clientX - rect.left
+      const cy = event.clientY - rect.top
+      setView((current) => {
+        const k = clamp(current.k * Math.exp(-event.deltaY * 0.01), MIN_ZOOM, MAX_ZOOM)
+        const px = (cx - current.x) / current.k
+        const py = (cy - current.y) / current.k
+        return { k, ...keepInside(k, cx - px * k, cy - py * k, rect.width, rect.height) }
+      })
+    }
+    canvas.addEventListener("wheel", onWheel, { passive: false })
+    return () => canvas.removeEventListener("wheel", onWheel)
+  }, [])
+  const onTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    if (event.touches.length === 2) {
+      const [a, b] = [event.touches[0], event.touches[1]]
+      gesture.current = {
+        mode: "pinch",
+        startDistance: Math.max(distance(a, b), 1),
+        k: view.k,
+        x: view.x,
+        y: view.y,
+        fromX: (a.clientX + b.clientX) / 2 - rect.left,
+        fromY: (a.clientY + b.clientY) / 2 - rect.top,
+        moved: false,
+      }
+    } else if (event.touches.length === 1 && view.k > 1) {
+      gesture.current = {
+        mode: "pan",
+        startDistance: 0,
+        k: view.k,
+        x: view.x,
+        y: view.y,
+        fromX: event.touches[0].clientX,
+        fromY: event.touches[0].clientY,
+        moved: false,
+      }
+    }
+  }
+  const onTouchMove = (event: TouchEvent<HTMLDivElement>) => {
+    const g = gesture.current
+    if (!g) return
+    const rect = event.currentTarget.getBoundingClientRect()
+    if (g.mode === "pinch" && event.touches.length === 2) {
+      const [a, b] = [event.touches[0], event.touches[1]]
+      const k = clamp((g.k * distance(a, b)) / g.startDistance, MIN_ZOOM, MAX_ZOOM)
+      const cx = (a.clientX + b.clientX) / 2 - rect.left
+      const cy = (a.clientY + b.clientY) / 2 - rect.top
+      // 처음 두 손가락 가운데에 있던 지도 지점이 지금 손가락 가운데에 오도록 맞춘다
+      const px = (g.fromX - g.x) / g.k
+      const py = (g.fromY - g.y) / g.k
+      g.moved = true
+      setView({ k, ...keepInside(k, cx - px * k, cy - py * k, rect.width, rect.height) })
+    } else if (g.mode === "pan" && event.touches.length === 1) {
+      const dx = event.touches[0].clientX - g.fromX
+      const dy = event.touches[0].clientY - g.fromY
+      if (Math.abs(dx) + Math.abs(dy) > 6) g.moved = true
+      setView((current) => ({
+        k: current.k,
+        ...keepInside(current.k, g.x + dx, g.y + dy, rect.width, rect.height),
+      }))
+    }
+  }
+  const onTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
+    if (event.touches.length > 0) return
+    // 끌거나 확대한 직후에는 핀이 눌린 것으로 처리하지 않는다 (click이 touchend 뒤에 오므로 잠시 유지)
+    window.setTimeout(() => {
+      gesture.current = undefined
+    }, 80)
+  }
+  const swallowClickAfterGesture = (event: MouseEvent<HTMLDivElement>) => {
+    if (gesture.current?.moved) {
+      event.stopPropagation()
+      event.preventDefault()
+    }
+  }
   const { from, to } = rangeOf(period, date)
   const inRange = (value: YMD) => keyOf(value) >= from && keyOf(value) <= to
   const sorted = (list: Payment[]) =>
@@ -119,6 +230,7 @@ export function MapTab({
       setDate(ymd(next.getFullYear(), next.getMonth() + 1, 1))
     } else setDate(addDays(date, direction * step))
     setSelected(undefined)
+    resetView()
   }
   const chosenPayment =
     selected?.kind === "payment"
@@ -149,6 +261,7 @@ export function MapTab({
               onClick={() => {
                 setPeriod(key)
                 setSelected(undefined)
+                resetView()
               }}
             >
               {text}
@@ -183,7 +296,23 @@ export function MapTab({
             </Action>
           ))}
         </div>
-        <div className="map-canvas">
+        <div
+          className={cx("map-canvas", view.k > 1 && "zoomed")}
+          onClickCapture={swallowClickAfterGesture}
+          onTouchEnd={onTouchEnd}
+          onTouchMove={onTouchMove}
+          onTouchStart={onTouchStart}
+          ref={canvasRef}
+        >
+          <div
+            className="map-layer"
+            style={
+              {
+                transform: `translate(${view.x}px, ${view.y}px) scale(${view.k})`,
+                "--inv": 1 / view.k,
+              } as CSSProperties
+            }
+          >
           {/* 목업 지도: 한강, 큰 길, 지역 이름 */}
           <svg
             aria-hidden="true"
@@ -317,8 +446,14 @@ export function MapTab({
                 </Action>
               )
             })}
+          </div>
           {pays.length + pics.length + evs.length === 0 && (
             <div className="map-empty">이 기간에는 지도에 표시할 기록이 없어요</div>
+          )}
+          {view.k > 1 && (
+            <Action className="map-reset" onClick={resetView}>
+              원래 크기
+            </Action>
           )}
         </div>
         <div className="map-legend">
