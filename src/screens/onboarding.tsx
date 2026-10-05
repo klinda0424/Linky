@@ -313,7 +313,7 @@ export const permissions: Array<{
     required: true,
     icon: <CreditCard size={19} strokeWidth={1.5} />,
     collects: "결제 일시·금액·가맹점명",
-    purpose: "잊은 결제를 날짜별로 모아 보여주기 위해",
+    purpose: "결제를 날짜별로 모아 보여줘요",
   },
   {
     key: "calendar",
@@ -321,7 +321,7 @@ export const permissions: Array<{
     description: "그날의 일정 연결",
     icon: <CalendarDays size={19} strokeWidth={1.5} />,
     collects: "일정 제목·시간·장소",
-    purpose: "결제 시각과 겹치는 내 일정을 근거로 보여주기 위해",
+    purpose: "결제 시각과 겹치는 일정을 근거로 써요",
   },
   {
     key: "photos",
@@ -329,7 +329,7 @@ export const permissions: Array<{
     description: "결제 전후 사진 연결",
     icon: <Image size={19} strokeWidth={1.5} />,
     collects: "사진 촬영 시각·위치 정보",
-    purpose: "결제 시각 전후 30분 사진을 근거로 보여주기 위해",
+    purpose: "결제 전후 30분 사진을 근거로 써요",
     scope: "결제 시각 ±30분 · 반경 500m 사진만 사용",
   },
   {
@@ -338,7 +338,7 @@ export const permissions: Array<{
     description: "결제 당시 내 위치 연결",
     icon: <MapPin size={19} strokeWidth={1.5} />,
     collects: "결제 시각의 내 위치 기록",
-    purpose: "지도에서 그날의 동선을 보여주기 위해",
+    purpose: "그날 동선을 지도에 보여줘요",
   },
 ]
 
