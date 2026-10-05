@@ -109,7 +109,8 @@ export function MainApp({
         [paymentId]: [...(value.unlinked[paymentId] ?? []), key],
       },
     }))
-  const attach = (paymentId: string) => {
+  // text가 있으면 캡처에서 인식한 문구(예: "블라우스 1벌")를 근거로 붙인다
+  const attach = (paymentId: string, text?: string) => {
     setLedger((value) => {
       const current = value.added[paymentId] ?? []
       return {
@@ -118,7 +119,7 @@ export function MainApp({
           ...value.added,
           [paymentId]: [
             ...current,
-            { kind: "added", text: addedText[recordKind] },
+            { kind: "added", text: text ?? addedText[recordKind] },
           ],
         },
       }
