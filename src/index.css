@@ -2083,10 +2083,10 @@ p {
   font-size: 11px;
 }
 
-/* 달력: 칸 배경 없이 큰 날짜 + 그날 내 지출 전체 금액. 좌우 여백을 줄여 6자리 금액도 한 줄에 들어가게 한다 */
+/* 달력: 칸 배경 없이 큰 날짜 + 그날 내 지출 전체 금액. 화면 가장자리에서 14px 띄우고, 6자리 금액도 한 줄에 들어가게 한다 */
 .cal-weekdays,
 .cal-grid {
-  margin: 0 -14px;
+  margin: 0 -6px;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
 }
@@ -2138,9 +2138,9 @@ p {
 
 .cal-cell i {
   color: var(--sub);
-  font-size: 11.5px;
+  font-size: 11px;
   font-style: normal;
-  font-weight: 500;
+  font-weight: 400;
   letter-spacing: -0.3px;
   white-space: nowrap;
 }
