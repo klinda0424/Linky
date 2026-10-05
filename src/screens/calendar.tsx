@@ -16,7 +16,6 @@ import {
   type Payment,
   type YMD,
   TODAY,
-  dayFacts,
   daysWithPayments,
   dayStatus,
   dayTotal,
@@ -40,7 +39,6 @@ import {
   won,
   ymd,
 } from "@/lib/ledger"
-import { type Tone } from "@/types"
 
 const weekdays = ["일", "월", "화", "수", "목", "금", "토"]
 
@@ -171,7 +169,6 @@ export function CalendarHome({
 export function DaySheet({
   day,
   state,
-  tone,
   focusPayment,
   close,
   move,
@@ -185,7 +182,6 @@ export function DaySheet({
 }: {
   day: YMD
   state: LedgerState
-  tone: Tone
   // 지도 핀에서 넘어온 결제: 해당 카드를 강조해 보여 준다
   focusPayment?: string
   close: () => void
@@ -307,7 +303,7 @@ export function DaySheet({
               verify={verify}
             />
           ))}
-          <DayReport day={day} state={state} tone={tone} />
+          <DayReport day={day} state={state} />
         </div>
       </div>
     </div>
@@ -436,13 +432,11 @@ function PayCard({
         </div>
       )}
       <div className="pay-foot">
-        <Action
-          className="evidence-dots"
-          disabled={evidence.length === 0}
-          onClick={() => setOpen(!open)}
-        >
-          근거 {evidence.length}개
-        </Action>
+        {evidence.length > 0 && (
+          <Action className="evidence-dots" onClick={() => setOpen(!open)}>
+            근거 {evidence.length}개
+          </Action>
+        )}
         <Action className="edit-link" onClick={() => setEditing(!editing)}>
           {editing ? "완료" : "수정"}
         </Action>
@@ -485,7 +479,11 @@ function PayCard({
               </div>
             ),
           )}
-          <p className="evidence-recount">근거 {evidence.length}개로 다시 계산했어요</p>
+          <p className="evidence-recount">
+            {evidence.length > 0
+              ? `근거 ${evidence.length}개로 다시 계산했어요`
+              : "연결된 근거가 없어 기록 없음으로 돌아갔어요"}
+          </p>
           <div className="evidence-actions">
             <Action className="mini-primary" onClick={() => openRecord(payment.id)}>
               기록 추가
@@ -508,55 +506,13 @@ function PayCard({
 }
 
 // ---------- 하루 리포트 (사실만 나열) ----------
-function DayReport({
-  day,
-  state,
-  tone,
-}: {
-  day: YMD
-  state: LedgerState
-  tone: Tone
-}) {
-  const facts = dayFacts(day, state)
-  const max = Math.max(...facts.top.map((payment) => payment.amount), 1)
+function DayReport({ day, state }: { day: YMD; state: LedgerState }) {
   return (
     <div className="day-report">
       <p className="section-title">하루 리포트</p>
-      {tone === "narrative" ? (
-        <div className="main-card report-line">
-          <p>{narrativeLine(day, state)}</p>
-        </div>
-      ) : (
-        <div className="main-card report-numbers">
-          <div>
-            <span>총 지출</span>
-            <strong>{won(facts.total)}</strong>
-          </div>
-          <div>
-            <span>결제</span>
-            <strong>
-              {facts.count}건 · 복원 {facts.restored}건
-            </strong>
-          </div>
-          <div>
-            <span>시간대</span>
-            <strong>
-              {facts.first}~{facts.last}
-            </strong>
-          </div>
-          <div className="report-bars">
-            {facts.top.map((payment) => (
-              <div key={payment.id}>
-                <span>{payment.merchant}</span>
-                <i>
-                  <b style={{ width: `${(payment.amount / max) * 100}%` }} />
-                </i>
-                <strong>{man(payment.amount)}</strong>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <div className="main-card report-line">
+        <p>{narrativeLine(day, state)}</p>
+      </div>
     </div>
   )
 }

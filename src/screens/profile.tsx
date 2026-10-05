@@ -11,15 +11,11 @@ import {
 } from "lucide-react"
 import { Action, Badge, PageTitle, Toggle } from "@/components/common"
 import { MainHeader } from "@/components/layout"
-import {
-  permissions as permissionOptions,
-  ToneOptions,
-} from "@/screens/onboarding"
+import { permissions as permissionOptions } from "@/screens/onboarding"
 import {
   type NotificationKey,
   type PermissionKey,
   type ProfileDetails,
-  type Tone,
 } from "@/types"
 
 // ---------- 마이페이지 (탭) ----------
@@ -29,7 +25,6 @@ export function MyPage({
   openConnections,
   openPrivacy,
   openSettlement,
-  openTone,
   openNotifications,
 }: {
   name: string
@@ -37,7 +32,6 @@ export function MyPage({
   openConnections: () => void
   openPrivacy: () => void
   openSettlement: () => void
-  openTone: () => void
   openNotifications: () => void
 }) {
   const items: Array<[string, ReactNode, () => void]> = [
@@ -304,42 +298,3 @@ export function ProfileInfoSettings({
   )
 }
 
-// ---------- 리포트 톤 설정 ----------
-export function ProfileTone({
-  tone,
-
-  setTone,
-
-  back,
-}: {
-  tone: Tone
-
-  setTone: (tone: Tone) => void
-
-  back: () => void
-}) {
-  const [draft, setDraft] = useState<Tone>(tone)
-
-  return (
-    <div className="main-page sub-page">
-      <MainHeader back={back} title="리포트 톤 설정" />
-      <div className="sub-content tone-settings">
-        <p className="sub-heading">어떤 방식이 더 편한가요?</p>
-        <p className="settings-sub">다음 리포트부터 바로 반영해요</p>
-        <ToneOptions setTone={setDraft} tone={draft} />
-      </div>
-      <div className="main-footer">
-        <Action
-          className="primary-button"
-          onClick={() => {
-            setTone(draft)
-
-            back()
-          }}
-        >
-          저장
-        </Action>
-      </div>
-    </div>
-  )
-}

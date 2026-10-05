@@ -8,9 +8,9 @@ import {
   PrivacyNotice,
   Welcome,
 } from "@/screens/onboarding"
-import { type PermissionKey, type ProfileDetails, type Tone } from "@/types"
+import { type PermissionKey, type ProfileDetails } from "@/types"
 
-// 온보딩 5단계 → 메인 앱. 하루 리포트는 서사형으로 시작한다. 온보딩에서 정한 값은 마이페이지에서 그대로 다시 바꿀 수 있다.
+// 온보딩 5단계 → 메인 앱. 하루 리포트는 서사형 하나로 보여 준다.
 export default function App() {
   const [step, setStep] = useState(1)
   const [profile, setProfile] = useState<ProfileDetails>({
@@ -24,7 +24,6 @@ export default function App() {
     photos: true,
     location: true,
   })
-  const [tone, setTone] = useState<Tone>("narrative")
   const next = () => setStep((value) => value + 1)
   const back = () => setStep((value) => Math.max(1, value - 1))
   const toggle = (key: PermissionKey) =>
@@ -66,8 +65,6 @@ export default function App() {
             profile={profile}
             setPermissions={setPermissions}
             setProfile={setProfile}
-            setTone={setTone}
-            tone={tone}
           />
         )}
       </div>

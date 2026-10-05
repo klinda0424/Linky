@@ -384,7 +384,7 @@ export function MapTab({
           </div>
         )}
         <div className="map-places">
-          <p className="section-title">자주 간 장소</p>
+          <p className="section-title">최근 한 달 자주 간 장소</p>
           <div>
             {frequentPlaces(state).map(([place, count]) => (
               <span key={place}>
