@@ -7,12 +7,11 @@ import {
   Permissions,
   PrivacyNotice,
   RestoreResult,
-  ToneSelection,
 } from "@/screens/onboarding"
 import { initialLedger } from "@/lib/ledger"
 import { type PermissionKey, type ProfileDetails, type Tone } from "@/types"
 
-// 온보딩 6단계 → 메인 앱. 온보딩에서 정한 값은 마이페이지에서 그대로 다시 바꿀 수 있다.
+// 온보딩 5단계 → 메인 앱. 하루 리포트는 서사형으로 시작한다. 온보딩에서 정한 값은 마이페이지에서 그대로 다시 바꿀 수 있다.
 export default function App() {
   const [step, setStep] = useState(1)
   const [profile, setProfile] = useState<ProfileDetails>({
@@ -26,7 +25,7 @@ export default function App() {
     photos: true,
     location: true,
   })
-  const [tone, setTone] = useState<Tone>()
+  const [tone, setTone] = useState<Tone>("narrative")
   const next = () => setStep((value) => value + 1)
   const back = () => setStep((value) => Math.max(1, value - 1))
   const toggle = (key: PermissionKey) =>
@@ -67,8 +66,6 @@ export default function App() {
           }}
         />
       )
-    if (step === 6)
-      return <ToneSelection back={back} next={next} setTone={setTone} tone={tone} />
     return null
   })()
 
@@ -76,7 +73,7 @@ export default function App() {
     <div className="app-shell">
       <div className="phone">
         <StatusBar />
-        {step <= 6 ? (
+        {step <= 5 ? (
           onboarding
         ) : (
           <MainApp
@@ -85,7 +82,7 @@ export default function App() {
             setPermissions={setPermissions}
             setProfile={setProfile}
             setTone={setTone}
-            tone={tone ?? "narrative"}
+            tone={tone}
           />
         )}
       </div>

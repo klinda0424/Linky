@@ -5,7 +5,6 @@ import {
   FileText,
   Info,
   Link2,
-  MessageCircle,
   Receipt,
   ShieldCheck,
   UserRound,
@@ -46,7 +45,6 @@ export function MyPage({
     ["연동 서비스 관리", <Link2 size={18} strokeWidth={1.5} />, openConnections],
     ["개인정보·권한", <ShieldCheck size={18} strokeWidth={1.5} />, openPrivacy],
     ["정산 내역", <Receipt size={18} strokeWidth={1.5} />, openSettlement],
-    ["리포트 톤 설정", <MessageCircle size={18} strokeWidth={1.5} />, openTone],
     ["알림 설정", <Bell size={18} strokeWidth={1.5} />, openNotifications],
   ]
   return (

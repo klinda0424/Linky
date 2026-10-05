@@ -175,7 +175,7 @@ p {
 
 .progress-bars {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 4px;
 }
 
@@ -2095,7 +2095,7 @@ p {
 .cal-weekdays,
 .cal-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 4px;
 }
 

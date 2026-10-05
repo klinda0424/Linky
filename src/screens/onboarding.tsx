@@ -609,7 +609,7 @@ export function ImportExpenses({
   )
 }
 
-// ---------- 5. 일괄 복원 결과 (일 기준) ----------
+// ---------- 5. 일괄 복원 결과 (일 기준, 마지막 단계) ----------
 export function RestoreResult({
   state,
   next,
@@ -619,7 +619,8 @@ export function RestoreResult({
   next: () => void
   back: () => void
 }) {
-  // 가져온 달(목업 기준일의 달)을 날짜 단위로 집계한다. 근거 종류별 건수는 결제 단위다.
+  // 불러온 결제내역(목업 기준일의 달)을 날짜 단위로 집계한다. 근거 종류별 건수는 결제 단위다.
+  // 화면에는 "몇 월"을 쓰지 않는다.
   const { y, m } = TODAY
   const days = restoreDaySummary(y, m, state)
   const byKind = restoreSummary(y, m, state)
@@ -638,7 +639,7 @@ export function RestoreResult({
     <Screen step={5} onBack={back}>
       <div className="onboarding-scroll">
         <PageTitle
-          title={`${days.paidDays === monthLength ? `${monthLength}일 모두` : `${m}월 ${days.paidDays}일`} 지출이 있었어요.\n${days.complete}일은 내 기록으로 채웠어요`}
+          title={`${days.paidDays === monthLength ? `${monthLength}일 모두` : `${days.paidDays}일`} 지출이 있었어요.\n${days.complete}일은 내 기록으로 채웠어요`}
           sub="내 캘린더·사진·위치 기록에서만 찾았어요"
         />
         <div className="main-card restore-result">
@@ -663,12 +664,12 @@ export function RestoreResult({
           <span>근거가 없는 결제는 추측하지 않고 “기록 없음”으로 둬요</span>
         </div>
       </div>
-      <Footer button="리포트 톤 고르기" onNext={next} />
+      <Footer button="Linky 시작하기" onNext={next} />
     </Screen>
   )
 }
 
-// ---------- 6. 리포트 톤 선택 ----------
+// ---------- 리포트 톤 미리보기 (마이페이지에서만 사용, 온보딩 단계 없음) ----------
 // 미리보기는 10월 시연일(10/12)의 실제 하루 리포트 문구를 그대로 보여 준다
 const PREVIEW_DAY = ymd(2026, 10, 12)
 
@@ -711,33 +712,5 @@ export function ToneOptions({
         <p>건수와 금액 중심으로 간결하게 보여줘요</p>
       </Action>
     </div>
-  )
-}
-
-export function ToneSelection({
-  tone,
-  setTone,
-  next,
-  back,
-}: {
-  tone?: Tone
-  setTone: (tone: Tone) => void
-  next: () => void
-  back: () => void
-}) {
-  return (
-    <Screen step={6} onBack={back}>
-      <PageTitle
-        title={"하루 리포트를 어떤 방식으로\n받아볼까요?"}
-        sub="같은 기록을 다른 모양으로 보여줘요"
-      />
-      <ToneOptions setTone={setTone} tone={tone} />
-      <Footer
-        button="Linky 시작하기"
-        caption="마이페이지 > 리포트 톤 설정에서 언제든 바꿀 수 있어요"
-        disabled={!tone}
-        onNext={next}
-      />
-    </Screen>
   )
 }
