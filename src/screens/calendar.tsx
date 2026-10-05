@@ -187,6 +187,7 @@ export function DaySheet({
   const dayPhotos = photosOn(day, state).filter(
     (photo) => !state.photoUnlinked.includes(photo.id),
   )
+  const [activeFocus, setActiveFocus] = useState(focusPayment)
   const scroller = useRef<HTMLDivElement>(null)
   const touchStart = useRef<{ x: number; y: number } | undefined>(undefined)
   const keys = daysWithPayments.map(keyOf)
@@ -197,10 +198,20 @@ export function DaySheet({
   useEffect(() => {
     const box = scroller.current
     if (!box) return
+    setActiveFocus(focusPayment)
     const target = focusPayment
       ? box.querySelector<HTMLElement>(`[data-pay="${focusPayment}"]`)
       : null
-    box.scrollTop = target ? target.offsetTop - 12 : 0
+    const paddingTop = Number.parseFloat(window.getComputedStyle(box).paddingTop) || 0
+    box.scrollTop = target
+      ? target.getBoundingClientRect().top -
+        box.getBoundingClientRect().top +
+        box.scrollTop -
+        paddingTop
+      : 0
+    if (!focusPayment) return
+    const timer = window.setTimeout(() => setActiveFocus(undefined), 1500)
+    return () => window.clearTimeout(timer)
   }, [day, focusPayment])
   const swipeEnd = (event: TouchEvent<HTMLDivElement>) => {
     const start = touchStart.current
@@ -278,7 +289,7 @@ export function DaySheet({
           </div>
           {list.map((payment) => (
             <PayCard
-              focus={focusPayment === payment.id}
+              focus={activeFocus === payment.id}
               key={payment.id}
               openRecord={openRecord}
               openSplit={openSplit}
