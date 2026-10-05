@@ -173,6 +173,10 @@ export function MainApp({
         <MapTab
           initialDay={mapDay}
           key={mapDay ? `${mapDay.y}-${mapDay.m}-${mapDay.d}` : "all"}
+          openEvent={(item) => {
+            setEvent(item)
+            setView("eventReport")
+          }}
           openPayment={openPayment}
           state={state}
         />
