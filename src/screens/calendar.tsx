@@ -76,7 +76,10 @@ export function CalendarHome({
   }, [sheetDay])
   const summary = monthSummary(y, m, state)
   // 같은 해 이전 달이 있으면 지난달 복원 일수를 함께 보여 준다
-  const lastMonth = m > 1 ? restoreDaySummary(y, m - 1, state) : undefined
+  // 지난달 복원 일수는 일괄 복원 시점 기준이다. 이후 사용자가 직접 추가한 기록(added)은 빼서
+  // 10/12 캡처 입력 뒤에도 "지난달 18일"로 유지한다.
+  const lastMonth =
+    m > 1 ? restoreDaySummary(y, m - 1, { ...state, added: {} }) : undefined
   return (
     <>
       <div className="cal-top">
