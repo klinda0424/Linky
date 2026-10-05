@@ -335,7 +335,7 @@ export const permissions: Array<{
     icon: <Image size={19} strokeWidth={1.5} />,
     collects: "사진 촬영 시각·위치 정보",
     purpose: "결제 시각 전후 30분 사진을 근거로 보여주기 위해",
-    scope: "결제 시각 ±30분 · 반경 500m 사진만 사용, 기기에 저장",
+    scope: "결제 시각 ±30분 · 반경 500m 사진만 사용",
   },
   {
     key: "location",
