@@ -156,7 +156,6 @@ export function MainApp({
             setFocusPayment(undefined)
             setSheetDay(day)
           }}
-          openRecord={() => openRecord()}
           openSearch={() => setView("search")}
           sheetDay={sheetDay}
           state={state}
