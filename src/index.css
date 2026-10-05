@@ -2709,6 +2709,27 @@ p {
   box-shadow: none;
 }
 
+.map-pin.trail {
+  z-index: 2;
+  width: 14px;
+  height: 14px;
+  border: 2.5px solid var(--primary);
+  background: var(--background);
+  box-shadow: none;
+}
+
+.map-pin.trail em {
+  position: absolute;
+  top: 17px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--text);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .map-pin.photo {
   z-index: 2;
   background: var(--photo-pin);
@@ -2766,6 +2787,11 @@ p {
 
 .map-legend i.pay.dashed {
   border: 1.5px dashed var(--primary);
+  background: var(--background);
+}
+
+.map-legend i.trail {
+  border: 2px solid var(--primary);
   background: var(--background);
 }
 

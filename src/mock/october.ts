@@ -1,6 +1,6 @@
 // 2026년 10월 목업 (주인공 김소연). 캘린더·지도·앨범·검색·리포트가 lib/ledger.ts를 거쳐 이 파일만 참조한다.
 // 합계는 파일 맨 아래 verifyOctober()가 명세와 일치하는지 검증한다.
-import type { CalEvent, Category, Payment, Photo } from "@/lib/ledger"
+import type { CalEvent, Category, Payment, Photo, TrailPoint } from "@/lib/ledger"
 
 const d = (day: number) => ({ y: 2026, m: 10, d: day })
 
@@ -51,6 +51,12 @@ export const octoberPhotos: Photo[] = [
   { id: "ph20", date: d(24), time: "18:40", zone: "합정", title: "합정 숯불갈비" },
   { id: "ph21", date: d(31), time: "19:50", zone: "성수", title: "핼러윈 파티" },
   { id: "ph22", date: d(31), time: "22:10", zone: "성수", title: "성수" },
+]
+
+// 내 위치 기록 중 결제와 별개로 동선에 이어지는 지점 (장면 6: 성수역 → 식당 → 옷가게 → 귀가)
+export const octoberTrail: TrailPoint[] = [
+  { id: "t1", date: d(12), time: "12:10", name: "성수역", zone: "성수" },
+  { id: "t2", date: d(12), time: "22:30", name: "집 (귀가)", zone: "역삼" },
 ]
 
 // 장면 4에서 사용자가 직접 확정하는 10/12 점심을 뺀 그룹 결제 (10/4 술자리, 10/25 카페는 이미 확정)
