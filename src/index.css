@@ -1160,6 +1160,44 @@ p {
   margin: 22px 0 10px;
 }
 
+.settlement-empty {
+  margin-bottom: 12px;
+  word-break: keep-all;
+  color: var(--sub);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* 항목 수정에서 하나뿐인 결제를 제외해 0원이 된 상태 */
+.settlement-zero {
+  margin-top: 8px;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-radius: 14px;
+  background: var(--surface);
+  text-align: center;
+}
+
+.settlement-zero strong {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.settlement-zero p {
+  margin-bottom: 6px;
+  word-break: keep-all;
+  color: var(--sub);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.settlement-zero .secondary-button {
+  height: 44px;
+  font-size: 13px;
+}
+
 .settlement-items {
   display: flex;
   flex-direction: column;
