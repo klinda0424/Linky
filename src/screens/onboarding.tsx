@@ -510,11 +510,6 @@ export function ImportExpenses({
   next: () => void
   back: () => void
 }) {
-  // 불러오는 범위 = 목업 기준일의 달
-  const { y, m } = TODAY
-  const month = payments.filter((payment) => payment.date.y === y && payment.date.m === m)
-  const total = month.reduce((sum, payment) => sum + payment.amount, 0)
-  const lastDay = new Date(y, m, 0).getDate()
   const [agreed, setAgreed] = useState<Record<string, boolean>>({})
   const [opened, setOpened] = useState<string>()
   const [phase, setPhase] = useState<"agree" | "loading" | "done">("agree")
@@ -529,7 +524,7 @@ export function ImportExpenses({
   if (phase !== "agree")
     return (
       <Screen step={4} onBack={back}>
-        <div className="complete-content">
+        <div className="import-status">
           <span className={cx("complete-check", phase === "loading" && "loading")}>
             {phase === "done" ? (
               <Check size={30} strokeWidth={2.2} />
@@ -538,38 +533,10 @@ export function ImportExpenses({
             )}
           </span>
           <p className="complete-title">
-            {phase === "done"
-              ? `${m}월 결제내역을 불러왔어요`
-              : `${m}월 결제내역을 불러오는 중이에요`}
+            {phase === "done" ? "결제내역을 불러왔어요" : "결제내역을 불러오는 중이에요"}
           </p>
-          {phase === "done" && (
-            <div className="result-list">
-              <div className="result-row">
-                <p>기간</p>
-                <strong>
-                  {m}월 1일 ~ {m}월 {lastDay}일
-                </strong>
-              </div>
-              <div className="result-row">
-                <p>결제</p>
-                <strong>{month.length}건</strong>
-              </div>
-              <div className="result-row">
-                <p>합계</p>
-                <strong>{won(total)}</strong>
-              </div>
-              <div className="result-row">
-                <p>새 결제 자동 불러오기</p>
-                <strong>{agreed.auto ? "켬" : "끔"}</strong>
-              </div>
-            </div>
-          )}
         </div>
-        <Footer
-          button={`${m}월 복원하기`}
-          disabled={phase !== "done"}
-          onNext={next}
-        />
+        <Footer button="복원하기" disabled={phase !== "done"} onNext={next} />
       </Screen>
     )
 
