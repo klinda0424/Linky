@@ -11,6 +11,7 @@ export type MainView =
   | "connections"
   | "privacy"
   | "notifications"
+  | "transfer"
   | "settlementList"
   | "settlement"
   | "settlementTable"

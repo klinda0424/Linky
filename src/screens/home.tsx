@@ -82,6 +82,8 @@ export function HomePage({
   openPhoto,
   openSettlement,
   pendingSettlement,
+  foundTransfer,
+  openTransfer,
 }: {
   state: LedgerState
   openSearch: () => void
@@ -93,6 +95,9 @@ export function HomePage({
   // 정산 알림(필요시): 처리할 정산이 있을 때만 값이 있다
   openSettlement: () => void
   pendingSettlement?: { count: number; total: number }
+  // "링키가 찾았어요": 가맹점 없는 송금에서 맥락을 찾았을 때만 값이 있다
+  foundTransfer?: { counterparty: string; amount: number; place?: string }
+  openTransfer: () => void
 }) {
   const week = weekOf(TODAY)
   const todayList = paymentsOn(TODAY)
@@ -112,6 +117,18 @@ export function HomePage({
         </Action>
       </div>
       <div className="main-scroll">
+        {foundTransfer && (
+          <Action className="main-card settle-alert found-alert" onClick={openTransfer}>
+            <div>
+              <strong>링키가 찾았어요</strong>
+              <span>
+                {foundTransfer.counterparty} {won(foundTransfer.amount)} 송금
+                {foundTransfer.place ? `, ${foundTransfer.place}에서의 기록과 이어져요` : ""}
+              </span>
+            </div>
+            <ChevronRight size={17} strokeWidth={1.5} />
+          </Action>
+        )}
         {pendingSettlement && (
           <Action className="main-card settle-alert" onClick={openSettlement}>
             <div>

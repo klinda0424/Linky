@@ -246,6 +246,8 @@ export type LedgerState = {
   restoreConfirmed: string[]
   // 송금 맥락 제안을 "맞아요"로 확정한 송금 (확정 전에는 이체로 둔다)
   transferMatched: string[]
+  // 송금 맥락 제안에서 "아니에요"를 눌러 이체로 둔 송금
+  transferDeclined?: string[]
 }
 export const initialLedger: LedgerState = {
   sources: { location: true, calendar: true, photos: true },

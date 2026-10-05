@@ -4203,3 +4203,108 @@ p {
   width: 56px;
   height: 56px;
 }
+
+/* ---------- 링키가 찾았어요 · 송금 맥락 확인 ---------- */
+.found-alert strong::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--primary-strong);
+  vertical-align: middle;
+}
+
+.transfer-scroll {
+  height: calc(100% - 120px);
+  padding: 24px 20px 80px;
+  overflow-y: auto;
+}
+
+.transfer-origin {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.transfer-origin span,
+.transfer-origin small {
+  color: var(--sub);
+  font-size: 12px;
+}
+
+.transfer-origin strong {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.transfer-question {
+  margin: 22px 0 6px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
+.transfer-lead {
+  color: var(--sub);
+  font-size: 13px;
+}
+
+.transfer-basis {
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+}
+
+.transfer-basis li {
+  padding: 12px;
+  display: flex;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.transfer-basis .basis-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--primary-soft);
+  color: var(--primary-text);
+}
+
+.transfer-basis p {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.transfer-basis .thumbs {
+  margin-top: 8px;
+}
+
+.transfer-basis .thumbs .photo-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+}
+
+.transfer-result {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+}

@@ -9,12 +9,13 @@ import {
   TODAY,
   initialLedger,
   payments,
+  transferGuess,
 } from "@/lib/ledger"
 import { AlbumTab, EventReport, PhotoDetail } from "@/screens/album"
 import { CalendarHome, DaySheet } from "@/screens/calendar"
 import { HomePage } from "@/screens/home"
 import { ReportTab } from "@/screens/report"
-import { summarize } from "@/lib/settlement"
+import { meeting, summarize } from "@/lib/settlement"
 import { MapTab } from "@/screens/map"
 import {
   ConnectionSettings,
@@ -25,6 +26,7 @@ import {
 } from "@/screens/profile"
 import { AlbumPicker, addedPhotoText } from "@/screens/record"
 import { SearchScreen } from "@/screens/search"
+import { TransferConfirm } from "@/screens/transfer"
 import {
   GroupSplitSheet,
   SettlementConfirm,
@@ -66,6 +68,8 @@ export function MainApp({
   const [returnToMonth, setReturnToMonth] = useState<YMD>()
   const [recordTarget, setRecordTarget] = useState<string>()
   const [splitting, setSplitting] = useState<Payment>()
+  // 링키가 찾았어요: 확인 중인 송금
+  const [transferId, setTransferId] = useState<string>()
   const [photo, setPhoto] = useState<Photo>()
   const [event, setEvent] = useState<CalEvent>()
   const [excluded, setExcluded] = useState<string[]>([])
@@ -89,7 +93,33 @@ export function MainApp({
     }),
     [ledger, permissions],
   )
+  // 그룹 결제 확인의 "아니요, 개인 지출"이 가리키는 결제
+  const meetingId = meeting?.id
   const toTabs = () => setView("tabs")
+  // 맥락을 찾았지만 아직 맞아요/아니에요를 누르지 않은 송금 (홈 알림)
+  const foundTransfer = payments.find(
+    (item) =>
+      item.kind === "transfer" &&
+      !state.transferMatched.includes(item.id) &&
+      !(state.transferDeclined ?? []).includes(item.id) &&
+      transferGuess(item, state) !== null,
+  )
+  const transferPayment = payments.find((item) => item.id === transferId)
+  const confirmTransfer = (payment: Payment) => {
+    setLedger((value) => ({
+      ...value,
+      transferMatched: [...value.transferMatched, payment.id],
+    }))
+    // 재분류된 결과를 지출 내역(날짜 시트)에서 바로 보여 준다
+    openPayment(payment)
+  }
+  const declineTransfer = (payment: Payment) => {
+    setLedger((value) => ({
+      ...value,
+      transferDeclined: [...(value.transferDeclined ?? []), payment.id],
+    }))
+    toTabs()
+  }
   const recordPayment = payments.find((item) => item.id === recordTarget)
 
   const openPayment = (payment: Payment, monthContext?: YMD) => {
@@ -190,8 +220,21 @@ export function MainApp({
             setInboxFromHome(true)
             setView("settlement")
           }}
+          foundTransfer={
+            foundTransfer
+              ? {
+                  counterparty: foundTransfer.counterparty ?? "",
+                  amount: foundTransfer.amount,
+                  place: transferGuess(foundTransfer, state)?.place,
+                }
+              : undefined
+          }
+          openTransfer={() => {
+            setTransferId(foundTransfer?.id)
+            setView("transfer")
+          }}
           pendingSettlement={
-            settled
+            settled || Boolean(meetingId && (state.personal ?? []).includes(meetingId))
               ? undefined
               : (() => {
                   const pending = summarize(excluded)
@@ -334,6 +377,16 @@ export function MainApp({
             values={notifications}
           />
         )
+      case "transfer":
+        return transferPayment ? (
+          <TransferConfirm
+            back={toTabs}
+            confirm={() => confirmTransfer(transferPayment)}
+            decline={() => declineTransfer(transferPayment)}
+            payment={transferPayment}
+            state={state}
+          />
+        ) : null
       case "settlementList":
         return (
           <SettlementList
@@ -351,7 +404,16 @@ export function MainApp({
           <SettlementInbox
             back={() => (inboxFromHome ? toTabs() : setView("settlementList"))}
             excluded={excluded}
+            notGroup={
+              meetingId
+                ? () => {
+                    markPersonal(meetingId)
+                    toTabs()
+                  }
+                : undefined
+            }
             openTable={() => setView("settlementTable")}
+            state={state}
           />
         )
       case "settlementTable":
