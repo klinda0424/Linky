@@ -15,6 +15,7 @@ import {
   octoberEvents,
   octoberPayments,
   octoberPhotos,
+  octoberTrail,
   verifyOctober,
 } from "@/mock/october"
 
@@ -97,6 +98,15 @@ export type Photo = {
   title: string
 }
 
+// 결제와 별개로 남은 내 위치 기록 지점 (동선 지도에서 결제 핀 사이를 잇는다)
+export type TrailPoint = {
+  id: string
+  date: YMD
+  time: string
+  name: string
+  zone: string
+}
+
 export type CalEvent = {
   id: string
   title: string
@@ -132,6 +142,8 @@ export const photos: Photo[] = [
   ...octoberPhotos,
   ...novemberPhotos,
 ]
+
+export const trailPoints: TrailPoint[] = octoberTrail
 
 const pay = (
   id: string,

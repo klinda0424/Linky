@@ -19,6 +19,7 @@ import {
   photos,
   pinPoint,
   shareOf,
+  trailPoints,
   weekday,
   won,
   ymd,
@@ -85,14 +86,31 @@ export function MapTab({
   const evs = state.sources.calendar
     ? events.filter((event: CalEvent) => inRange(event.date))
     : []
-  // 하루·주는 날짜별로 시간순 동선을 점선으로 잇는다
+  // 결제 사이를 잇는 내 위치 기록 지점 (위치 연동을 끄면 빠진다)
+  const trail =
+    period === "month" || !state.sources.location
+      ? []
+      : trailPoints.filter((point) => inRange(point.date))
+  // 하루·주는 날짜별로 시간순 동선을 점선으로 잇는다 (결제 + 내 위치 기록 지점)
   const routes =
     period === "month"
       ? []
-      : [...new Set(pays.map((payment) => keyOf(payment.date)))].map((key) =>
-          pays
-            .filter((payment) => keyOf(payment.date) === key)
-            .map((payment) => pinPoint(payment.zone, payment.id)),
+      : [
+          ...new Set([
+            ...pays.map((payment) => keyOf(payment.date)),
+            ...trail.map((point) => keyOf(point.date)),
+          ]),
+        ].map((key) =>
+          [
+            ...pays
+              .filter((payment) => keyOf(payment.date) === key)
+              .map((payment) => ({ time: payment.time, at: pinPoint(payment.zone, payment.id) })),
+            ...trail
+              .filter((point) => keyOf(point.date) === key)
+              .map((point) => ({ time: point.time, at: pinPoint(point.zone, point.id) })),
+          ]
+            .sort((a, b) => a.time.localeCompare(b.time))
+            .map((item) => item.at),
         )
   const step = period === "day" ? 1 : period === "week" ? 7 : 30
   const move = (direction: number) => {
@@ -262,6 +280,20 @@ export function MapTab({
               </Action>
             ))}
           {show.payment &&
+            trail.map((point) => (
+              <span
+                aria-label={`내 위치 기록 ${point.name}`}
+                className="map-pin trail"
+                key={point.id}
+                style={{
+                  left: `${pinPoint(point.zone, point.id).x}%`,
+                  top: `${pinPoint(point.zone, point.id).y}%`,
+                }}
+              >
+                <em>{point.name}</em>
+              </span>
+            ))}
+          {show.payment &&
             pays.map((payment, index) => {
               const restored = evidenceOf(payment, state).length > 0
               return (
@@ -295,6 +327,9 @@ export function MapTab({
           </span>
           <span>
             <i className="pay dashed" /> 근거 없는 결제
+          </span>
+          <span>
+            <i className="trail" /> 내 위치 기록
           </span>
           <span>
             <i className="photo" /> 사진
