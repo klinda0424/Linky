@@ -34,6 +34,11 @@ export default function App() {
       return (
         <BasicInfo
           next={next}
+          skipAll={() => {
+            // 닉네임이 비어 있으면 목업 주인공 이름으로 채우고 바로 메인 앱으로
+            setProfile((value) => ({ ...value, nickname: value.nickname.trim() || "소연" }))
+            setStep(6)
+          }}
           nickname={profile.nickname}
           setNickname={(nickname) =>
             setProfile((value) => ({ ...value, nickname }))
