@@ -92,7 +92,11 @@ export function CalendarHome({
   return (
     <>
       <div className="cal-top">
-        <span />
+        {/* 서비스 로고 (온보딩 상단과 같은 모양, 누르는 요소 아님) */}
+        <div className="brand cal-brand">
+          <span className="brand-mark">L</span>
+          <span>Linky</span>
+        </div>
         <div className="cal-month">
           <Action
             className="cal-arrow"

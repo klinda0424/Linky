@@ -1889,6 +1889,11 @@ p {
   align-items: center;
 }
 
+.cal-brand {
+  height: auto;
+  white-space: nowrap;
+}
+
 .cal-icon {
   width: 36px;
   height: 36px;
