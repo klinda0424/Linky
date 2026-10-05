@@ -34,7 +34,6 @@ export const octoberEvents: CalEvent[] = [
   { id: "e10", title: "지은·민지 성수", date: d(12), start: "12:00", end: "14:00", zone: "성수", people: ["지은", "민지"] },
   { id: "e11", title: "영화 보기", date: d(18), start: "15:00", end: "17:30", zone: "용산" },
   { id: "e12", title: "가족 외식", date: d(24), start: "18:00", end: "20:30", zone: "합정" },
-  { id: "e13", title: "핼러윈 파티", date: d(31), start: "19:00", end: "23:00", zone: "성수", people: ["지은", "민지"] },
 ]
 
 export const octoberPhotos: Photo[] = [
@@ -49,8 +48,6 @@ export const octoberPhotos: Photo[] = [
   { id: "ph18", date: d(12), time: "15:40", zone: "서울숲", title: "서울숲 산책" },
   { id: "ph19", date: d(18), time: "14:50", zone: "용산", title: "CGV 용산" },
   { id: "ph20", date: d(24), time: "18:40", zone: "합정", title: "합정 숯불갈비" },
-  { id: "ph21", date: d(31), time: "19:50", zone: "성수", title: "핼러윈 파티" },
-  { id: "ph22", date: d(31), time: "22:10", zone: "성수", title: "성수" },
 ]
 
 // 내 위치 기록 중 결제와 별개로 동선에 이어지는 지점 (장면 6: 성수역 → 식당 → 옷가게 → 귀가)
@@ -152,10 +149,6 @@ export const octoberPayments: Payment[] = [
   o(29, "19:30", "티머니 후불교통", 3100, "교통", "선릉", true),
   o(30, "08:30", "스타벅스 광화문점", 5800, "식비·카페", "광화문", true),
   o(30, "12:40", "(주)샐러디 선릉점", 9500, "식비·카페", "선릉", false),
-  o(30, "20:30", "(주)자라리테일코리아", 27600, "쇼핑", "선릉", false),
-  o(31, "12:30", "(주)성수연방", 14000, "식비·카페", "성수", true),
-  o(31, "16:00", "(주)아더에러 성수", 39000, "쇼핑", "성수", true),
-  o(31, "19:40", "(주)파티월드 성수점", 40000, "생활·기타", "성수", true),
 ]
 
 // 장면 5: 주문내역 캡처를 올리면 인식되는 구매 품목 (결제 시각 기준)

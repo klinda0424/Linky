@@ -15,8 +15,15 @@ import {
   octoberPayments,
   octoberPhotos,
   octoberTrail,
-  verifyOctober,
 } from "@/mock/october"
+import {
+  scenarioEvents,
+  scenarioPayments,
+  scenarioPhotos,
+  scenarioStays,
+  scenarioTrail,
+  verifyScenario,
+} from "@/mock/scenario"
 
 export type YMD = { y: number; m: number; d: number }
 export const ymd = (y: number, m: number, d: number): YMD => ({ y, m, d })
@@ -67,6 +74,8 @@ export const PLACES: Record<string, Pt> = {
   광화문: { x: 34, y: 20 },
   합정: { x: 14, y: 36 },
   용산: { x: 40, y: 44 },
+  압구정로데오: { x: 62, y: 62 },
+  연남동: { x: 22, y: 30 },
 }
 export const zoneNames = Object.keys(PLACES)
 
@@ -87,6 +96,16 @@ export type Payment = {
   group?: string[]
   // 지출 분류 (10월 목업부터. 내 지출 기준 집계)
   category?: Category
+  // 송금이면 가맹점 대신 상대가 있다 (기본은 카드 결제)
+  kind?: "card" | "transfer"
+  // 송금 상대 ("김지은")
+  counterparty?: string
+  // 복원 결과: 가맹점명 대신 보여줄 장소 (포토이즘 강남역점 · 강남역 11번출구)
+  restored?: { label: string; spot?: string }
+  // 이동 복원: 체류 구간 밖 결제의 탑승 지점
+  transit?: { from: string }
+  // 정산 근거가 되는 입금 (그룹 결제를 내가 대표로 결제한 경우)
+  deposits?: { from: string; amount: number; time: string }[]
 }
 
 export type Photo = {
@@ -95,6 +114,18 @@ export type Photo = {
   time: string
   zone: string
   title: string
+  // 사진 내용 인식 문구 ("파스타 · 2인 세팅")
+  content?: string
+}
+
+// 위치 체류 구간 (진입~이탈). 체류 밖 시각의 결제는 이동 중으로 본다.
+export type Stay = {
+  id: string
+  date: YMD
+  zone: string
+  name: string
+  from: string
+  to: string
 }
 
 // 결제와 별개로 남은 내 위치 기록 지점 (동선 지도에서 결제 핀 사이를 잇는다)
@@ -127,6 +158,7 @@ export const events: CalEvent[] = [
   { id: "e6", title: "수진이 결혼식", date: d(9, 26), start: "13:00", end: "15:00", zone: "합정" },
   ...octoberEvents,
   ...novemberEvents,
+  ...scenarioEvents,
 ]
 
 export const photos: Photo[] = [
@@ -140,9 +172,11 @@ export const photos: Photo[] = [
   { id: "ph10", date: d(9, 27), time: "15:00", zone: "용산", title: "한강" },
   ...octoberPhotos,
   ...novemberPhotos,
+  ...scenarioPhotos,
 ]
 
-export const trailPoints: TrailPoint[] = octoberTrail
+export const trailPoints: TrailPoint[] = [...octoberTrail, ...scenarioTrail]
+export const stays: Stay[] = scenarioStays
 
 const pay = (
   id: string,
@@ -187,6 +221,7 @@ export const payments: Payment[] = [
   pay("p28", d(9, 29), "18:45", "스타벅스 선릉점", 6200, "선릉", "선릉"),
   ...octoberPayments,
   ...novemberPayments,
+  ...scenarioPayments,
 ]
 
 // ---------- 사용자가 바꾼 연결 상태 ----------
@@ -207,12 +242,18 @@ export type LedgerState = {
   personal?: string[]
   // 결제 카드에서 "맞아요"로 근거를 확인한 결제
   verified?: string[]
+  // 복원 결과(장소·이동)를 "맞아요"로 확정한 결제
+  restoreConfirmed: string[]
+  // 송금 맥락 제안을 "맞아요"로 확정한 송금 (확정 전에는 이체로 둔다)
+  transferMatched: string[]
 }
 export const initialLedger: LedgerState = {
   sources: { location: true, calendar: true, photos: true },
   unlinked: {},
   photoUnlinked: [],
   added: {},
+  restoreConfirmed: [],
+  transferMatched: [],
   splitConfirmed: [
     "p7",
     "p8",
@@ -230,8 +271,41 @@ export type Evidence = {
   photoIds?: string[]
 }
 
+// 송금이 가리키는 모임의 근거(체류·일정·사진). 확정 전에는 제안일 뿐이라 evidenceOf에 쓰지 않는다.
+function transferBasis(payment: Payment, state: LedgerState) {
+  if (payment.kind !== "transfer") return null
+  const at = minutes(payment.time)
+  const name = payment.counterparty ?? ""
+  const stay = state.sources.location
+    ? stays.find(
+        (item) =>
+          sameDay(item.date, payment.date) &&
+          minutes(item.to) <= at &&
+          at - minutes(item.to) <= 120,
+      )
+    : undefined
+  const event = eventsFor(payment, state).find((item) =>
+    (item.people ?? []).some((person) => name.includes(person)),
+  )
+  const near = state.sources.photos
+    ? photos.filter(
+        (photo) =>
+          sameDay(photo.date, payment.date) &&
+          !state.photoUnlinked.includes(photo.id) &&
+          (stay
+            ? minutes(photo.time) >= minutes(stay.from) && minutes(photo.time) <= minutes(stay.to)
+            : Math.abs(minutes(photo.time) - at) <= 30),
+      )
+    : []
+  return { stay, event, photos: near }
+}
+
 export function photosFor(payment: Payment, state: LedgerState) {
   if (!state.sources.photos) return []
+  if (payment.kind === "transfer")
+    return state.transferMatched.includes(payment.id)
+      ? (transferBasis(payment, state)?.photos ?? [])
+      : []
   return photos.filter(
     (photo) =>
       sameDay(photo.date, payment.date) &&
@@ -253,12 +327,27 @@ export function eventsFor(payment: Payment, state: LedgerState) {
 export function evidenceOf(payment: Payment, state: LedgerState): Evidence[] {
   const cut = state.unlinked[payment.id] ?? []
   const list: Evidence[] = []
+  const matched = payment.kind !== "transfer" || state.transferMatched.includes(payment.id)
   if (payment.place && state.sources.location)
     list.push({
       key: "loc",
       kind: "location",
       text: `결제 당시 내 위치 · ${payment.place}`,
     })
+  if (payment.transit && state.sources.location) {
+    const stay = stays.find(
+      (item) => sameDay(item.date, payment.date) && minutes(item.to) <= minutes(payment.time),
+    )
+    list.push({
+      key: "loc",
+      kind: "location",
+      text: stay
+        ? `결제 당시 내 위치 · 이동 중 (직전 체류 ${stay.name} ${stay.from}~${stay.to})`
+        : "결제 당시 내 위치 · 이동 중",
+    })
+  }
+  // 송금은 맥락을 확정하기 전까지 근거로 삼지 않는다 (제안은 transferGuess가 담당)
+  if (!matched) return list.filter((item) => !cut.includes(item.key))
   for (const event of eventsFor(payment, state))
     list.push({
       key: `cal:${event.id}`,
@@ -281,6 +370,101 @@ export function evidenceOf(payment: Payment, state: LedgerState): Evidence[] {
 
 export const isRestored = (payment: Payment, state: LedgerState) =>
   evidenceOf(payment, state).length > 0
+
+// 복원 결과: 원본(가맹점명) → 복원된 장소·탑승 지점. 근거가 하나도 없으면 null("기록 없음").
+export type Restored = {
+  kind: "place" | "transit"
+  original: string
+  label: string
+  spot?: string
+  evidence: Evidence[]
+  confirmed: boolean
+}
+export function restoredOf(payment: Payment, state: LedgerState): Restored | null {
+  const evidence = evidenceOf(payment, state)
+  if (evidence.length === 0) return null
+  const confirmed = state.restoreConfirmed.includes(payment.id)
+  if (payment.transit)
+    return {
+      kind: "transit",
+      original: payment.merchant,
+      label: `${payment.transit.from} 인근 택시 탑승`,
+      evidence,
+      confirmed,
+    }
+  if (payment.restored)
+    return {
+      kind: "place",
+      original: payment.merchant,
+      label: payment.restored.label,
+      spot: payment.restored.spot,
+      evidence,
+      confirmed,
+    }
+  return null
+}
+
+// 송금 → 정산 후보: 상대 이름과 맞는 일정·직전 체류·사진 내용을 근거로 "식비" 재분류를 제안한다.
+// 근거가 하나도 없으면 null. 원본 금액은 바꾸지 않는다.
+export type TransferGuess = {
+  paymentId: string
+  counterparty: string
+  category: Category
+  place?: string
+  eventTitle?: string
+  photoContents: string[]
+  evidence: Evidence[]
+  confirmed: boolean
+}
+export function transferGuess(payment: Payment, state: LedgerState): TransferGuess | null {
+  const basis = transferBasis(payment, state)
+  if (!basis) return null
+  const evidence: Evidence[] = []
+  if (basis.stay)
+    evidence.push({
+      key: "loc",
+      kind: "location",
+      text: `내 위치 · ${basis.stay.name} 체류 ${basis.stay.from}~${basis.stay.to}`,
+    })
+  if (basis.event)
+    evidence.push({
+      key: `cal:${basis.event.id}`,
+      kind: "calendar",
+      text: `내 일정 · ${basis.event.title} (${basis.event.start}~${basis.event.end})`,
+    })
+  if (basis.photos.length > 0)
+    evidence.push({
+      key: "photo",
+      kind: "photo",
+      text: `그날 사진 ${basis.photos.length}장 · ${basis.photos
+        .map((photo) => photo.content ?? photo.title)
+        .join(", ")}`,
+      photoIds: basis.photos.map((photo) => photo.id),
+    })
+  if (evidence.length === 0) return null
+  return {
+    paymentId: payment.id,
+    counterparty: payment.counterparty ?? "",
+    category: "식비·카페",
+    place: basis.stay?.name,
+    eventTitle: basis.event?.title,
+    photoContents: basis.photos.flatMap((photo) => (photo.content ? [photo.content] : [])),
+    evidence,
+    confirmed: state.transferMatched.includes(payment.id),
+  }
+}
+
+// 분류: 송금은 맞아요로 확정하기 전까지 분류가 없다(이체). 확정하면 제안된 분류를 쓴다.
+export const categoryOf = (payment: Payment, state: LedgerState): Category | undefined =>
+  payment.kind === "transfer"
+    ? state.transferMatched.includes(payment.id)
+      ? transferGuess(payment, state)?.category
+      : undefined
+    : payment.category
+
+// 대표 결제에서 돌려받을 돈: 총액에서 내 몫(인원 균등)을 뺀 값
+export const receivableOf = (payment: Payment) =>
+  payment.group ? payment.amount - Math.round(payment.amount / payment.group.length) : 0
 
 export const paymentsOn = (date: YMD) =>
   payments
@@ -472,7 +656,7 @@ export const photoLinked = (photo: Photo, state: LedgerState) =>
   payments.some(
     (payment) =>
       sameDay(payment.date, photo.date) &&
-      Math.abs(minutes(photo.time) - minutes(payment.time)) <= 30,
+      photosFor(payment, state).some((item) => item.id === photo.id),
   )
 
 // 같은 지역에 핀이 겹치지 않게 아이디로 고정된 작은 위치 차이를 준다
@@ -514,6 +698,7 @@ export function searchLedger(query: string, state: LedgerState) {
   return payments.filter((payment) => {
     const evText = [
       payment.merchant,
+      payment.counterparty ?? "",
       state.sources.location ? (payment.place ?? "") : "",
       payment.zone,
       ...eventsFor(payment, state).map((event) => event.title + (event.people ?? []).join(" ")),
@@ -549,7 +734,7 @@ export function restoreSummary(y: number, m: number, state: LedgerState) {
 // 개발 중에만 10월 목업이 명세 합계와 맞는지 확인한다 (어긋나면 콘솔 오류)
 if (import.meta.env.DEV) {
   try {
-    verifyOctober((day) => dayStatus(ymd(2026, 10, day), initialLedger))
+    verifyScenario(payments)
     verifyNovember((day) => dayStatus(ymd(2026, 11, day), initialLedger))
     verifyHistory()
     verifySeptember(monthSummary(2026, 9, initialLedger).total)
