@@ -1,5 +1,7 @@
 // 정산 목업 데이터와 계산 로직. 정산 대기함·정산표·확정·결과가 같은 숫자를 쓰도록 한 곳에서 계산한다.
-export type Member = "나" | "지은" | "민지"
+import { octoberPayments } from "@/mock/october"
+
+export type Member = "나" | "지은" | "민지" | "수진"
 export type SettlementCategory = "식비" | "교통"
 export type SettlementItem = {
   name: string
@@ -8,16 +10,17 @@ export type SettlementItem = {
   payer: Member
 }
 
-export const MEMBERS: readonly Member[] = ["나", "지은", "민지"]
+export const MEMBERS: readonly Member[] = ["나", "지은", "민지", "수진"]
 
-// 정산 대상 모임: 10월 3일 수진이 생일 (합정). 내가 낸 고깃집은 캘린더의 같은 결제(lib/ledger.ts)다.
-export const settlementTitle = "수진이 생일 모임"
-export const settlementPeriod = "10월 3일 · 합정 · 3명"
-export const settlementItems: readonly SettlementItem[] = [
-  { name: "합정 고깃집", category: "식비", amount: 120000, payer: "나" },
-  { name: "합정 호프", category: "식비", amount: 45000, payer: "지은" },
-  { name: "카카오T 택시", category: "교통", amount: 21000, payer: "민지" },
-]
+// 정산 대상 모임: 10월 4일 대학 동기 모임 (합정, 4명). 내가 낸 술자리는 캘린더의 같은 결제(mock/october.ts)다.
+const meeting = octoberPayments.find(
+  (payment) => payment.date.d === 4 && payment.group?.length === MEMBERS.length,
+)
+export const settlementTitle = "대학 동기 모임"
+export const settlementPeriod = `10월 4일 · 합정 · ${MEMBERS.length}명`
+export const settlementItems: readonly SettlementItem[] = meeting
+  ? [{ name: meeting.merchant, category: "식비", amount: meeting.amount, payer: "나" }]
+  : []
 
 export const won = (value: number) => `${value.toLocaleString()}원`
 

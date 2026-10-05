@@ -2,6 +2,14 @@
 // 원칙: AI는 추측하지 않는다. 결제에는 사용자 기록(내 위치·일정·사진)에서 찾은 근거만 붙이고,
 // 근거가 없으면 "기록 없음"으로 비워 둔다. 캘린더·지도·앨범·검색이 모두 이 한 곳의 값을 쓴다.
 
+import {
+  octoberEvents,
+  octoberPayments,
+  octoberPhotos,
+  myShare,
+  verifyOctober,
+} from "@/mock/october"
+
 export type YMD = { y: number; m: number; d: number }
 export const ymd = (y: number, m: number, d: number): YMD => ({ y, m, d })
 export const keyOf = (v: YMD) => v.y * 10000 + v.m * 100 + v.d
@@ -19,7 +27,7 @@ export const man = (amount: number) => {
 }
 
 // 오늘 (프로토타입 기준일)
-export const TODAY = ymd(2026, 10, 4)
+export const TODAY = ymd(2026, 10, 31)
 export const monthsAvailable = [
   { y: 2026, m: 9 },
   { y: 2026, m: 10 },
@@ -57,6 +65,8 @@ export const PLACES: Record<string, Pt> = {
 export const zoneNames = Object.keys(PLACES)
 
 // ---------- 데이터 ----------
+export type Category = "식비·카페" | "쇼핑" | "문화·여가" | "생활·기타" | "교통"
+
 export type Payment = {
   id: string
   date: YMD
@@ -69,6 +79,8 @@ export type Payment = {
   zone: string
   // 같이 결제한 사람 (그룹 지출)
   group?: string[]
+  // 지출 분류 (10월 목업부터. 내 지출 기준 집계)
+  category?: Category
 }
 
 export type Photo = {
@@ -98,8 +110,7 @@ export const events: CalEvent[] = [
   { id: "e4", title: "영화 보기", date: d(9, 12), start: "15:00", end: "17:30", zone: "용산" },
   { id: "e5", title: "엄마 생신", date: d(9, 19), start: "12:00", end: "15:00", zone: "합정" },
   { id: "e6", title: "수진이 결혼식", date: d(9, 26), start: "13:00", end: "15:00", zone: "합정" },
-  { id: "e7", title: "팀 회의", date: d(10, 2), start: "14:00", end: "15:30", zone: "광화문" },
-  { id: "e8", title: "수진이 생일", date: d(10, 3), start: "18:00", end: "21:00", zone: "합정", people: ["지은", "민지"] },
+  ...octoberEvents,
 ]
 
 export const photos: Photo[] = [
@@ -110,9 +121,8 @@ export const photos: Photo[] = [
   { id: "ph5", date: d(9, 12), time: "17:35", zone: "용산", title: "용산" },
   { id: "ph6", date: d(9, 19), time: "12:45", zone: "합정", title: "한정식 집" },
   { id: "ph7", date: d(9, 19), time: "12:50", zone: "합정", title: "한정식 집" },
-  { id: "ph8", date: d(10, 3), time: "18:40", zone: "합정", title: "합정 고깃집" },
-  { id: "ph9", date: d(10, 3), time: "19:50", zone: "합정", title: "합정" },
   { id: "ph10", date: d(9, 27), time: "15:00", zone: "용산", title: "한강" },
+  ...octoberPhotos,
 ]
 
 const pay = (
@@ -155,14 +165,7 @@ export const payments: Payment[] = [
   pay("p26", d(9, 26), "16:20", "카페 합정", 8500, "합정", "합정"),
   pay("p27", d(9, 29), "12:05", "본도시락 선릉점", 6900, "선릉"),
   pay("p28", d(9, 29), "18:45", "스타벅스 선릉점", 6200, "선릉", "선릉"),
-  pay("p29", d(10, 1), "08:40", "스타벅스 강남역점", 5800, "강남역", "강남역"),
-  pay("p30", d(10, 1), "12:20", "맥도날드 선릉점", 7300, "선릉", "선릉"),
-  pay("p31", d(10, 2), "13:40", "스타벅스 광화문점", 6100, "광화문", "광화문"),
-  pay("p32", d(10, 2), "21:10", "배달의민족", 17500, "역삼"),
-  pay("p33", d(10, 3), "18:30", "합정 고깃집", 120000, "합정", "합정", ["나", "지은", "민지"]),
-  pay("p34", d(10, 3), "21:05", "카카오T 택시", 14300, "합정", "합정"),
-  pay("p35", d(10, 4), "10:30", "스타벅스 서울숲점", 6300, "서울숲"),
-  pay("p36", d(10, 4), "12:50", "성수 수제버거", 13500, "성수"),
+  ...octoberPayments,
 ]
 
 // ---------- 사용자가 바꾼 연결 상태 ----------
@@ -185,7 +188,12 @@ export const initialLedger: LedgerState = {
   unlinked: {},
   photoUnlinked: [],
   added: {},
-  splitConfirmed: ["p7", "p8", "p20"],
+  splitConfirmed: [
+    "p7",
+    "p8",
+    "p20",
+    ...octoberPayments.filter((payment) => payment.group).map((payment) => payment.id),
+  ],
 }
 
 // ---------- 근거 계산 ----------
@@ -281,6 +289,11 @@ export function monthSummary(y: number, m: number, state: LedgerState) {
   ).filter((date) => paymentsOn(date).length > 0)
   return {
     total: days.reduce((sum, date) => sum + dayTotal(date), 0),
+    // 그룹 결제는 내 몫만 합친 값
+    mine: days.reduce(
+      (sum, date) => sum + paymentsOn(date).reduce((s, payment) => s + myShare(payment), 0),
+      0,
+    ),
     restoredDays: days.filter((date) => dayStatus(date, state) === "complete")
       .length,
     paidDays: days.length,
@@ -405,5 +418,14 @@ export function restoreSummary(y: number, m: number, state: LedgerState) {
     restored,
     none: month.length - restored,
     kinds,
+  }
+}
+
+// 개발 중에만 10월 목업이 명세 합계와 맞는지 확인한다 (어긋나면 콘솔 오류)
+if (import.meta.env.DEV) {
+  try {
+    verifyOctober((day) => dayStatus(ymd(2026, 10, day), initialLedger))
+  } catch (error) {
+    console.error(error)
   }
 }

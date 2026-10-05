@@ -10,6 +10,8 @@ import {
 import { MainHeader } from "@/components/layout"
 import { won as wonFull, type Payment } from "@/lib/ledger"
 import {
+  MEMBERS,
+  type Member,
   settlementItems,
   settlementPeriod,
   settlementTitle,
@@ -39,7 +41,7 @@ export function GroupSplitSheet({
         <div className="split-people">
           {people.map((name) => (
             <div key={name}>
-              <PersonAvatar name={name as "나" | "지은" | "민지"} />
+              <PersonAvatar name={name as Member} />
               <span>{name}</span>
             </div>
           ))}
@@ -110,10 +112,10 @@ export function SettlementInbox({
           <div>
             <span>정산 대기</span>
             <strong>{won(summary.total)}</strong>
-            <p>{summary.items.length}건의 결제 · 3명</p>
+            <p>{summary.items.length}건의 결제 · {MEMBERS.length}명</p>
           </div>
           <div className="stacked-avatars">
-            {(["나", "지은", "민지"] as const).map((name) => (
+            {MEMBERS.map((name) => (
               <PersonAvatar key={name} name={name} />
             ))}
           </div>
@@ -157,11 +159,11 @@ export function SettlementTable({
   excluded: string[]
 }) {
   const summary = summarize(excluded)
-  const people = [
-    ["나", won(summary.paid["나"]), "done"],
-    ["지은", won(summary.paid["지은"]), "done"],
-    ["민지", won(summary.paid["민지"]), "waiting"],
-  ] as const
+  // 민지만 아직 대기 (입금 확인 시연용)
+  const people = MEMBERS.map(
+    (name) =>
+      [name, won(summary.paid[name]), name === "민지" ? "waiting" : "done"] as const,
+  )
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="정산표" />
@@ -224,7 +226,7 @@ export function SettlementEdit({
   const [swiped, setSwiped] = useState<number>()
   const [touchX, setTouchX] = useState<number>()
   const total = items.reduce((sum, item) => sum + item[2], 0)
-  const perPerson = Math.round(total / 3)
+  const perPerson = Math.round(total / MEMBERS.length)
   const finishSwipe = (event: TouchEvent<HTMLDivElement>, index: number) => {
     if (touchX === undefined) return
     if (event.changedTouches[0].clientX - touchX < -35) setSwiped(index)
@@ -306,6 +308,7 @@ export function SettlementConfirm({
   matched: boolean
 }) {
   const summary = summarize(excluded)
+  const deposits = MEMBERS.filter((name) => name !== "나")
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="정산 확정" />
@@ -322,24 +325,25 @@ export function SettlementConfirm({
           </p>
           <div>
             <span>입금 현황</span>
-            <strong>2명 중 {matched ? 2 : 1}명 입금 완료</strong>
+            <strong>
+              {deposits.length}명 중 {matched ? deposits.length : deposits.length - 1}명 입금 완료
+            </strong>
           </div>
         </div>
         <div className="deposit-list">
-          <div>
-            <PersonAvatar name="지은" />
-            <strong>지은 · {won(summary.owes["지은"])}</strong>
-            <span className="deposit-done">✓ 입금 확인</span>
-          </div>
-          <div>
-            <PersonAvatar name="민지" />
-            <strong>민지 · {won(summary.owes["민지"])}</strong>
-            {matched ? (
-              <span className="deposit-done">✓ 입금 확인</span>
-            ) : (
-              <span className="deposit-waiting">◷ 대기 중</span>
-            )}
-          </div>
+          {deposits.map((name) => (
+            <div key={name}>
+              <PersonAvatar name={name} />
+              <strong>
+                {name} · {won(summary.owes[name])}
+              </strong>
+              {name !== "민지" || matched ? (
+                <span className="deposit-done">✓ 입금 확인</span>
+              ) : (
+                <span className="deposit-waiting">◷ 대기 중</span>
+              )}
+            </div>
+          ))}
         </div>
       </div>
       <div className="confirm-bottom">

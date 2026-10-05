@@ -208,7 +208,7 @@ export function PersonAvatar({
   name,
   size = "normal",
 }: {
-  name: "나" | "지은" | "민지"
+  name: "나" | "지은" | "민지" | "수진"
   size?: "normal" | "small"
 }) {
   return (
@@ -218,6 +218,7 @@ export function PersonAvatar({
         name === "나" && "me",
         name === "지은" && "su",
         name === "민지" && "min",
+        name === "수진" && "jin",
         size === "small" && "small",
       )}
     >
