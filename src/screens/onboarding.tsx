@@ -5,7 +5,6 @@ import {
   ChevronDown,
   CreditCard,
   Image,
-  Info,
   MapPin,
   ShieldCheck,
 } from "lucide-react"
@@ -19,14 +18,9 @@ import {
   cx,
 } from "@/components/common"
 import {
-  type LedgerState,
-  TODAY,
   dayFacts,
   initialLedger,
   narrativeLine,
-  payments,
-  restoreDaySummary,
-  restoreSummary,
   won,
   ymd,
 } from "@/lib/ledger"
@@ -537,7 +531,7 @@ export function ImportExpenses({
             {phase === "done" ? "결제내역을 불러왔어요" : "결제내역을 불러오는 중이에요"}
           </p>
         </div>
-        <Footer button="복원하기" disabled={phase !== "done"} onNext={next} />
+        <Footer button="다음" disabled={phase !== "done"} onNext={next} />
       </Screen>
     )
 
@@ -609,60 +603,15 @@ export function ImportExpenses({
   )
 }
 
-// ---------- 5. 일괄 복원 결과 (일 기준, 마지막 단계) ----------
-export function RestoreResult({
-  state,
-  next,
-  back,
-}: {
-  state: LedgerState
-  next: () => void
-  back: () => void
-}) {
-  // 불러온 결제내역(목업 기준일의 달)을 날짜 단위로 집계한다. 근거 종류별 건수는 결제 단위다.
-  // 화면에는 "몇 월"을 쓰지 않는다.
-  const { y, m } = TODAY
-  const days = restoreDaySummary(y, m, state)
-  const byKind = restoreSummary(y, m, state)
-  const monthLength = new Date(y, m, 0).getDate()
-  const dayRows: Array<[string, number]> = [
-    ["복원 완료", days.complete],
-    ["부분 복원", days.partial],
-    ["기록 없음", days.none],
-  ]
-  const kindRows: Array<[string, number]> = [
-    ["내 위치", byKind.kinds.location],
-    ["내 일정", byKind.kinds.calendar],
-    ["내 사진", byKind.kinds.photo],
-  ]
+// ---------- 5. 시작 (마지막 단계) ----------
+// 복원 결과는 온보딩에서 따로 보여 주지 않고, 시작하면 캘린더 월뷰에서 바로 보인다.
+export function Welcome({ next, back }: { next: () => void; back: () => void }) {
   return (
     <Screen step={5} onBack={back}>
-      <div className="onboarding-scroll">
-        <PageTitle
-          title={`${days.paidDays === monthLength ? `${monthLength}일 모두` : `${days.paidDays}일`} 지출이 있었어요.\n${days.complete}일은 내 기록으로 채웠어요`}
-          sub="내 캘린더·사진·위치 기록에서만 찾았어요"
-        />
-        <div className="main-card restore-result">
-          {dayRows.map(([name, value]) => (
-            <div className="result-row" key={name}>
-              <p>{name}</p>
-              <strong>{value}일</strong>
-            </div>
-          ))}
-        </div>
-        <p className="restore-kind-title">근거로 쓴 기록 (결제 {byKind.count}건 중)</p>
-        <div className="main-card restore-result">
-          {kindRows.map(([name, value]) => (
-            <div className="result-row" key={name}>
-              <p>{name}</p>
-              <strong>{value > 0 ? `${value}건` : "기록 없음"}</strong>
-            </div>
-          ))}
-        </div>
-        <div className="info-banner">
-          <Info size={15} strokeWidth={1.7} />
-          <span>근거가 없는 결제는 추측하지 않고 “기록 없음”으로 둬요</span>
-        </div>
+      <div className="import-status welcome">
+        <span className="welcome-mark">L</span>
+        <p className="complete-title">{"Linky와 함께\n흩어진 지출 맥락을 모아봐요"}</p>
+        <p className="welcome-sub">내 일정·사진·위치 기록을 결제 옆에 이어 붙여 둘게요</p>
       </div>
       <Footer button="Linky 시작하기" onNext={next} />
     </Screen>

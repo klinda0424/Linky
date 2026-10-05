@@ -6,9 +6,8 @@ import {
   ImportExpenses,
   Permissions,
   PrivacyNotice,
-  RestoreResult,
+  Welcome,
 } from "@/screens/onboarding"
-import { initialLedger } from "@/lib/ledger"
 import { type PermissionKey, type ProfileDetails, type Tone } from "@/types"
 
 // 온보딩 5단계 → 메인 앱. 하루 리포트는 서사형으로 시작한다. 온보딩에서 정한 값은 마이페이지에서 그대로 다시 바꿀 수 있다.
@@ -51,21 +50,7 @@ export default function App() {
         <PrivacyNotice back={back} next={next} toggle={toggle} values={permissions} />
       )
     if (step === 4) return <ImportExpenses back={back} next={next} />
-    if (step === 5)
-      return (
-        <RestoreResult
-          back={back}
-          next={next}
-          state={{
-            ...initialLedger,
-            sources: {
-              location: permissions.location,
-              calendar: permissions.calendar,
-              photos: permissions.photos,
-            },
-          }}
-        />
-      )
+    if (step === 5) return <Welcome back={back} next={next} />
     return null
   })()
 

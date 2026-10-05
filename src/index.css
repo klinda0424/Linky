@@ -3418,6 +3418,34 @@ p {
   text-align: center;
 }
 
+/* 온보딩 마지막 단계: 시작 */
+.welcome .complete-title {
+  margin-top: 18px;
+  white-space: pre-line;
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+.welcome-mark {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  background: var(--primary);
+  color: var(--on-primary);
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.welcome-sub {
+  margin-top: 8px;
+  color: var(--sub);
+  font-size: 13px;
+  word-break: keep-all;
+}
+
 /* 지출 내역 가져오기: 금융앱식 약관 동의 */
 .term-check {
   display: inline-flex;
@@ -3535,28 +3563,6 @@ p {
 .term-detail dd {
   margin: 0;
   word-break: keep-all;
-}
-
-.restore-kind-title {
-  margin: 4px 0 8px;
-  color: var(--sub);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.restore-result {
-  margin-bottom: 14px;
-  padding: 6px 14px;
-}
-
-.restore-result .result-row,
-.complete-content .result-row {
-  justify-content: space-between;
-}
-
-.restore-result .result-row {
-  padding: 0;
-  background: none;
 }
 
 .result-row strong {
