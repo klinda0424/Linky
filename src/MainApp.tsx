@@ -6,12 +6,15 @@ import {
   type Payment,
   type Photo,
   type YMD,
+  TODAY,
   initialLedger,
   payments,
 } from "@/lib/ledger"
 import { AlbumTab, EventReport, PhotoDetail } from "@/screens/album"
 import { CalendarHome, DaySheet } from "@/screens/calendar"
 import { HomePage } from "@/screens/home"
+import { ReportTab } from "@/screens/report"
+import { summarize } from "@/lib/settlement"
 import { MapTab } from "@/screens/map"
 import {
   ConnectionSettings,
@@ -68,6 +71,8 @@ export function MainApp({
   const [excluded, setExcluded] = useState<string[]>([])
   const [matched, setMatched] = useState(false)
   const [settled, setSettled] = useState(false)
+  // 정산 대기함은 홈 알림과 리포트 > 정산 내역 양쪽에서 열리므로 어디서 왔는지 기억한다
+  const [inboxFromHome, setInboxFromHome] = useState(false)
   const [notifications, setNotifications] = useState<
     Record<NotificationKey, boolean>
   >({ restore: true, report: true, settlement: true })
@@ -168,10 +173,28 @@ export function MainApp({
           openAlbum={() => setTab("album")}
           openDay={openDayInCalendar}
           openMap={() => {
-            setMapDay(undefined)
+            setMapDay(TODAY)
             setMapPeriod("day")
             setTab("map")
           }}
+          openPhoto={(item) => {
+            setPhoto(item)
+            setView("photo")
+          }}
+          openSettlement={() => {
+            setInboxFromHome(true)
+            setView("settlement")
+          }}
+          pendingSettlement={
+            settled
+              ? undefined
+              : (() => {
+                  const pending = summarize(excluded)
+                  return pending.items.length > 0
+                    ? { count: pending.items.length, total: pending.total }
+                    : undefined
+                })()
+          }
           openPayment={(payment) => openPayment(payment)}
           openSearch={() => setView("search")}
           state={state}
@@ -213,6 +236,13 @@ export function MainApp({
           state={state}
         />
       )
+    if (tab === "report")
+      return (
+        <ReportTab
+          openSettlement={() => setView("settlementList")}
+          state={state}
+        />
+      )
     return (
       <MyPage
         name={profile.nickname || "소연"}
@@ -220,7 +250,6 @@ export function MainApp({
         openInfo={() => setView("profileInfo")}
         openNotifications={() => setView("notifications")}
         openPrivacy={() => setView("privacy")}
-        openSettlement={() => setView("settlementList")}
       />
     )
   }
@@ -305,14 +334,17 @@ export function MainApp({
           <SettlementList
             back={toTabs}
             completed={settled}
-            open={() => setView("settlement")}
+            open={() => {
+              setInboxFromHome(false)
+              setView("settlement")
+            }}
             state={state}
           />
         )
       case "settlement":
         return (
           <SettlementInbox
-            back={() => setView("settlementList")}
+            back={() => (inboxFromHome ? toTabs() : setView("settlementList"))}
             excluded={excluded}
             openTable={() => setView("settlementTable")}
           />
@@ -353,6 +385,8 @@ export function MainApp({
             excluded={excluded}
             finish={() => {
               setSettled(true)
+              setInboxFromHome(false)
+              setTab("report")
               setView("settlementList")
             }}
           />

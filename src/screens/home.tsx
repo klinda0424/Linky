@@ -1,4 +1,4 @@
-import { ChevronRight, Image, Map, Search } from "lucide-react"
+import { ChevronRight, Search } from "lucide-react"
 import { Action, cx } from "@/components/common"
 import {
   TODAY,
@@ -8,6 +8,8 @@ import {
   narrativeLine,
   paymentsOn,
   payments,
+  photosOn,
+  type Photo,
   sameDay,
   shareOf,
   weekday,
@@ -76,6 +78,9 @@ export function HomePage({
   openPayment,
   openAlbum,
   openMap,
+  openPhoto,
+  openSettlement,
+  pendingSettlement,
 }: {
   state: LedgerState
   openSearch: () => void
@@ -83,10 +88,17 @@ export function HomePage({
   openPayment: (payment: Payment) => void
   openAlbum: () => void
   openMap: () => void
+  openPhoto: (photo: Photo) => void
+  // 정산 알림(필요시): 처리할 정산이 있을 때만 값이 있다
+  openSettlement: () => void
+  pendingSettlement?: { count: number; total: number }
 }) {
   const week = weekOf(TODAY)
   const todayList = paymentsOn(TODAY)
   const recent = todayList.length === 0 ? recentPayments(3) : []
+  const todayPhotos = photosOn(TODAY, state).filter(
+    (photo) => !state.photoUnlinked.includes(photo.id),
+  )
   return (
     <>
       <div className="cal-brandbar">
@@ -99,6 +111,17 @@ export function HomePage({
         </Action>
       </div>
       <div className="main-scroll">
+        {pendingSettlement && (
+          <Action className="main-card settle-alert" onClick={openSettlement}>
+            <div>
+              <strong>정산할 결제가 있어요</strong>
+              <span>
+                정산 대기 {pendingSettlement.count}건 · {won(pendingSettlement.total)}
+              </span>
+            </div>
+            <ChevronRight size={17} strokeWidth={1.5} />
+          </Action>
+        )}
         <div className="main-card calendar-strip">
           <div className="block-heading">
             <strong>이번 주</strong>
@@ -162,15 +185,46 @@ export function HomePage({
           </div>
         </div>
 
-        <div className="home-shortcuts">
-          <Action className="home-shortcut" onClick={openMap}>
-            <Map size={18} strokeWidth={1.5} />
-            <span>동선 지도</span>
-          </Action>
-          <Action className="home-shortcut" onClick={openAlbum}>
-            <Image size={18} strokeWidth={1.5} />
-            <span>앨범</span>
-          </Action>
+        <div className="main-card home-route">
+          <div className="block-heading">
+            <strong>오늘의 동선 지도</strong>
+            <Action className="home-more" onClick={openMap}>
+              지도로 보기
+            </Action>
+          </div>
+          <p className="home-sub">결제 당시 내 위치</p>
+          {todayList.length === 0 ? (
+            <p className="report-line">기록 없음</p>
+          ) : (
+            <div className="route-chips">
+              {todayList.map((payment) => (
+                <span key={payment.id}>
+                  {payment.time} {state.sources.location && payment.place ? payment.place : "기록 없음"}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="main-card home-photos">
+          <div className="block-heading">
+            <strong>오늘의 사진</strong>
+            <Action className="home-more" onClick={openAlbum}>
+              앨범 보기
+            </Action>
+          </div>
+          {todayPhotos.length === 0 ? (
+            <p className="report-line">기록 없음</p>
+          ) : (
+            <div className="thumbs home-thumbs">
+              {todayPhotos.slice(0, 4).map((photo, index) => (
+                <Action key={photo.id} label={`${photo.title} 사진`} onClick={() => openPhoto(photo)}>
+                  <i className={`photo-thumb t${index % 5}`} />
+                </Action>
+              ))}
+              {todayPhotos.length > 4 && <em>+{todayPhotos.length - 4}</em>}
+            </div>
+          )}
         </div>
       </div>
     </>
