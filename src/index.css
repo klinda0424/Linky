@@ -2482,6 +2482,34 @@ p {
   box-shadow: 0 0 0 3px var(--primary-border);
 }
 
+.map-waypoint {
+  position: absolute;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.map-waypoint i {
+  display: block;
+  width: 12px;
+  height: 12px;
+  margin: 0 auto 3px;
+  border: 2px solid var(--primary);
+  border-radius: 50%;
+  background: var(--background);
+}
+
+.map-waypoint span {
+  display: block;
+  padding: 2px 5px;
+  border-radius: 5px;
+  background: rgb(255 255 255 / 88%);
+  color: var(--text);
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .map-empty {
   position: absolute;
   right: 16px;
@@ -2561,6 +2589,13 @@ p {
 .map-preview span {
   color: var(--sub);
   font-size: 12px;
+}
+
+.map-preview .map-preview-share {
+  display: block;
+  margin-top: 2px;
+  color: var(--text);
+  font-weight: 700;
 }
 
 .map-preview .mini-primary {
