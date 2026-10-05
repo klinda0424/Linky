@@ -1,5 +1,5 @@
-// 하단 탭 4개
-export type MainTab = "calendar" | "map" | "album" | "mypage"
+// 하단 탭은 홈·캘린더·마이페이지 3개. 지도·앨범은 탭이 아니라 홈·날짜 시트에서 여는 화면이다.
+export type MainTab = "home" | "calendar" | "mypage" | "map" | "album"
 
 // 탭 위에 쌓이는 전체 화면
 export type MainView =
