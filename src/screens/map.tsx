@@ -74,10 +74,13 @@ const rangeLabel = (period: Period, date: YMD) => {
 export function MapTab({
   state,
   initialDay,
+  openEvent,
   openPayment,
 }: {
   state: LedgerState
   initialDay?: YMD
+  // 월 지도 일정에서 기존 이벤트 리포트로 이동한다
+  openEvent: (event: CalEvent) => void
   // 핀의 결제 카드로 이동 (캘린더 탭의 날짜 시트가 열린다)
   openPayment: (payment: Payment) => void
 }) {
@@ -85,6 +88,7 @@ export function MapTab({
   const [date, setDate] = useState<YMD>(initialDay ?? TODAY)
   const [show, setShow] = useState({ payment: true, photo: true, event: true })
   const [selected, setSelected] = useState<Selected>()
+  const [selectedPlace, setSelectedPlace] = useState<string | "missing">()
   const [view, setView] = useState<MapView>({ k: 1, x: 0, y: 0 })
   const canvasRef = useRef<HTMLDivElement>(null)
   const gesture = useRef<{
@@ -197,6 +201,44 @@ export function MapTab({
   const evs = state.sources.calendar
     ? events.filter((event: CalEvent) => inRange(event.date))
     : []
+  // 월 지도와 아래 목록이 함께 쓰는 단일 지역 집계. place는 결제 당시 내 위치만 사용한다.
+  const locatedPays = state.sources.location
+    ? pays.filter((payment) => payment.place)
+    : []
+  const monthPlaces = [...locatedPays.reduce((groups, payment) => {
+    const place = payment.place as string
+    const current = groups.get(place) ?? []
+    current.push(payment)
+    groups.set(place, current)
+    return groups
+  }, new Map<string, Payment[]>())]
+    .map(([place, placePayments]) => ({
+      place,
+      payments: placePayments,
+      count: placePayments.length,
+      total: placePayments.reduce((sum, payment) => sum + payment.amount, 0),
+    }))
+    .sort((a, b) => b.count - a.count || a.place.localeCompare(b.place, "ko"))
+  const missingPays = state.sources.location
+    ? pays.filter((payment) => !payment.place)
+    : pays
+  const missingTotal = missingPays.reduce((sum, payment) => sum + payment.amount, 0)
+  const maxPlaceCount = Math.max(1, ...monthPlaces.map((item) => item.count))
+  const placeSelection = selectedPlace === "missing"
+    ? {
+        title: "위치 기록 없는 결제",
+        description: "결제 당시 내 위치 기록이 없는 결제 · 날짜순",
+        payments: missingPays,
+        total: missingTotal,
+      }
+    : monthPlaces.find((item) => item.place === selectedPlace)
+      ? {
+          title: selectedPlace as string,
+          description: `결제 당시 내 위치가 ${selectedPlace}였던 결제 · 날짜순`,
+          payments: monthPlaces.find((item) => item.place === selectedPlace)!.payments,
+          total: monthPlaces.find((item) => item.place === selectedPlace)!.total,
+        }
+      : undefined
   // 결제 사이를 잇는 내 위치 기록 지점 (위치 연동을 끄면 빠진다)
   const trail =
     period === "month" || !state.sources.location
@@ -230,6 +272,7 @@ export function MapTab({
       setDate(ymd(next.getFullYear(), next.getMonth() + 1, 1))
     } else setDate(addDays(date, direction * step))
     setSelected(undefined)
+    setSelectedPlace(undefined)
     resetView()
   }
   const chosenPayment =
@@ -261,6 +304,7 @@ export function MapTab({
               onClick={() => {
                 setPeriod(key)
                 setSelected(undefined)
+                setSelectedPlace(undefined)
                 resetView()
               }}
             >
@@ -363,7 +407,7 @@ export function MapTab({
               ) : null,
             )}
           </svg>
-          {zoneNames.map((zone) => (
+          {period !== "month" && zoneNames.map((zone) => (
             <span
               className="map-zone"
               key={zone}
@@ -381,7 +425,10 @@ export function MapTab({
                 )}
                 key={event.id}
                 label={event.title}
-                onClick={() => setSelected({ kind: "event", id: event.id })}
+                onClick={() => {
+                  if (period === "month") openEvent(event)
+                  else setSelected({ kind: "event", id: event.id })
+                }}
                 style={{
                   left: `${pinPoint(event.zone, event.id).x}%`,
                   top: `${pinPoint(event.zone, event.id).y - 7}%`,
@@ -408,7 +455,26 @@ export function MapTab({
                 <Camera size={13} strokeWidth={1.8} />
               </Action>
             ))}
-          {show.payment &&
+          {period === "month" && show.payment &&
+            monthPlaces.map((item) => (
+              <Action
+                className="map-place-bubble"
+                key={item.place}
+                label={`${item.place} 결제 ${item.count}건`}
+                onClick={() => setSelectedPlace(item.place)}
+                style={
+                  {
+                    left: `${(PLACES[item.place] ?? { x: 50 }).x}%`,
+                    top: `${(PLACES[item.place] ?? { y: 50 }).y}%`,
+                    "--place-size": `${42 + Math.round((item.count / maxPlaceCount) * 22)}px`,
+                  } as CSSProperties
+                }
+              >
+                <strong>{item.count}</strong>
+                <span>{item.place}</span>
+              </Action>
+            ))}
+          {period !== "month" && show.payment &&
             trail.map((point) => (
               <span
                 aria-label={`내 위치 기록 ${point.name}`}
@@ -422,7 +488,7 @@ export function MapTab({
                 <em>{point.name}</em>
               </span>
             ))}
-          {show.payment &&
+          {period !== "month" && show.payment &&
             pays.map((payment, index) => {
               const restored = evidenceOf(payment, state).length > 0
               return (
@@ -447,7 +513,11 @@ export function MapTab({
               )
             })}
           </div>
-          {pays.length + pics.length + evs.length === 0 && (
+          {((period === "month"
+            ? (show.payment ? monthPlaces.length : 0) +
+              (show.photo ? pics.length : 0) +
+              (show.event ? evs.length : 0)
+            : pays.length + pics.length + evs.length) === 0) && (
             <div className="map-empty">이 기간에는 지도에 표시할 기록이 없어요</div>
           )}
           {view.k > 1 && (
@@ -460,12 +530,16 @@ export function MapTab({
           <span>
             <i className="pay" /> 결제
           </span>
-          <span>
-            <i className="pay dashed" /> 근거 없는 결제
-          </span>
-          <span>
-            <i className="trail" /> 내 위치 기록
-          </span>
+          {period !== "month" && (
+            <>
+              <span>
+                <i className="pay dashed" /> 근거 없는 결제
+              </span>
+              <span>
+                <i className="trail" /> 내 위치 기록
+              </span>
+            </>
+          )}
           <span>
             <i className="photo" /> 사진
           </span>
@@ -518,17 +592,69 @@ export function MapTab({
             </div>
           </div>
         )}
-        <div className="map-places">
-          <p className="section-title">최근 한 달 자주 간 장소</p>
-          <div>
-            {frequentPlaces(state).map(([place, count]) => (
-              <span key={place}>
-                {place} <b>{count}회</b>
-              </span>
-            ))}
+        {period === "month" && show.payment && (
+          <div className="map-month-places">
+            <p className="section-title">{date.m}월 결제한 곳</p>
+            <div className="map-place-list">
+              {monthPlaces.map((item) => (
+                <Action key={item.place} onClick={() => setSelectedPlace(item.place)}>
+                  <span>{item.place}</span>
+                  <small>결제 {item.count}건</small>
+                  <strong>{won(item.total)}</strong>
+                  <ChevronRight size={16} strokeWidth={1.6} />
+                </Action>
+              ))}
+              {monthPlaces.length === 0 && <p>기록 없음</p>}
+            </div>
+            {missingPays.length > 0 && (
+              <Action className="map-missing-chip" onClick={() => setSelectedPlace("missing")}>
+                위치 기록 없는 결제 {missingPays.length}건 · 지도에 표시 안 함
+              </Action>
+            )}
+          </div>
+        )}
+        {period !== "month" && (
+          <div className="map-places">
+            <p className="section-title">최근 한 달 자주 간 장소</p>
+            <div>
+              {frequentPlaces(state).map(([place, count]) => (
+                <span key={place}>
+                  {place} <b>{count}회</b>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      {placeSelection && (
+        <div className="map-sheet-dim" onClick={() => setSelectedPlace(undefined)}>
+          <div className="map-place-sheet" onClick={(event) => event.stopPropagation()}>
+            <div className="sheet-grip" />
+            <div className="map-place-sheet-head">
+              <div>
+                <strong>
+                  {placeSelection.title} · 결제 {placeSelection.payments.length}건 · {won(placeSelection.total)}
+                </strong>
+                <span>{placeSelection.description}</span>
+              </div>
+              <Action label="닫기" onClick={() => setSelectedPlace(undefined)}>×</Action>
+            </div>
+            <div className="map-place-payments">
+              {placeSelection.payments.map((payment) => (
+                <Action key={payment.id} onClick={() => openPayment(payment)}>
+                  <time>{label(payment.date)} {payment.time}</time>
+                  <strong>{payment.merchant}</strong>
+                  <span>{won(payment.amount)}</span>
+                  {payment.group && (
+                    <small>내 몫 {won(Math.round(payment.amount / payment.group.length))}</small>
+                  )}
+                  <ChevronRight size={16} strokeWidth={1.6} />
+                </Action>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </>
   )
 }
