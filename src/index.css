@@ -1846,6 +1846,17 @@ p {
   font-weight: 700;
 }
 
+.cal-summary .cal-summary-main {
+  font-size: 22px;
+}
+
+.cal-summary small {
+  margin-top: 2px;
+  display: block;
+  color: var(--sub);
+  font-size: 11px;
+}
+
 .cal-weekdays,
 .cal-grid {
   display: grid;

@@ -100,8 +100,9 @@ export function CalendarHome({
       <div className="cal-body">
         <div className="cal-summary">
           <div>
-            <span>총 지출</span>
-            <strong>{won(summary.total)}</strong>
+            <span>내 지출</span>
+            <strong className="cal-summary-main">{won(summary.mine)}</strong>
+            <small>결제 총액 {won(summary.total)}</small>
           </div>
           <div>
             <span>복원</span>
