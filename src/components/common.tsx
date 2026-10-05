@@ -61,6 +61,9 @@ export function StatusBar() {
     </div>
   )
 }
+// 온보딩 단계 수: 본인인증 → 권한 연동 → 개인정보 고지 → 결제내역 불러오기 → 일괄 복원 결과
+const ONBOARDING_STEPS = 5
+
 export function OnboardingHeader({
   step,
   onBack,
@@ -83,11 +86,13 @@ export function OnboardingHeader({
           <div className="back-placeholder" />
         )}
         <div className="progress-bars">
-          {Array.from({ length: 6 }, (_, index) => (
+          {Array.from({ length: ONBOARDING_STEPS }, (_, index) => (
             <span className={index < step ? "complete" : ""} key={index} />
           ))}
         </div>
-        <span className="step-count">{step}/6</span>
+        <span className="step-count">
+          {step}/{ONBOARDING_STEPS}
+        </span>
       </div>
     </div>
   )
