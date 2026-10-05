@@ -1124,6 +1124,33 @@ p {
   margin: 22px 0 10px;
 }
 
+.group-basis {
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.group-basis span {
+  color: var(--sub);
+  font-size: 12px;
+}
+
+.group-basis p {
+  word-break: keep-all;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.main-footer.split-footer {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 8px;
+}
+
 .settlement-empty {
   margin-bottom: 12px;
   word-break: keep-all;
