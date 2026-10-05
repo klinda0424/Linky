@@ -1,7 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react"
 import {
   CalendarDays,
-  Camera,
   Check,
   ChevronDown,
   CreditCard,
@@ -24,7 +23,6 @@ import {
   TODAY,
   dayFacts,
   initialLedger,
-  label,
   narrativeLine,
   payments,
   restoreSummary,
@@ -299,9 +297,59 @@ export function PrivacyNotice({
   )
 }
 
-// ---------- 4. 지출 내역 가져오기: 결제내역 캡처 → 인식 결과 확인 → 틀린 줄 수정 ----------
-type Fix = { merchant: string; amount: number }
-const PREVIEW_ROWS = 5
+// ---------- 4. 지출 내역 가져오기: 금융앱식 약관 동의 → 불러오기 → 결과 ----------
+type ImportTerm = {
+  key: string
+  required: boolean
+  title: string
+  // 펼쳐서 보는 요약 (수집 항목·목적·보관)
+  detail: Array<[string, string]>
+}
+
+const importTerms: ImportTerm[] = [
+  {
+    key: "service",
+    required: true,
+    title: "결제내역 불러오기 서비스 이용약관",
+    detail: [
+      ["내용", "연결한 카드·계좌의 결제내역을 Linky로 불러와 날짜별로 보여줘요"],
+      ["해지", "마이페이지 > 연동 서비스 관리에서 언제든 끊을 수 있어요"],
+    ],
+  },
+  {
+    key: "collect",
+    required: true,
+    title: "개인(신용)정보 수집·이용 동의",
+    detail: [
+      ["수집 항목", "결제 일시·금액·가맹점명"],
+      ["목적", "잊은 결제를 날짜별로 모아 보여주기 위해"],
+      ["보관", "내 기기 안에 암호화해 저장, 연동 해제 시 삭제"],
+    ],
+  },
+  {
+    key: "inquiry",
+    required: true,
+    title: "개인(신용)정보 조회 동의",
+    detail: [
+      ["조회 대상", "연결한 카드사·은행의 결제내역"],
+      ["조회 기간", "최근 1개월"],
+    ],
+  },
+  {
+    key: "auto",
+    required: false,
+    title: "새 결제 자동 불러오기",
+    detail: [["내용", "앱을 열 때 새로 생긴 결제를 자동으로 불러와요. 끄면 직접 새로고침해요"]],
+  },
+]
+
+function CheckMark({ on, size = 22 }: { on: boolean; size?: number }) {
+  return (
+    <span className={cx("term-check", on && "on")} style={{ width: size, height: size }}>
+      <Check size={size * 0.62} strokeWidth={2.6} />
+    </span>
+  )
+}
 
 export function ImportExpenses({
   next,
@@ -310,49 +358,66 @@ export function ImportExpenses({
   next: () => void
   back: () => void
 }) {
-  // 캡처에서 읽은 결과 = 이번 달(목업 기준일) 결제 목록. 수정한 값은 이 화면 안에서만 바뀐다 (목업)
+  // 불러오는 범위 = 목업 기준일의 달
   const { y, m } = TODAY
-  const month = payments
-    .filter((payment) => payment.date.y === y && payment.date.m === m)
-    .sort((a, b) => a.date.d - b.date.d || a.time.localeCompare(b.time))
-  const [phase, setPhase] = useState<"upload" | "reading" | "confirm">("upload")
-  const [fixes, setFixes] = useState<Record<string, Fix>>({})
-  const [editing, setEditing] = useState<string>()
-  const [draft, setDraft] = useState<Fix>({ merchant: "", amount: 0 })
-  const [expanded, setExpanded] = useState(false)
+  const month = payments.filter((payment) => payment.date.y === y && payment.date.m === m)
+  const total = month.reduce((sum, payment) => sum + payment.amount, 0)
+  const lastDay = new Date(y, m, 0).getDate()
+  const [agreed, setAgreed] = useState<Record<string, boolean>>({})
+  const [opened, setOpened] = useState<string>()
+  const [phase, setPhase] = useState<"agree" | "loading" | "done">("agree")
+  const allAgreed = importTerms.every((term) => agreed[term.key])
+  const requiredAgreed = importTerms.every((term) => !term.required || agreed[term.key])
   useEffect(() => {
-    if (phase !== "reading") return
-    const timer = window.setTimeout(() => setPhase("confirm"), 1400)
+    if (phase !== "loading") return
+    const timer = window.setTimeout(() => setPhase("done"), 1400)
     return () => window.clearTimeout(timer)
   }, [phase])
 
-  const valueOf = (id: string, merchant: string, amount: number) =>
-    fixes[id] ?? { merchant, amount }
-  const total = month.reduce(
-    (sum, payment) => sum + valueOf(payment.id, payment.merchant, payment.amount).amount,
-    0,
-  )
-  const rows = expanded ? month : month.slice(0, PREVIEW_ROWS)
-
-  if (phase !== "confirm")
+  if (phase !== "agree")
     return (
       <Screen step={4} onBack={back}>
-        <PageTitle
-          title={"결제내역 캡처를\n올려주세요"}
-          sub={`카드·은행 앱의 ${m}월 이용내역 화면이면 돼요`}
-        />
-        <Action
-          className={cx("capture-zone", phase === "reading" && "recognizing")}
-          disabled={phase === "reading"}
-          onClick={() => setPhase("reading")}
-        >
-          <span className="capture-icon">
-            <Camera size={21} strokeWidth={1.5} />
+        <div className="complete-content">
+          <span className={cx("complete-check", phase === "loading" && "loading")}>
+            {phase === "done" ? (
+              <Check size={30} strokeWidth={2.2} />
+            ) : (
+              <CreditCard size={28} strokeWidth={1.5} />
+            )}
           </span>
-          <strong>{phase === "reading" ? "캡처를 읽는 중이에요" : "캡처 선택"}</strong>
-          <span>{phase === "reading" ? "날짜·가맹점·금액을 찾고 있어요" : "탭해서 선택 (목업)"}</span>
-        </Action>
-        <Footer button="인식 결과 확인" disabled onNext={() => undefined} />
+          <p className="complete-title">
+            {phase === "done"
+              ? `${m}월 결제내역을 불러왔어요`
+              : `${m}월 결제내역을 불러오는 중이에요`}
+          </p>
+          {phase === "done" && (
+            <div className="result-list">
+              <div className="result-row">
+                <p>기간</p>
+                <strong>
+                  {m}월 1일 ~ {m}월 {lastDay}일
+                </strong>
+              </div>
+              <div className="result-row">
+                <p>결제</p>
+                <strong>{month.length}건</strong>
+              </div>
+              <div className="result-row">
+                <p>합계</p>
+                <strong>{won(total)}</strong>
+              </div>
+              <div className="result-row">
+                <p>새 결제 자동 불러오기</p>
+                <strong>{agreed.auto ? "켬" : "끔"}</strong>
+              </div>
+            </div>
+          )}
+        </div>
+        <Footer
+          button={`${m}월 복원하기`}
+          disabled={phase !== "done"}
+          onNext={next}
+        />
       </Screen>
     )
 
@@ -360,95 +425,65 @@ export function ImportExpenses({
     <Screen step={4} onBack={back}>
       <div className="onboarding-scroll">
         <PageTitle
-          title={`${m}월 결제 ${month.length}건을 읽었어요\n맞는지 확인해 주세요`}
-          sub={`합계 ${won(total)}`}
+          title={"카드·계좌 결제내역을\n불러올게요"}
+          sub="아래 약관에 동의하면 바로 불러와요"
         />
-        <div className="info-banner">
-          <Info size={15} strokeWidth={1.7} />
-          <span>잘못 읽힌 줄은 눌러서 고칠 수 있어요</span>
-        </div>
-        <div className="import-list">
-          {rows.map((payment) => {
-            const value = valueOf(payment.id, payment.merchant, payment.amount)
-            if (editing === payment.id)
-              return (
-                <div className="import-row editing" key={payment.id}>
-                  <span className="import-date">
-                    {label(payment.date)} {payment.time}
-                  </span>
-                  <div className="text-field">
-                    <input
-                      aria-label="가맹점"
-                      onChange={(event) => {
-                        const merchant = event.currentTarget.value
-                        setDraft((current) => ({ ...current, merchant }))
-                      }}
-                      value={draft.merchant}
-                    />
-                  </div>
-                  <div className="text-field">
-                    <input
-                      aria-label="금액"
-                      inputMode="numeric"
-                      onChange={(event) => {
-                        const amount = Number(event.currentTarget.value.replace(/[^0-9]/g, ""))
-                        setDraft((current) => ({ ...current, amount }))
-                      }}
-                      value={draft.amount ? draft.amount.toLocaleString("ko-KR") : ""}
-                    />
-                    <span>원</span>
-                  </div>
-                  <div className="import-edit-actions">
-                    <Action className="secondary-button" onClick={() => setEditing(undefined)}>
-                      취소
-                    </Action>
-                    <Action
-                      className="primary-button"
-                      disabled={!draft.merchant.trim() || draft.amount <= 0}
-                      onClick={() => {
-                        setFixes((current) => ({
-                          ...current,
-                          [payment.id]: { merchant: draft.merchant.trim(), amount: draft.amount },
-                        }))
-                        setEditing(undefined)
-                      }}
-                    >
-                      저장
-                    </Action>
-                  </div>
-                </div>
-              )
-            return (
-              <Action
-                className="import-row"
-                key={payment.id}
-                onClick={() => {
-                  setDraft(value)
-                  setEditing(payment.id)
-                }}
-              >
-                <div>
-                  <span className="import-date">
-                    {label(payment.date)} {payment.time}
-                  </span>
-                  <strong>{value.merchant}</strong>
-                </div>
-                {fixes[payment.id] && <Badge>수정함</Badge>}
-                <p>{won(value.amount)}</p>
-              </Action>
+        <Action
+          className="term-all"
+          onClick={() =>
+            setAgreed(
+              Object.fromEntries(importTerms.map((term) => [term.key, !allAgreed])),
             )
-          })}
+          }
+        >
+          <CheckMark on={allAgreed} size={26} />
+          <strong>약관 전체 동의</strong>
+        </Action>
+        <div className="term-list">
+          {importTerms.map((term) => (
+            <div className="term-item" key={term.key}>
+              <div className="term-row">
+                <Action
+                  className="term-toggle"
+                  onClick={() =>
+                    setAgreed((current) => ({ ...current, [term.key]: !current[term.key] }))
+                  }
+                >
+                  <CheckMark on={Boolean(agreed[term.key])} />
+                  <span>
+                    <em className={cx(term.required && "required")}>
+                      ({term.required ? "필수" : "선택"})
+                    </em>{" "}
+                    {term.title}
+                  </span>
+                </Action>
+                <Action
+                  className={cx("term-more", opened === term.key && "open")}
+                  label={`${term.title} 자세히 보기`}
+                  onClick={() => setOpened(opened === term.key ? undefined : term.key)}
+                >
+                  <ChevronDown size={17} strokeWidth={1.6} />
+                </Action>
+              </div>
+              {opened === term.key && (
+                <dl className="term-detail">
+                  {term.detail.map(([name, value]) => (
+                    <div key={name}>
+                      <dt>{name}</dt>
+                      <dd>{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+            </div>
+          ))}
         </div>
-        {month.length > PREVIEW_ROWS && (
-          <Action className="import-more" onClick={() => setExpanded((value) => !value)}>
-            {expanded ? "접기" : `나머지 ${month.length - PREVIEW_ROWS}건 보기`}
-          </Action>
-        )}
       </div>
       <Footer
-        button={`맞아요, ${m}월 복원하기`}
-        disabled={editing !== undefined}
-        onNext={next}
+        button={requiredAgreed ? "동의하고 불러오기" : "필수 약관에 동의해 주세요"}
+        caption="선택 항목은 동의하지 않아도 불러올 수 있어요"
+        disabled={!requiredAgreed}
+        onNext={() => setPhase("loading")}
       />
     </Screen>
   )
