@@ -110,6 +110,23 @@ export function MainApp({
       },
     }))
   // text가 있으면 캡처에서 인식한 문구(예: "블라우스 1벌")를 근거로 붙인다
+  const unlinkPhoto = (id: string) =>
+    setLedger((value) => ({
+      ...value,
+      photoUnlinked: value.photoUnlinked.includes(id)
+        ? value.photoUnlinked
+        : [...value.photoUnlinked, id],
+    }))
+  const verify = (paymentId: string) =>
+    setLedger((value) => ({
+      ...value,
+      verified: [...(value.verified ?? []), paymentId],
+    }))
+  const markPersonal = (paymentId: string) =>
+    setLedger((value) => ({
+      ...value,
+      personal: [...(value.personal ?? []), paymentId],
+    }))
   const attach = (paymentId: string, text?: string) => {
     setLedger((value) => {
       const current = value.added[paymentId] ?? []
@@ -360,6 +377,7 @@ export function MainApp({
             setSheetDay(day)
           }}
           openRecord={openRecord}
+          markPersonal={markPersonal}
           openSplit={setSplitting}
           showMap={(day) => {
             setSheetDay(undefined)
@@ -369,6 +387,8 @@ export function MainApp({
           state={state}
           tone={tone}
           unlink={unlink}
+          unlinkPhoto={unlinkPhoto}
+          verify={verify}
         />
       )}
       {recordSheet && (

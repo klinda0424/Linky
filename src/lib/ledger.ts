@@ -192,6 +192,10 @@ export type LedgerState = {
   added: Record<string, AddedEvidence[]>
   // 인원 분할을 확인한 그룹 결제
   splitConfirmed: string[]
+  // 그룹 결제 알림에서 "아니요"를 눌러 개인 지출로 둔 결제
+  personal?: string[]
+  // 결제 카드에서 "맞아요"로 근거를 확인한 결제
+  verified?: string[]
 }
 export const initialLedger: LedgerState = {
   sources: { location: true, calendar: true, photos: true },
@@ -255,7 +259,7 @@ export function evidenceOf(payment: Payment, state: LedgerState): Evidence[] {
     list.push({
       key: "photo",
       kind: "photo",
-      text: `결제 ±30분 사진 ${near.length}장`,
+      text: `${payment.time} ${payment.place ?? payment.zone} · 결제 ±30분 사진 ${near.length}장`,
       photoIds: near.map((photo) => photo.id),
     })
   ;(state.added[payment.id] ?? []).forEach((item, index) =>
@@ -338,6 +342,14 @@ export const recognizedPurchase = (payment: Payment) =>
     (item) =>
       payment.date.m === 10 && payment.date.d === item.day && payment.time === item.time,
   )?.text
+
+// 그룹 결제 알림의 인원 근거: 같은 날 일정에 사람이 적혀 있으면 일정 인원(나 포함), 없으면 결제에 묶인 인원
+export function groupBasis(payment: Payment, state: LedgerState) {
+  const event = eventsFor(payment, state).find((item) => item.people?.length)
+  if (event?.people) return { count: event.people.length + 1, source: "일정 인원", detail: event.title }
+  const count = payment.group?.length ?? 1
+  return { count, source: "함께 결제한 인원", detail: undefined }
+}
 
 // 결제가 있는 날 목록 (바텀시트 좌우 이동용)
 export const daysWithPayments = [

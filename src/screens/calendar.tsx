@@ -22,6 +22,7 @@ import {
   dayTotal,
   eventsOn,
   evidenceOf,
+  groupBasis,
   isRestored,
   keyOf,
   label,
@@ -31,7 +32,9 @@ import {
   monthsAvailable,
   narrativeLine,
   paymentsOn,
+  photos,
   photosOn,
+  restoreDaySummary,
   sameDay,
   weekday,
   won,
@@ -72,6 +75,8 @@ export function CalendarHome({
     if (found >= 0) setIndex(found)
   }, [sheetDay])
   const summary = monthSummary(y, m, state)
+  // 같은 해 이전 달이 있으면 지난달 복원 일수를 함께 보여 준다
+  const lastMonth = m > 1 ? restoreDaySummary(y, m - 1, state) : undefined
   return (
     <>
       <div className="cal-top">
@@ -115,6 +120,7 @@ export function CalendarHome({
             <strong>
               {summary.restoredDays}일 / {summary.paidDays}일
             </strong>
+            {lastMonth && <small>지난달 {lastMonth.complete}일</small>}
           </div>
         </div>
         <div className="cal-weekdays">
@@ -173,7 +179,10 @@ export function DaySheet({
   showMap,
   openRecord,
   openSplit,
+  markPersonal,
   unlink,
+  unlinkPhoto,
+  verify,
 }: {
   day: YMD
   state: LedgerState
@@ -185,7 +194,10 @@ export function DaySheet({
   showMap: (day: YMD) => void
   openRecord: (paymentId?: string) => void
   openSplit: (payment: Payment) => void
+  markPersonal: (paymentId: string) => void
   unlink: (paymentId: string, key: string) => void
+  unlinkPhoto: (photoId: string) => void
+  verify: (paymentId: string) => void
 }) {
   const list = paymentsOn(day)
   const restored = list.filter((payment) => isRestored(payment, state)).length
@@ -286,11 +298,14 @@ export function DaySheet({
             <PayCard
               focus={focusPayment === payment.id}
               key={payment.id}
+              markPersonal={markPersonal}
               openRecord={openRecord}
               openSplit={openSplit}
               payment={payment}
               state={state}
               unlink={unlink}
+              unlinkPhoto={unlinkPhoto}
+              verify={verify}
             />
           ))}
           <DayReport day={day} state={state} tone={tone} />
@@ -307,20 +322,29 @@ function PayCard({
   focus,
   openRecord,
   openSplit,
+  markPersonal,
   unlink,
+  unlinkPhoto,
+  verify,
 }: {
   payment: Payment
   state: LedgerState
   focus: boolean
   openRecord: (paymentId?: string) => void
   openSplit: (payment: Payment) => void
+  markPersonal: (paymentId: string) => void
   unlink: (paymentId: string, key: string) => void
+  unlinkPhoto: (photoId: string) => void
+  verify: (paymentId: string) => void
 }) {
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState(false)
   const evidence = evidenceOf(payment, state)
   const people = payment.group
   const confirmed = state.splitConfirmed.includes(payment.id)
+  const personal = (state.personal ?? []).includes(payment.id)
+  const verified = (state.verified ?? []).includes(payment.id)
+  const basis = groupBasis(payment, state)
   const location = evidence.find((item) => item.kind === "location")
   const calendar = evidence.filter((item) => item.kind === "calendar")
   const photo = evidence.find((item) => item.kind === "photo")
@@ -332,7 +356,7 @@ function PayCard({
         <time>{payment.time}</time>
         <strong>{payment.merchant}</strong>
         <b>{won(payment.amount)}</b>
-        {people && (
+        {people && !personal && (
           <Action
             className={cx("group-badge", confirmed && "confirmed")}
             onClick={() => openSplit(payment)}
@@ -348,6 +372,25 @@ function PayCard({
           {won(Math.round(payment.amount / people.length))}
         </p>
       )}
+      {people && !confirmed && !personal && (
+        <div className="group-notice">
+          <p>
+            {basis.source} {basis.count}명, 그룹 결제 같아요
+          </p>
+          <span>
+            {basis.detail ? `내 일정 · ${basis.detail}` : "결제에 함께 묶인 인원 기준"}
+          </span>
+          <div>
+            <Action className="mini-primary" onClick={() => openSplit(payment)}>
+              맞아요
+            </Action>
+            <Action className="mini-secondary" onClick={() => markPersonal(payment.id)}>
+              아니요
+            </Action>
+          </div>
+        </div>
+      )}
+      {personal && <p className="split-line">개인 지출로 기록했어요</p>}
       <div className="pay-dotted" />
       {evidence.length === 0 ? (
         <div className="pay-empty">
@@ -409,6 +452,7 @@ function PayCard({
         <Action className="edit-link" onClick={() => setEditing(!editing)}>
           {editing ? "완료" : "수정"}
         </Action>
+        {verified && !editing && <span className="verified-chip">✓ 확인함</span>}
       </div>
       {open && evidence.length > 0 && (
         <ul className="evidence-list">
@@ -420,20 +464,49 @@ function PayCard({
       {editing && (
         <div className="evidence-editor">
           <p>연결된 기록을 끊거나 새로 붙일 수 있어요</p>
-          {evidence.map((item) => (
-            <div key={item.key}>
-              <span>{item.text}</span>
-              <Action
-                className="mini-secondary"
-                onClick={() => unlink(payment.id, item.key)}
-              >
-                연결 해제
-              </Action>
-            </div>
-          ))}
-          <Action className="mini-primary" onClick={() => openRecord(payment.id)}>
-            기록 추가
-          </Action>
+          {evidence.map((item) =>
+            item.kind === "photo" ? (
+              (item.photoIds ?? []).map((id) => {
+                const found = photos.find((photo) => photo.id === id)
+                return (
+                  <div key={id}>
+                    <span>
+                      사진 · {found?.title} {found?.time}
+                    </span>
+                    <Action className="mini-secondary" onClick={() => unlinkPhoto(id)}>
+                      제외
+                    </Action>
+                  </div>
+                )
+              })
+            ) : (
+              <div key={item.key}>
+                <span>{item.text}</span>
+                <Action
+                  className="mini-secondary"
+                  onClick={() => unlink(payment.id, item.key)}
+                >
+                  연결 해제
+                </Action>
+              </div>
+            ),
+          )}
+          <p className="evidence-recount">근거 {evidence.length}개로 다시 계산했어요</p>
+          <div className="evidence-actions">
+            <Action className="mini-primary" onClick={() => openRecord(payment.id)}>
+              기록 추가
+            </Action>
+            <Action
+              className="mini-primary"
+              disabled={verified}
+              onClick={() => {
+                verify(payment.id)
+                setEditing(false)
+              }}
+            >
+              {verified ? "확인했어요" : "맞아요"}
+            </Action>
+          </div>
         </div>
       )}
     </div>
