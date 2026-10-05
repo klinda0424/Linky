@@ -8,7 +8,6 @@ import {
   Plus,
   Route,
   Search,
-  TrendingUp,
   Users,
 } from "lucide-react"
 import { Action, cx } from "@/components/common"
@@ -27,7 +26,6 @@ import {
   isRestored,
   keyOf,
   label,
-  man,
   monthCells,
   monthSummary,
   monthsAvailable,
@@ -78,7 +76,7 @@ export function CalendarHome({
   // 같은 해 이전 달이 있으면 지난달 복원 일수를 함께 보여 준다
   // 지난달 복원 일수는 일괄 복원 시점 기준이다. 이후 사용자가 직접 추가한 기록(added)은 빼서
   // 10/12 캡처 입력 뒤에도 "지난달 18일"로 유지한다.
-  // 색 대신 표시: 지출이 큰 날, 나눔 검토가 필요한 날만
+  // 색 대신 표시: 지출이 큰 날은 금액을 빨간색으로, 나눔 검토가 필요한 날은 날짜 옆 점으로
   const bigDays = bigSpendDays(y, m, state)
   const reviewDays = splitReviewDays(y, m, state)
   const lastMonth =
@@ -143,35 +141,30 @@ export function CalendarHome({
               <Action
                 className={cx(
                   "cal-cell",
-                  mine > 0 && "paid",
                   sameDay(date, TODAY) && "today",
                   sheetDay && sameDay(date, sheetDay) && "picked",
                 )}
                 key={day}
+                label={`${m}월 ${day}일${mine > 0 ? ` 내 지출 ${won(mine)}` : ""}${bigDays.has(day) ? ", 지출이 큰 날" : ""}${reviewDays.has(day) ? ", 나눔 검토 필요" : ""}`}
                 onClick={() => openDay(date)}
               >
-                <b>{day}</b>
-                {(bigDays.has(day) || reviewDays.has(day)) && (
-                  <span className="cal-flags">
-                    {bigDays.has(day) && (
-                      <TrendingUp aria-label="지출이 큰 날" role="img" size={13} strokeWidth={2} />
-                    )}
-                    {reviewDays.has(day) && (
-                      <Users aria-label="나눔 검토 필요" role="img" size={13} strokeWidth={2} />
-                    )}
-                  </span>
+                <b>
+                  {day}
+                  {reviewDays.has(day) && <span className="cal-review-dot" />}
+                </b>
+                {mine > 0 && (
+                  <i className={cx(bigDays.has(day) && "big")}>-{mine.toLocaleString("ko-KR")}</i>
                 )}
-                {mine > 0 && <i>{man(mine)}</i>}
               </Action>
             )
           })}
         </div>
         <div className="cal-legend">
           <span>
-            <TrendingUp size={13} strokeWidth={2} /> 지출이 큰 날
+            <i className="cal-legend-big">빨간 금액</i> 지출이 큰 날
           </span>
           <span>
-            <Users size={13} strokeWidth={2} /> 나눔 검토 필요
+            <span className="cal-review-dot" /> 나눔 검토 필요
           </span>
         </div>
       </div>

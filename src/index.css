@@ -26,6 +26,8 @@
   --warning-light: #fff3ea;
   --pending: #f04438;
   --pending-light: #fff0ee;
+  /* 캘린더에서 지출이 큰 날의 금액 (흰 배경 위 작은 글자 명암비 4.5:1 이상) */
+  --expense-high: #d92d20;
   --night-glow: #424248;
   --glass: rgba(255, 255, 255, 0.94);
   --glass-border: rgba(255, 255, 255, 0.7);
@@ -2081,49 +2083,32 @@ p {
   font-size: 11px;
 }
 
+/* 달력: 칸 배경 없이 큰 날짜 + 그날 내 지출 전체 금액. 좌우 여백을 줄여 6자리 금액도 한 줄에 들어가게 한다 */
 .cal-weekdays,
 .cal-grid {
+  margin: 0 -14px;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
 }
 
 .cal-weekdays {
-  margin-bottom: 6px;
+  margin-top: 6px;
+  margin-bottom: 4px;
 }
 
 .cal-weekdays span {
   text-align: center;
-  color: var(--sub);
-  font-size: 11px;
-}
-
-/* 복원 상태에 따른 색 구분은 쓰지 않는다. 지출이 큰 날·나눔 검토 필요한 날만 아이콘으로 표시한다. */
-.cal-cell {
-  position: relative;
-  height: 84px;
-  padding: 8px 2px 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  border: 1px solid transparent;
-  border-radius: 10px;
+  color: var(--disabled);
   font-size: 13px;
 }
 
-.cal-cell.paid {
-  background: var(--surface);
-}
-
-.cal-flags {
-  position: absolute;
-  top: 33px;
-  left: 50%;
-  transform: translateX(-50%);
+.cal-cell {
+  height: 72px;
+  padding: 6px 0 0;
   display: flex;
-  gap: 3px;
-  color: var(--primary-text);
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
 .cal-cell.blank {
@@ -2131,26 +2116,55 @@ p {
 }
 
 .cal-cell b {
-  font-weight: 600;
-}
-
-.cal-cell i {
-  font-size: 11px;
-  font-style: normal;
-  font-weight: 600;
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  color: #3a3a3f;
+  font-size: 20px;
+  font-weight: 500;
 }
 
 .cal-cell.today b {
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  background: var(--surface);
 }
 
-.cal-cell.picked {
-  box-shadow: 0 0 0 2px var(--text);
+.cal-cell.picked b {
+  box-shadow: inset 0 0 0 1.5px var(--text);
+}
+
+.cal-cell i {
+  color: var(--sub);
+  font-size: 11.5px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+}
+
+.cal-cell i.big {
+  color: var(--expense-high);
+}
+
+.cal-review-dot {
+  width: 5px;
+  height: 5px;
+  display: inline-block;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+.cal-cell b .cal-review-dot {
+  position: absolute;
+  top: 3px;
+  right: 1px;
 }
 
 .cal-legend {
-  margin-top: 16px;
+  margin-top: 14px;
   display: flex;
   justify-content: center;
   gap: 14px;
@@ -2164,8 +2178,10 @@ p {
   gap: 5px;
 }
 
-.cal-legend svg {
-  color: var(--primary-text);
+.cal-legend-big {
+  color: var(--expense-high);
+  font-style: normal;
+  font-weight: 600;
 }
 
 /* ---------- 날짜 바텀시트 ---------- */
