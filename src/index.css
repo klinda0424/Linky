@@ -2453,22 +2453,6 @@ p {
   color: var(--disabled);
 }
 
-.dots {
-  display: flex;
-  gap: 3px;
-}
-
-.dots i {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--toggle-off);
-}
-
-.dots i.on {
-  background: var(--primary);
-}
-
 .edit-link {
   color: var(--sub);
   font-size: 12px;
