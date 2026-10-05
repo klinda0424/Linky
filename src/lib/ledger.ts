@@ -2,6 +2,13 @@
 // 원칙: AI는 추측하지 않는다. 결제에는 사용자 기록(내 위치·일정·사진)에서 찾은 근거만 붙이고,
 // 근거가 없으면 "기록 없음"으로 비워 둔다. 캘린더·지도·앨범·검색이 모두 이 한 곳의 값을 쓴다.
 
+import { historyPayments, verifyHistory } from "@/mock/history"
+import {
+  novemberEvents,
+  novemberPayments,
+  novemberPhotos,
+  verifyNovember,
+} from "@/mock/november"
 import {
   capturedPurchases,
   octoberConfirmedSplitIds,
@@ -26,10 +33,11 @@ export const man = (amount: number) => `${Math.round(amount / 1000) / 10}만`
 
 // 오늘 (프로토타입 기준일)
 export const TODAY = ymd(2026, 10, 31)
-export const monthsAvailable = [
-  { y: 2026, m: 9 },
-  { y: 2026, m: 10 },
-]
+// 2026년 1~11월을 월 이동으로 열람한다
+export const monthsAvailable = Array.from({ length: 11 }, (_, index) => ({
+  y: 2026,
+  m: index + 1,
+}))
 
 // 일요일 시작 달력 칸 (앞쪽 빈 칸은 null)
 export function monthCells(y: number, m: number): Array<number | null> {
@@ -109,6 +117,7 @@ export const events: CalEvent[] = [
   { id: "e5", title: "엄마 생신", date: d(9, 19), start: "12:00", end: "15:00", zone: "합정" },
   { id: "e6", title: "수진이 결혼식", date: d(9, 26), start: "13:00", end: "15:00", zone: "합정" },
   ...octoberEvents,
+  ...novemberEvents,
 ]
 
 export const photos: Photo[] = [
@@ -121,6 +130,7 @@ export const photos: Photo[] = [
   { id: "ph7", date: d(9, 19), time: "12:50", zone: "합정", title: "한정식 집" },
   { id: "ph10", date: d(9, 27), time: "15:00", zone: "용산", title: "한강" },
   ...octoberPhotos,
+  ...novemberPhotos,
 ]
 
 const pay = (
@@ -135,6 +145,7 @@ const pay = (
 ): Payment => ({ id, date, time, merchant, amount, zone, place, group })
 
 export const payments: Payment[] = [
+  ...historyPayments,
   pay("p1", d(9, 1), "08:15", "스타벅스 강남역점", 5500, "강남역", "강남역"),
   pay("p2", d(9, 1), "12:30", "김밥천국 역삼점", 7000, "역삼", "역삼"),
   pay("p3", d(9, 1), "19:50", "GS25 역삼점", 3200, "역삼"),
@@ -164,6 +175,7 @@ export const payments: Payment[] = [
   pay("p27", d(9, 29), "12:05", "본도시락 선릉점", 6900, "선릉"),
   pay("p28", d(9, 29), "18:45", "스타벅스 선릉점", 6200, "선릉", "선릉"),
   ...octoberPayments,
+  ...novemberPayments,
 ]
 
 // ---------- 사용자가 바꾼 연결 상태 ----------
@@ -452,6 +464,8 @@ export function restoreSummary(y: number, m: number, state: LedgerState) {
 if (import.meta.env.DEV) {
   try {
     verifyOctober((day) => dayStatus(ymd(2026, 10, day), initialLedger))
+    verifyNovember((day) => dayStatus(ymd(2026, 11, day), initialLedger))
+    verifyHistory()
   } catch (error) {
     console.error(error)
   }
