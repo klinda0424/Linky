@@ -7,6 +7,7 @@ import {
   type Payment,
   PLACES,
   evidenceOf,
+  evidenceText,
   keyOf,
   label,
   photosFor,
@@ -154,7 +155,7 @@ export function SearchScreen({
                     <strong>{payment.merchant}</strong>
                     <span>
                       {label(payment.date)} ({weekday(payment.date)}){" "}
-                      {payment.time} · 근거 {evidenceOf(payment, state).length}개
+                      {payment.time} · {evidenceText(evidenceOf(payment, state).length)}
                     </span>
                   </div>
                   <b>{won(payment.amount)}</b>

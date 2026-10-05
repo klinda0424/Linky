@@ -17,7 +17,6 @@ import {
   NotificationSettings,
   PrivacySettings,
   ProfileInfoSettings,
-  ProfileTone,
 } from "@/screens/profile"
 import {
   type RecordKind,
@@ -41,21 +40,16 @@ import {
   type NotificationKey,
   type PermissionKey,
   type ProfileDetails,
-  type Tone,
 } from "@/types"
 
 export function MainApp({
   profile,
   setProfile,
-  tone,
-  setTone,
   permissions,
   setPermissions,
 }: {
   profile: ProfileDetails
   setProfile: (value: ProfileDetails) => void
-  tone: Tone
-  setTone: (tone: Tone) => void
   permissions: Record<PermissionKey, boolean>
   setPermissions: (
     update: (value: Record<PermissionKey, boolean>) => Record<PermissionKey, boolean>,
@@ -192,7 +186,6 @@ export function MainApp({
         openNotifications={() => setView("notifications")}
         openPrivacy={() => setView("privacy")}
         openSettlement={() => setView("settlementList")}
-        openTone={() => setView("tone")}
       />
     )
   }
@@ -282,8 +275,6 @@ export function MainApp({
             values={notifications}
           />
         )
-      case "tone":
-        return <ProfileTone back={toTabs} setTone={setTone} tone={tone} />
       case "settlementList":
         return (
           <SettlementList
@@ -385,7 +376,6 @@ export function MainApp({
             setTab("map")
           }}
           state={state}
-          tone={tone}
           unlink={unlink}
           unlinkPhoto={unlinkPhoto}
           verify={verify}

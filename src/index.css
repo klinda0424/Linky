@@ -296,8 +296,7 @@ p {
 }
 
 .choice-chip.selected,
-.list-card.selected,
-.tone-card.selected {
+.list-card.selected {
   border-color: var(--primary);
   background: var(--primary-soft);
 }
@@ -535,57 +534,6 @@ p {
   color: var(--sub);
   text-align: left;
   font-size: 11px;
-}
-
-.tone-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.tone-card {
-  padding: 13px;
-  border: 1.5px solid var(--border);
-  border-radius: 14px;
-  background: var(--background);
-}
-
-.tone-label {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.tone-label strong {
-  flex: 1;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.tone-preview {
-  margin-top: 10px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: var(--surface);
-  font-size: 12px;
-  line-height: 1.45;
-}
-
-.tone-card > p {
-  margin-top: 8px;
-  color: var(--sub);
-  font-size: 11px;
-}
-
-.numeric-preview {
-  padding-top: 9px;
-}
-
-.numeric-preview > strong {
-  display: block;
-  margin-top: 7px;
-  font-size: 11px;
-  font-weight: 700;
 }
 
 .main-page {
@@ -934,14 +882,6 @@ p {
   overflow: visible;
   line-height: 1.4;
   white-space: normal;
-}
-
-.tone-settings {
-  padding-top: 22px;
-}
-
-.tone-settings .sub-heading {
-  margin-bottom: 0;
 }
 
 .settings-sub {
@@ -2496,6 +2436,7 @@ p {
 }
 
 .edit-link {
+  margin-left: auto;
   color: var(--sub);
   font-size: 12px;
   text-decoration: underline;

@@ -17,14 +17,7 @@ import {
   Toggle,
   cx,
 } from "@/components/common"
-import {
-  dayFacts,
-  initialLedger,
-  narrativeLine,
-  won,
-  ymd,
-} from "@/lib/ledger"
-import { type PermissionKey, type Tone } from "@/types"
+import { type PermissionKey } from "@/types"
 
 // ---------- 1. 본인인증 → 닉네임 ----------
 // 금융앱 가입처럼 이름·생년월일·휴대폰으로 본인을 확인한다 (목업: 실제 인증·저장 없음).
@@ -618,48 +611,3 @@ export function Welcome({ next, back }: { next: () => void; back: () => void }) 
   )
 }
 
-// ---------- 리포트 톤 미리보기 (마이페이지에서만 사용, 온보딩 단계 없음) ----------
-// 미리보기는 10월 시연일(10/12)의 실제 하루 리포트 문구를 그대로 보여 준다
-const PREVIEW_DAY = ymd(2026, 10, 12)
-
-export function ToneOptions({
-  tone,
-  setTone,
-}: {
-  tone?: Tone
-  setTone: (tone: Tone) => void
-}) {
-  const facts = dayFacts(PREVIEW_DAY, initialLedger)
-  return (
-    <div className="tone-cards">
-      <Action
-        className={cx("tone-card", tone === "narrative" && "selected")}
-        onClick={() => setTone("narrative")}
-      >
-        <div className="tone-label">
-          <strong>서사형</strong>
-          {tone === "narrative" && <Check size={15} strokeWidth={2.2} />}
-        </div>
-        <div className="tone-preview">
-          “{narrativeLine(PREVIEW_DAY, initialLedger)}.”
-        </div>
-        <p>하루의 사실을 한 문장으로 이어서 보여줘요</p>
-      </Action>
-      <Action
-        className={cx("tone-card", tone === "numeric" && "selected")}
-        onClick={() => setTone("numeric")}
-      >
-        <div className="tone-label">
-          <strong>수치형</strong>
-          {tone === "numeric" && <Check size={15} strokeWidth={2.2} />}
-        </div>
-        <div className="tone-preview numeric-preview">
-          <strong>
-            결제 {facts.count}건 · {won(facts.total)} · 복원 {facts.restored}건
-          </strong>
-        </div>
-        <p>건수와 금액 중심으로 간결하게 보여줘요</p>
-      </Action>
-    </div>
-  )
-}

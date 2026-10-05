@@ -8,6 +8,7 @@ import {
   type Photo,
   type YMD,
   evidenceOf,
+  evidenceText,
   events,
   label,
   man,
@@ -63,7 +64,7 @@ export function AlbumTab({
           }
         : {
             key,
-            title: "일정 없는 사진",
+            title: "기타",
             sub: `${label(photo.date)} (${weekday(photo.date)})`,
             list: [],
           }
@@ -169,7 +170,7 @@ export function PhotoDetail({
               <div>
                 <strong>{payment.merchant}</strong>
                 <span>
-                  {payment.time} · 근거 {evidenceOf(payment, state).length}개
+                  {payment.time} · {evidenceText(evidenceOf(payment, state).length)}
                 </span>
               </div>
               <b>{won(payment.amount)}</b>

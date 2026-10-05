@@ -430,9 +430,16 @@ export function pinPoint(zone: string, id: string): Pt {
   }
 }
 
-// 자주 간 장소: 내 위치 기록이 있는 결제 기준 방문 횟수
+// 근거 개수 문구: 근거가 없으면 개수 대신 "기록 없음"
+export const evidenceText = (count: number) => (count > 0 ? `근거 ${count}개` : "기록 없음")
+
+// 자주 간 장소: 최근 한 달(오늘 기준 30일) 내 위치 기록이 있는 결제 기준 방문 횟수
 export function frequentPlaces(state: LedgerState, limit = 4) {
+  const start = new Date(TODAY.y, TODAY.m - 1, TODAY.d - 29)
+  const since = keyOf(ymd(start.getFullYear(), start.getMonth() + 1, start.getDate()))
   const counts = payments.reduce<Record<string, number>>((acc, payment) => {
+    const at = keyOf(payment.date)
+    if (at < since || at > keyOf(TODAY)) return acc
     if (payment.place && state.sources.location)
       acc[payment.place] = (acc[payment.place] ?? 0) + 1
     return acc

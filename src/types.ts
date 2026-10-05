@@ -1,5 +1,3 @@
-export type Tone = "narrative" | "numeric"
-
 // 하단 탭 4개
 export type MainTab = "calendar" | "map" | "album" | "mypage"
 
@@ -15,7 +13,6 @@ export type MainView =
   | "connections"
   | "privacy"
   | "notifications"
-  | "tone"
   | "settlementList"
   | "settlement"
   | "settlementTable"
