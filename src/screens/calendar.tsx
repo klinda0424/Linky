@@ -8,6 +8,7 @@ import {
   Plus,
   Route,
   Search,
+  TrendingUp,
   Users,
 } from "lucide-react"
 import { Action, cx } from "@/components/common"
@@ -17,8 +18,8 @@ import {
   type YMD,
   TODAY,
   daysWithPayments,
+  bigSpendDays,
   dayMine,
-  dayStatus,
   dayTotal,
   eventsOn,
   evidenceOf,
@@ -37,6 +38,7 @@ import {
   removedEvidenceOf,
   restoreDaySummary,
   sameDay,
+  splitReviewDays,
   weekday,
   won,
   ymd,
@@ -76,6 +78,9 @@ export function CalendarHome({
   // 같은 해 이전 달이 있으면 지난달 복원 일수를 함께 보여 준다
   // 지난달 복원 일수는 일괄 복원 시점 기준이다. 이후 사용자가 직접 추가한 기록(added)은 빼서
   // 10/12 캡처 입력 뒤에도 "지난달 18일"로 유지한다.
+  // 색 대신 표시: 지출이 큰 날, 나눔 검토가 필요한 날만
+  const bigDays = bigSpendDays(y, m, state)
+  const reviewDays = splitReviewDays(y, m, state)
   const lastMonth =
     m > 1 ? restoreDaySummary(y, m - 1, { ...state, added: {} }) : undefined
   return (
@@ -132,14 +137,13 @@ export function CalendarHome({
             if (day === null)
               return <span className="cal-cell blank" key={`b${cellIndex}`} />
             const date = ymd(y, m, day)
-            const status = dayStatus(date, state)
             // 셀에는 내 지출(확정한 분할만 차감)을 보여 준다
             const mine = dayMine(date, state)
             return (
               <Action
                 className={cx(
                   "cal-cell",
-                  status,
+                  mine > 0 && "paid",
                   sameDay(date, TODAY) && "today",
                   sheetDay && sameDay(date, sheetDay) && "picked",
                 )}
@@ -147,6 +151,16 @@ export function CalendarHome({
                 onClick={() => openDay(date)}
               >
                 <b>{day}</b>
+                {(bigDays.has(day) || reviewDays.has(day)) && (
+                  <span className="cal-flags">
+                    {bigDays.has(day) && (
+                      <TrendingUp aria-label="지출이 큰 날" role="img" size={13} strokeWidth={2} />
+                    )}
+                    {reviewDays.has(day) && (
+                      <Users aria-label="나눔 검토 필요" role="img" size={13} strokeWidth={2} />
+                    )}
+                  </span>
+                )}
                 {mine > 0 && <i>{man(mine)}</i>}
               </Action>
             )
@@ -154,13 +168,10 @@ export function CalendarHome({
         </div>
         <div className="cal-legend">
           <span>
-            <i className="complete" /> 복원 완료
+            <TrendingUp size={13} strokeWidth={2} /> 지출이 큰 날
           </span>
           <span>
-            <i className="partial" /> 부분 복원
-          </span>
-          <span>
-            <i className="none" /> 미복원
+            <Users size={13} strokeWidth={2} /> 나눔 검토 필요
           </span>
         </div>
       </div>

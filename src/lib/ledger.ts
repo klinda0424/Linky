@@ -389,6 +389,32 @@ export function groupBasis(payment: Payment, state: LedgerState) {
   return { count, source: "함께 결제한 인원", detail: undefined }
 }
 
+// 지출이 큰 날: 한 달에서 내 지출이 큰 상위 3일 (동률 포함)
+export function bigSpendDays(y: number, m: number, state: LedgerState, limit = 3) {
+  const totals = paidDaysOf(y, m)
+    .map((date) => ({ day: date.d, mine: dayMine(date, state) }))
+    .filter((item) => item.mine > 0)
+    .sort((a, b) => b.mine - a.mine)
+  const cutoff = totals[Math.min(limit, totals.length) - 1]?.mine ?? Infinity
+  return new Set(totals.filter((item) => item.mine >= cutoff).map((item) => item.day))
+}
+
+// 나눔 검토가 필요한 날: 그룹 결제로 보이지만 아직 분할을 확정하지도, 개인 지출로 두지도 않은 결제가 있는 날
+export function splitReviewDays(y: number, m: number, state: LedgerState) {
+  return new Set(
+    paidDaysOf(y, m)
+      .filter((date) =>
+        paymentsOn(date).some(
+          (payment) =>
+            payment.group &&
+            !state.splitConfirmed.includes(payment.id) &&
+            !(state.personal ?? []).includes(payment.id),
+        ),
+      )
+      .map((date) => date.d),
+  )
+}
+
 // 결제가 있는 날 목록 (바텀시트 좌우 이동용)
 export const daysWithPayments = [
   ...new Set(payments.map((payment) => keyOf(payment.date))),
