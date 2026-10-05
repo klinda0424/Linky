@@ -53,6 +53,12 @@ export const octoberPhotos: Photo[] = [
   { id: "ph22", date: d(31), time: "22:10", zone: "성수", title: "성수" },
 ]
 
+// 장면 4에서 사용자가 직접 확정하는 10/12 점심을 뺀 그룹 결제 (10/4 술자리, 10/25 카페는 이미 확정)
+export const octoberConfirmedSplitIds = () =>
+  octoberPayments
+    .filter((payment) => payment.group && payment.date.d !== 12)
+    .map((payment) => payment.id)
+
 // 근거 없는 날(10/7·14·21·28)과 부분 복원일은 결제에 위치(place)가 없거나 일부만 있다.
 export const octoberPayments: Payment[] = [
   o(1, "08:40", "스타벅스 강남역점", 5800, "식비·카페", "강남역", true),
@@ -145,6 +151,9 @@ export const octoberPayments: Payment[] = [
   o(31, "16:00", "(주)아더에러 성수", 39000, "쇼핑", "성수", true),
   o(31, "19:40", "(주)파티월드 성수점", 40000, "생활·기타", "성수", true),
 ]
+
+// 장면 5: 주문내역 캡처를 올리면 인식되는 구매 품목 (결제 시각 기준)
+export const capturedPurchases = [{ day: 12, time: "21:40", text: "블라우스 1벌" }]
 
 // 11월은 월 요약만 둔다 (일별 데이터 없음)
 export const novemberSummary = { mine: 1170000, days: 30, restoredDays: 26 }
