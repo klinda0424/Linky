@@ -133,6 +133,11 @@ export function MainApp({
       ...value,
       verified: [...(value.verified ?? []), paymentId],
     }))
+  const confirmRestore = (paymentId: string) =>
+    setLedger((value) => ({
+      ...value,
+      restoreConfirmed: [...value.restoreConfirmed, paymentId],
+    }))
   const markPersonal = (paymentId: string) =>
     setLedger((value) => ({
       ...value,
@@ -450,6 +455,7 @@ export function MainApp({
           relinkPhoto={relinkPhoto}
           unlinkPhoto={unlinkPhoto}
           verify={verify}
+          confirmRestore={confirmRestore}
         />
       )}
       {recordPayment && (
