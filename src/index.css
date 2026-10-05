@@ -1834,6 +1834,47 @@ p {
   font-weight: 700;
 }
 
+.recognize-card {
+  margin-top: 14px;
+  padding: 14px 16px;
+}
+
+.recognize-card small {
+  color: var(--sub);
+  font-size: 11px;
+}
+
+.recognize-card strong {
+  margin-top: 4px;
+  display: block;
+  font-size: 17px;
+}
+
+.recognize-card input {
+  width: 100%;
+  margin-top: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--background);
+  font: inherit;
+  font-size: 15px;
+}
+
+.recognize-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.recognize-actions .secondary-button {
+  padding: 0 22px;
+  flex: none;
+}
+
+.recognize-actions .primary-button {
+  flex: 1;
+}
+
 .arc-rows {
   display: flex;
   flex-direction: column;

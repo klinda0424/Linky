@@ -18,6 +18,7 @@ import {
   photoLinked,
   photos,
   pinPoint,
+  shareOf,
   weekday,
   won,
   ymd,
@@ -312,6 +313,9 @@ export function MapTab({
               <span>
                 {label(chosenPayment.date)} {chosenPayment.time} ·{" "}
                 {won(chosenPayment.amount)}
+                {chosenPayment.group &&
+                  state.splitConfirmed.includes(chosenPayment.id) &&
+                  ` · 내 몫 ${won(shareOf(chosenPayment, state))}`}
               </span>
             </div>
             <Action
