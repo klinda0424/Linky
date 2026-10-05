@@ -376,7 +376,9 @@ function PayCard({
   unlinkPhoto: (photoId: string) => void
   verify: (paymentId: string) => void
 }) {
+  // 행을 누르면 사진만 펼치고, "수정"을 눌러야 근거 편집이 열린다
   const [open, setOpen] = useState(false)
+  const [editing, setEditing] = useState(false)
   const evidence = evidenceOf(payment, state)
   const people = payment.group
   const confirmed = state.splitConfirmed.includes(payment.id)
@@ -392,7 +394,13 @@ function PayCard({
   const Icon = payment.category ? categoryIcon[payment.category] : Receipt
   return (
     <div className={cx("pay-row", focus && "focus", open && "open")} data-pay={payment.id}>
-      <Action className="pay-main" onClick={() => setOpen(!open)}>
+      <Action
+        className="pay-main"
+        onClick={() => {
+          setOpen(!open)
+          setEditing(false)
+        }}
+      >
         <span className="pay-icon">
           <Icon size={17} strokeWidth={1.7} />
         </span>
@@ -460,16 +468,25 @@ function PayCard({
           <Plus size={12} strokeWidth={2} /> 캡처·사진 추가
         </Action>
       )}
-      {open && (
-        <div className="pay-detail">
-          {photoIds.length > 0 && (
+      {open && !editing && (
+        <div className="pay-photos">
+          {photoIds.length > 0 ? (
             <div className="thumbs">
               {photoIds.slice(0, 4).map((id, i) => (
                 <i className={`photo-thumb t${i % 5}`} key={id} />
               ))}
               {photoIds.length > 4 && <em>+{photoIds.length - 4}</em>}
             </div>
+          ) : (
+            <span className="no-photo">사진 기록 없음</span>
           )}
+          <Action className="text-btn" onClick={() => setEditing(true)}>
+            수정
+          </Action>
+        </div>
+      )}
+      {open && editing && (
+        <div className="pay-detail">
           {evidence.length === 0 && <p className="detail-note">연결된 근거가 없어요</p>}
           {evidence.map((item) =>
             item.kind === "photo" ? (
@@ -508,9 +525,6 @@ function PayCard({
               </Action>
             </div>
           ))}
-          {(removed.length > 0 || evidence.length > 0) && (
-            <p className="detail-note">근거 {evidence.length}개</p>
-          )}
           <div className="detail-actions">
             {people && confirmed && (
               <Action className="pill" onClick={() => openSplit(payment)}>
@@ -525,6 +539,7 @@ function PayCard({
               disabled={verified}
               onClick={() => {
                 verify(payment.id)
+                setEditing(false)
                 setOpen(false)
               }}
             >
