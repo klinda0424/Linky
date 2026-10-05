@@ -1077,6 +1077,10 @@ p {
   background: var(--green);
 }
 
+.person-avatar.jin {
+  background: var(--purple);
+}
+
 .person-avatar.small {
   width: 34px;
   height: 34px;
