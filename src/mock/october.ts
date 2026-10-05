@@ -1,6 +1,6 @@
 // 2026년 10월 목업 (주인공 김소연). 캘린더·지도·앨범·검색·리포트가 lib/ledger.ts를 거쳐 이 파일만 참조한다.
 // 합계는 파일 맨 아래 verifyOctober()가 명세와 일치하는지 검증한다.
-import type { CalEvent, Category, Payment, Photo } from "@/lib/ledger"
+import type { CalEvent, Category, Payment, Photo, TrailPoint } from "@/lib/ledger"
 
 const d = (day: number) => ({ y: 2026, m: 10, d: day })
 
@@ -52,6 +52,18 @@ export const octoberPhotos: Photo[] = [
   { id: "ph21", date: d(31), time: "19:50", zone: "성수", title: "핼러윈 파티" },
   { id: "ph22", date: d(31), time: "22:10", zone: "성수", title: "성수" },
 ]
+
+// 내 위치 기록 중 결제와 별개로 동선에 이어지는 지점 (장면 6: 성수역 → 식당 → 옷가게 → 귀가)
+export const octoberTrail: TrailPoint[] = [
+  { id: "t1", date: d(12), time: "12:10", name: "성수역", zone: "성수" },
+  { id: "t2", date: d(12), time: "22:30", name: "집 (귀가)", zone: "역삼" },
+]
+
+// 장면 4에서 사용자가 직접 확정하는 10/12 점심을 뺀 그룹 결제 (10/4 술자리, 10/25 카페는 이미 확정)
+export const octoberConfirmedSplitIds = () =>
+  octoberPayments
+    .filter((payment) => payment.group && payment.date.d !== 12)
+    .map((payment) => payment.id)
 
 // 근거 없는 날(10/7·14·21·28)과 부분 복원일은 결제에 위치(place)가 없거나 일부만 있다.
 export const octoberPayments: Payment[] = [
@@ -146,8 +158,8 @@ export const octoberPayments: Payment[] = [
   o(31, "19:40", "(주)파티월드 성수점", 40000, "생활·기타", "성수", true),
 ]
 
-// 11월은 월 요약만 둔다 (일별 데이터 없음)
-export const novemberSummary = { mine: 1170000, days: 30, restoredDays: 26 }
+// 장면 5: 주문내역 캡처를 올리면 인식되는 구매 품목 (결제 시각 기준)
+export const capturedPurchases = [{ day: 12, time: "21:40", text: "블라우스 1벌" }]
 
 export const OCTOBER_TARGET = {
   gross: 1362000,

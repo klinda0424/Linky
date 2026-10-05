@@ -2,11 +2,20 @@
 // 원칙: AI는 추측하지 않는다. 결제에는 사용자 기록(내 위치·일정·사진)에서 찾은 근거만 붙이고,
 // 근거가 없으면 "기록 없음"으로 비워 둔다. 캘린더·지도·앨범·검색이 모두 이 한 곳의 값을 쓴다.
 
+import { historyPayments, verifyHistory, verifySeptember } from "@/mock/history"
 import {
+  novemberEvents,
+  novemberPayments,
+  novemberPhotos,
+  verifyNovember,
+} from "@/mock/november"
+import {
+  capturedPurchases,
+  octoberConfirmedSplitIds,
   octoberEvents,
   octoberPayments,
   octoberPhotos,
-  myShare,
+  octoberTrail,
   verifyOctober,
 } from "@/mock/october"
 
@@ -20,18 +29,16 @@ export const weekdayOf = (v: YMD) => new Date(v.y, v.m - 1, v.d).getDay()
 export const weekday = (v: YMD) => weekdayNames[weekdayOf(v)]
 
 export const won = (amount: number) => `${amount.toLocaleString("ko-KR")}원`
-// 달력 셀용 만원 단위 (4.5만, 12만)
-export const man = (amount: number) => {
-  const value = amount / 10000
-  return `${value >= 10 ? Math.round(value) : Math.round(value * 10) / 10}만`
-}
+// 만원 단위, 소수 1자리 (4.5만, 17.4만, 120만). 소수가 0이면 생략한다.
+export const man = (amount: number) => `${Math.round(amount / 1000) / 10}만`
 
 // 오늘 (프로토타입 기준일)
 export const TODAY = ymd(2026, 10, 31)
-export const monthsAvailable = [
-  { y: 2026, m: 9 },
-  { y: 2026, m: 10 },
-]
+// 2026년 1~11월을 월 이동으로 열람한다
+export const monthsAvailable = Array.from({ length: 11 }, (_, index) => ({
+  y: 2026,
+  m: index + 1,
+}))
 
 // 일요일 시작 달력 칸 (앞쪽 빈 칸은 null)
 export function monthCells(y: number, m: number): Array<number | null> {
@@ -91,6 +98,15 @@ export type Photo = {
   title: string
 }
 
+// 결제와 별개로 남은 내 위치 기록 지점 (동선 지도에서 결제 핀 사이를 잇는다)
+export type TrailPoint = {
+  id: string
+  date: YMD
+  time: string
+  name: string
+  zone: string
+}
+
 export type CalEvent = {
   id: string
   title: string
@@ -111,6 +127,7 @@ export const events: CalEvent[] = [
   { id: "e5", title: "엄마 생신", date: d(9, 19), start: "12:00", end: "15:00", zone: "합정" },
   { id: "e6", title: "수진이 결혼식", date: d(9, 26), start: "13:00", end: "15:00", zone: "합정" },
   ...octoberEvents,
+  ...novemberEvents,
 ]
 
 export const photos: Photo[] = [
@@ -123,7 +140,10 @@ export const photos: Photo[] = [
   { id: "ph7", date: d(9, 19), time: "12:50", zone: "합정", title: "한정식 집" },
   { id: "ph10", date: d(9, 27), time: "15:00", zone: "용산", title: "한강" },
   ...octoberPhotos,
+  ...novemberPhotos,
 ]
+
+export const trailPoints: TrailPoint[] = octoberTrail
 
 const pay = (
   id: string,
@@ -137,6 +157,7 @@ const pay = (
 ): Payment => ({ id, date, time, merchant, amount, zone, place, group })
 
 export const payments: Payment[] = [
+  ...historyPayments,
   pay("p1", d(9, 1), "08:15", "스타벅스 강남역점", 5500, "강남역", "강남역"),
   pay("p2", d(9, 1), "12:30", "김밥천국 역삼점", 7000, "역삼", "역삼"),
   pay("p3", d(9, 1), "19:50", "GS25 역삼점", 3200, "역삼"),
@@ -166,6 +187,7 @@ export const payments: Payment[] = [
   pay("p27", d(9, 29), "12:05", "본도시락 선릉점", 6900, "선릉"),
   pay("p28", d(9, 29), "18:45", "스타벅스 선릉점", 6200, "선릉", "선릉"),
   ...octoberPayments,
+  ...novemberPayments,
 ]
 
 // ---------- 사용자가 바꾼 연결 상태 ----------
@@ -182,6 +204,10 @@ export type LedgerState = {
   added: Record<string, AddedEvidence[]>
   // 인원 분할을 확인한 그룹 결제
   splitConfirmed: string[]
+  // 그룹 결제 알림에서 "아니요"를 눌러 개인 지출로 둔 결제
+  personal?: string[]
+  // 결제 카드에서 "맞아요"로 근거를 확인한 결제
+  verified?: string[]
 }
 export const initialLedger: LedgerState = {
   sources: { location: true, calendar: true, photos: true },
@@ -192,7 +218,7 @@ export const initialLedger: LedgerState = {
     "p7",
     "p8",
     "p20",
-    ...octoberPayments.filter((payment) => payment.group).map((payment) => payment.id),
+    ...octoberConfirmedSplitIds(),
   ],
 }
 
@@ -245,7 +271,7 @@ export function evidenceOf(payment: Payment, state: LedgerState): Evidence[] {
     list.push({
       key: "photo",
       kind: "photo",
-      text: `결제 ±30분 사진 ${near.length}장`,
+      text: `${payment.time} ${payment.place ?? payment.zone} · 결제 ±30분 사진 ${near.length}장`,
       photoIds: near.map((photo) => photo.id),
     })
   ;(state.added[payment.id] ?? []).forEach((item, index) =>
@@ -265,6 +291,15 @@ export const paymentsOn = (date: YMD) =>
 export const dayTotal = (date: YMD) =>
   paymentsOn(date).reduce((sum, payment) => sum + payment.amount, 0)
 
+// 내 몫: 인원 분할을 확정한 그룹 결제만 인원수로 나눈다. 확정 전에는 결제 전체가 내 지출이다.
+export const shareOf = (payment: Payment, state: LedgerState) =>
+  payment.group && state.splitConfirmed.includes(payment.id)
+    ? Math.round(payment.amount / payment.group.length)
+    : payment.amount
+
+export const dayMine = (date: YMD, state: LedgerState) =>
+  paymentsOn(date).reduce((sum, payment) => sum + shareOf(payment, state), 0)
+
 export type DayStatus = "complete" | "partial" | "none" | "empty"
 export function dayStatus(date: YMD, state: LedgerState): DayStatus {
   const list = paymentsOn(date)
@@ -282,22 +317,50 @@ export const eventsOn = (date: YMD, state: LedgerState) =>
 export const photosOn = (date: YMD, state: LedgerState) =>
   state.sources.photos ? photos.filter((photo) => sameDay(photo.date, date)) : []
 
-// 월 요약: 총 지출, 복원 완료 일수 / 결제가 있는 일수
+// 결제가 있는 날
+const paidDaysOf = (y: number, m: number) =>
+  Array.from({ length: new Date(y, m, 0).getDate() }, (_, i) => ymd(y, m, i + 1)).filter(
+    (date) => paymentsOn(date).length > 0,
+  )
+
+// 월 요약: 결제 총액, 내 지출(확정된 분할만 차감), 복원 완료 일수 / 결제가 있는 일수
 export function monthSummary(y: number, m: number, state: LedgerState) {
-  const days = Array.from({ length: new Date(y, m, 0).getDate() }, (_, i) =>
-    ymd(y, m, i + 1),
-  ).filter((date) => paymentsOn(date).length > 0)
+  const days = paidDaysOf(y, m)
   return {
     total: days.reduce((sum, date) => sum + dayTotal(date), 0),
-    // 그룹 결제는 내 몫만 합친 값
-    mine: days.reduce(
-      (sum, date) => sum + paymentsOn(date).reduce((s, payment) => s + myShare(payment), 0),
-      0,
-    ),
+    mine: days.reduce((sum, date) => sum + dayMine(date, state), 0),
     restoredDays: days.filter((date) => dayStatus(date, state) === "complete")
       .length,
     paidDays: days.length,
   }
+}
+
+// 일 기준 복원 집계: 온보딩 "31일 모두 지출이 있었어요. 18일은 내 기록으로 채웠어요"에 쓴다
+export function restoreDaySummary(y: number, m: number, state: LedgerState) {
+  const days = paidDaysOf(y, m)
+  const count = (status: DayStatus) =>
+    days.filter((date) => dayStatus(date, state) === status).length
+  return {
+    paidDays: days.length,
+    complete: count("complete"),
+    partial: count("partial"),
+    none: count("none"),
+  }
+}
+
+// 결제 캡처 인식 목업: 해당 결제에서 인식되는 구매 품목 (없으면 undefined)
+export const recognizedPurchase = (payment: Payment) =>
+  capturedPurchases.find(
+    (item) =>
+      payment.date.m === 10 && payment.date.d === item.day && payment.time === item.time,
+  )?.text
+
+// 그룹 결제 알림의 인원 근거: 같은 날 일정에 사람이 적혀 있으면 일정 인원(나 포함), 없으면 결제에 묶인 인원
+export function groupBasis(payment: Payment, state: LedgerState) {
+  const event = eventsFor(payment, state).find((item) => item.people?.length)
+  if (event?.people) return { count: event.people.length + 1, source: "일정 인원", detail: event.title }
+  const count = payment.group?.length ?? 1
+  return { count, source: "함께 결제한 인원", detail: undefined }
 }
 
 // 결제가 있는 날 목록 (바텀시트 좌우 이동용)
@@ -425,6 +488,9 @@ export function restoreSummary(y: number, m: number, state: LedgerState) {
 if (import.meta.env.DEV) {
   try {
     verifyOctober((day) => dayStatus(ymd(2026, 10, day), initialLedger))
+    verifyNovember((day) => dayStatus(ymd(2026, 11, day), initialLedger))
+    verifyHistory()
+    verifySeptember(monthSummary(2026, 9, initialLedger).total)
   } catch (error) {
     console.error(error)
   }

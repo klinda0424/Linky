@@ -1,21 +1,17 @@
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import {
   Bell,
-  ChevronDown,
   ChevronRight,
   FileText,
   Info,
   Link2,
-  MessageCircle,
   Receipt,
   ShieldCheck,
   UserRound,
 } from "lucide-react"
-import { Action, Badge, PageTitle, Toggle, cx } from "@/components/common"
+import { Action, Badge, PageTitle, Toggle } from "@/components/common"
 import { MainHeader } from "@/components/layout"
 import {
-  birthYears,
-  jobOptions,
   permissions as permissionOptions,
   ToneOptions,
 } from "@/screens/onboarding"
@@ -49,7 +45,6 @@ export function MyPage({
     ["연동 서비스 관리", <Link2 size={18} strokeWidth={1.5} />, openConnections],
     ["개인정보·권한", <ShieldCheck size={18} strokeWidth={1.5} />, openPrivacy],
     ["정산 내역", <Receipt size={18} strokeWidth={1.5} />, openSettlement],
-    ["리포트 톤 설정", <MessageCircle size={18} strokeWidth={1.5} />, openTone],
     ["알림 설정", <Bell size={18} strokeWidth={1.5} />, openNotifications],
   ]
   return (
@@ -169,9 +164,17 @@ export function PrivacySettings({
                   <dt>목적</dt>
                   <dd>{item.purpose}</dd>
                 </div>
+                {item.scope && (
+                  <div>
+                    <dt>사용 범위</dt>
+                    <dd className="privacy-scope">{item.scope}</dd>
+                  </div>
+                )}
               </dl>
               {!values[item.key] && (
-                <p className="privacy-off">수집을 해제했어요. 새 기록은 가져오지 않아요.</p>
+                <p className="privacy-off">
+                  수집을 해제했어요. 이 기록은 결제 근거에서 빠져요.
+                </p>
               )}
             </div>
           ))}
@@ -256,18 +259,15 @@ export function ProfileInfoSettings({
 }) {
   const [draft, setDraft] = useState(value)
 
-  const valid = Boolean(draft.nickname.trim() && draft.birthYear && draft.job)
+  const valid = Boolean(draft.nickname.trim())
 
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="회원 정보" />
       <div className="sub-content profile-settings-content">
-        <p className="sub-heading">기본 정보</p>
-        <p className="settings-sub">
-          온보딩에서 입력한 정보를 확인하고 바꿀 수 있어요
-        </p>
+        <p className="sub-heading">닉네임</p>
+        <p className="settings-sub">Linky 안에서 나를 부르는 이름이에요</p>
         <div className="field">
-          <p className="field-label">닉네임</p>
           <div className="text-field">
             <input
               aria-label="닉네임"
@@ -277,51 +277,17 @@ export function ProfileInfoSettings({
 
                 setDraft((current) => ({ ...current, nickname }))
               }}
-              placeholder="예: 지은이"
+              placeholder="예: 소연"
               value={draft.nickname}
             />
             <span>{draft.nickname.length}/10</span>
           </div>
         </div>
-        <div className="field">
-          <p className="field-label">출생연도</p>
-          <div className="select-field">
-            <select
-              aria-label="출생연도"
-              onChange={(event) => {
-                const birthYear = event.currentTarget.value
-
-                setDraft((current) => ({ ...current, birthYear }))
-              }}
-              value={draft.birthYear}
-            >
-              {birthYears.map((year) => (
-                <option key={year} value={year}>
-                  {year}년
-                </option>
-              ))}
-            </select>
-            <ChevronDown
-              className="select-chevron"
-              size={17}
-              strokeWidth={1.5}
-            />
-          </div>
-        </div>
-        <div className="field">
-          <p className="field-label">직업 상태</p>
-          <div className="job-grid">
-            {jobOptions.map((item) => (
-              <Action
-                className={cx("choice-chip", draft.job === item && "selected")}
-                key={item}
-                onClick={() =>
-                  setDraft((current) => ({ ...current, job: item }))
-                }
-              >
-                {item}
-              </Action>
-            ))}
+        <div className="identity-status">
+          <ShieldCheck size={16} strokeWidth={1.6} />
+          <div>
+            <strong>본인인증 완료</strong>
+            <span>이름·생년월일·휴대폰 번호는 본인 확인에만 쓰고 저장하지 않았어요</span>
           </div>
         </div>
       </div>

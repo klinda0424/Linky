@@ -109,7 +109,25 @@ export function MainApp({
         [paymentId]: [...(value.unlinked[paymentId] ?? []), key],
       },
     }))
-  const attach = (paymentId: string) => {
+  // text가 있으면 캡처에서 인식한 문구(예: "블라우스 1벌")를 근거로 붙인다
+  const unlinkPhoto = (id: string) =>
+    setLedger((value) => ({
+      ...value,
+      photoUnlinked: value.photoUnlinked.includes(id)
+        ? value.photoUnlinked
+        : [...value.photoUnlinked, id],
+    }))
+  const verify = (paymentId: string) =>
+    setLedger((value) => ({
+      ...value,
+      verified: [...(value.verified ?? []), paymentId],
+    }))
+  const markPersonal = (paymentId: string) =>
+    setLedger((value) => ({
+      ...value,
+      personal: [...(value.personal ?? []), paymentId],
+    }))
+  const attach = (paymentId: string, text?: string) => {
     setLedger((value) => {
       const current = value.added[paymentId] ?? []
       return {
@@ -118,7 +136,7 @@ export function MainApp({
           ...value.added,
           [paymentId]: [
             ...current,
-            { kind: "added", text: addedText[recordKind] },
+            { kind: "added", text: text ?? addedText[recordKind] },
           ],
         },
       }
@@ -138,7 +156,6 @@ export function MainApp({
             setFocusPayment(undefined)
             setSheetDay(day)
           }}
-          openRecord={() => openRecord()}
           openSearch={() => setView("search")}
           sheetDay={sheetDay}
           state={state}
@@ -273,6 +290,7 @@ export function MainApp({
             back={toTabs}
             completed={settled}
             open={() => setView("settlement")}
+            state={state}
           />
         )
       case "settlement":
@@ -359,6 +377,7 @@ export function MainApp({
             setSheetDay(day)
           }}
           openRecord={openRecord}
+          markPersonal={markPersonal}
           openSplit={setSplitting}
           showMap={(day) => {
             setSheetDay(undefined)
@@ -368,6 +387,8 @@ export function MainApp({
           state={state}
           tone={tone}
           unlink={unlink}
+          unlinkPhoto={unlinkPhoto}
+          verify={verify}
         />
       )}
       {recordSheet && (
@@ -383,15 +404,22 @@ export function MainApp({
       {splitting && (
         <GroupSplitSheet
           close={() => setSplitting(undefined)}
+          // 확인하면 원장만 갱신하고, 시트는 반영 결과(S4-3)를 보여 준 뒤 사용자가 닫는다
           confirm={() => {
             const id = splitting.id
-            setLedger((value) => ({
-              ...value,
-              splitConfirmed: [...value.splitConfirmed, id],
-            }))
+            setLedger((value) =>
+              value.splitConfirmed.includes(id)
+                ? value
+                : { ...value, splitConfirmed: [...value.splitConfirmed, id] },
+            )
+          }}
+          openHistory={() => {
             setSplitting(undefined)
+            setSheetDay(undefined)
+            setView("settlementList")
           }}
           payment={splitting}
+          state={state}
         />
       )}
     </>
