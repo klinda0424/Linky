@@ -55,7 +55,13 @@ export function CalendarHome({
   openSearch: () => void
   openRecord: () => void
 }) {
-  const [index, setIndex] = useState(monthsAvailable.length - 1)
+  // 첫 화면은 오늘이 속한 달, 월 이동 화살표로 1~11월을 둘러본다
+  const [index, setIndex] = useState(() =>
+    Math.max(
+      0,
+      monthsAvailable.findIndex((item) => item.y === TODAY.y && item.m === TODAY.m),
+    ),
+  )
   const { y, m } = monthsAvailable[index]
   // 지도 핀에서 다른 달의 날짜를 열면 그 달로 이동
   useEffect(() => {

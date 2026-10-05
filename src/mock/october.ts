@@ -155,9 +155,6 @@ export const octoberPayments: Payment[] = [
 // 장면 5: 주문내역 캡처를 올리면 인식되는 구매 품목 (결제 시각 기준)
 export const capturedPurchases = [{ day: 12, time: "21:40", text: "블라우스 1벌" }]
 
-// 11월은 월 요약만 둔다 (일별 데이터 없음)
-export const novemberSummary = { mine: 1170000, days: 30, restoredDays: 26 }
-
 export const OCTOBER_TARGET = {
   gross: 1362000,
   settled: 162000,
