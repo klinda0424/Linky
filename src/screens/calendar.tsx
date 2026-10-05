@@ -50,13 +50,11 @@ export function CalendarHome({
   sheetDay,
   openDay,
   openSearch,
-  openRecord,
 }: {
   state: LedgerState
   sheetDay?: YMD
   openDay: (day: YMD) => void
   openSearch: () => void
-  openRecord: () => void
 }) {
   // 첫 화면은 오늘이 속한 달, 월 이동 화살표로 1~11월을 둘러본다
   const [index, setIndex] = useState(() =>
@@ -80,9 +78,7 @@ export function CalendarHome({
   return (
     <>
       <div className="cal-top">
-        <Action className="cal-icon" label="검색" onClick={openSearch}>
-          <Search size={20} strokeWidth={1.6} />
-        </Action>
+        <span />
         <div className="cal-month">
           <Action
             className="cal-arrow"
@@ -104,8 +100,8 @@ export function CalendarHome({
             <ChevronRight size={18} strokeWidth={1.6} />
           </Action>
         </div>
-        <Action className="cal-add" onClick={openRecord}>
-          <Plus size={15} strokeWidth={2} /> 기록
+        <Action className="cal-icon" label="검색" onClick={openSearch}>
+          <Search size={20} strokeWidth={1.6} />
         </Action>
       </div>
       <div className="cal-body">

@@ -1909,7 +1909,8 @@ p {
 .cal-icon {
   width: 36px;
   height: 36px;
-  margin-left: -8px;
+  margin-right: -8px;
+  justify-self: end;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1941,20 +1942,6 @@ p {
 
 .cal-arrow.disabled {
   color: var(--disabled);
-}
-
-.cal-add {
-  height: 32px;
-  padding: 0 11px;
-  justify-self: end;
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  border-radius: 16px;
-  background: var(--primary);
-  color: var(--on-primary);
-  font-size: 13px;
-  font-weight: 600;
 }
 
 .cal-body {
