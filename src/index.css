@@ -2292,13 +2292,25 @@ p {
   flex: 1;
 }
 
-.pay-text strong {
-  display: block;
+.pay-title {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.pay-title strong {
+  min-width: 0;
   overflow: hidden;
   font-size: 15px;
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.pay-title time {
+  flex: none;
+  color: var(--sub);
+  font-size: 11px;
 }
 
 .pay-meta {

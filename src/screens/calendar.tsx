@@ -405,9 +405,11 @@ function PayCard({
           <Icon size={17} strokeWidth={1.7} />
         </span>
         <div className="pay-text">
-          <strong>{payment.merchant}</strong>
-          <span className="pay-meta">
+          <div className="pay-title">
+            <strong>{payment.merchant}</strong>
             <time>{payment.time}</time>
+          </div>
+          <span className="pay-meta">
             {location && (
               <span>
                 <MapPin size={11} strokeWidth={1.8} />
