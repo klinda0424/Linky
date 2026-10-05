@@ -441,11 +441,6 @@ function PayCard({
           disabled={evidence.length === 0}
           onClick={() => setOpen(!open)}
         >
-          <span className="dots">
-            {[0, 1, 2].map((dot) => (
-              <i className={dot < evidence.length ? "on" : ""} key={dot} />
-            ))}
-          </span>
           근거 {evidence.length}개
         </Action>
         <Action className="edit-link" onClick={() => setEditing(!editing)}>
