@@ -1029,6 +1029,11 @@ p {
   font-size: 11px;
 }
 
+/* 날짜 시트(.sheet-dim) 위에서 열리므로 그보다 위에 둔다 */
+.split-overlay {
+  z-index: 40;
+}
+
 .split-sheet {
   width: 100%;
   padding: 10px 20px 28px;
@@ -1084,6 +1089,99 @@ p {
 .person-avatar.small {
   width: 34px;
   height: 34px;
+}
+
+.split-basis {
+  margin-top: 14px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--sub);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* 인원 분할 확인 후 반영 결과 */
+.split-result {
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.split-result > div {
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--primary-soft);
+}
+
+.split-result span {
+  color: var(--sub);
+  font-size: 12px;
+}
+
+.split-result p {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--sub);
+  font-size: 15px;
+}
+
+.split-result p strong {
+  color: var(--primary-text);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.split-actions {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 8px;
+}
+
+.split-actions.single {
+  grid-template-columns: 1fr;
+}
+
+.split-history {
+  display: flex;
+  flex-direction: column;
+}
+
+.split-history > div {
+  padding: 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.split-history > div > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.split-history strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.split-history span {
+  color: var(--sub);
+  font-size: 11px;
+}
+
+.split-history p {
+  color: var(--sub);
+  text-align: right;
+  font-size: 11px;
+}
+
+.split-history p strong {
+  color: var(--text);
 }
 
 .per-person {
@@ -3163,6 +3261,13 @@ p {
   color: var(--primary-text);
   text-align: center;
   font-size: 13px;
+  font-weight: 600;
+}
+
+.restore-kind-title {
+  margin: 4px 0 8px;
+  color: var(--sub);
+  font-size: 12px;
   font-weight: 600;
 }
 

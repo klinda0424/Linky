@@ -27,6 +27,7 @@ import {
   label,
   narrativeLine,
   payments,
+  restoreDaySummary,
   restoreSummary,
   won,
   ymd,
@@ -454,7 +455,7 @@ export function ImportExpenses({
   )
 }
 
-// ---------- 5. 지난달 일괄 복원 결과 ----------
+// ---------- 5. 일괄 복원 결과 (일 기준) ----------
 export function RestoreResult({
   state,
   next,
@@ -464,31 +465,49 @@ export function RestoreResult({
   next: () => void
   back: () => void
 }) {
-  const summary = restoreSummary(2026, 9, state)
-  const rows: Array<[string, string]> = [
-    ["복원한 결제", `${summary.restored}건`],
-    ["내 위치로 복원", `${summary.kinds.location}건`],
-    ["내 일정으로 복원", `${summary.kinds.calendar}건`],
-    ["내 사진으로 복원", `${summary.kinds.photo}건`],
-    ["기록 없음", `${summary.none}건`],
+  // 가져온 달(목업 기준일의 달)을 날짜 단위로 집계한다. 근거 종류별 건수는 결제 단위다.
+  const { y, m } = TODAY
+  const days = restoreDaySummary(y, m, state)
+  const byKind = restoreSummary(y, m, state)
+  const monthLength = new Date(y, m, 0).getDate()
+  const dayRows: Array<[string, number]> = [
+    ["복원 완료", days.complete],
+    ["부분 복원", days.partial],
+    ["기록 없음", days.none],
+  ]
+  const kindRows: Array<[string, number]> = [
+    ["내 위치", byKind.kinds.location],
+    ["내 일정", byKind.kinds.calendar],
+    ["내 사진", byKind.kinds.photo],
   ]
   return (
     <Screen step={5} onBack={back}>
-      <PageTitle
-        title={`9월 결제 ${summary.count}건 중\n${summary.restored}건을 복원했어요`}
-        sub="내 캘린더·사진·위치 기록에서만 찾았어요"
-      />
-      <div className="main-card restore-result">
-        {rows.map(([name, value]) => (
-          <div className="result-row" key={name}>
-            <p>{name}</p>
-            <strong>{value}</strong>
-          </div>
-        ))}
-      </div>
-      <div className="info-banner">
-        <Info size={15} strokeWidth={1.7} />
-        <span>근거가 없는 결제는 추측하지 않고 “기록 없음”으로 둬요</span>
+      <div className="onboarding-scroll">
+        <PageTitle
+          title={`${days.paidDays === monthLength ? `${monthLength}일 모두` : `${m}월 ${days.paidDays}일`} 지출이 있었어요.\n${days.complete}일은 내 기록으로 채웠어요`}
+          sub="내 캘린더·사진·위치 기록에서만 찾았어요"
+        />
+        <div className="main-card restore-result">
+          {dayRows.map(([name, value]) => (
+            <div className="result-row" key={name}>
+              <p>{name}</p>
+              <strong>{value}일</strong>
+            </div>
+          ))}
+        </div>
+        <p className="restore-kind-title">근거로 쓴 기록 (결제 {byKind.count}건 중)</p>
+        <div className="main-card restore-result">
+          {kindRows.map(([name, value]) => (
+            <div className="result-row" key={name}>
+              <p>{name}</p>
+              <strong>{value > 0 ? `${value}건` : "기록 없음"}</strong>
+            </div>
+          ))}
+        </div>
+        <div className="info-banner">
+          <Info size={15} strokeWidth={1.7} />
+          <span>근거가 없는 결제는 추측하지 않고 “기록 없음”으로 둬요</span>
+        </div>
       </div>
       <Footer button="리포트 톤 고르기" onNext={next} />
     </Screen>
