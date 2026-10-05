@@ -2,7 +2,7 @@
 // 원칙: AI는 추측하지 않는다. 결제에는 사용자 기록(내 위치·일정·사진)에서 찾은 근거만 붙이고,
 // 근거가 없으면 "기록 없음"으로 비워 둔다. 캘린더·지도·앨범·검색이 모두 이 한 곳의 값을 쓴다.
 
-import { historyPayments, verifyHistory } from "@/mock/history"
+import { historyPayments, verifyHistory, verifySeptember } from "@/mock/history"
 import {
   novemberEvents,
   novemberPayments,
@@ -466,6 +466,7 @@ if (import.meta.env.DEV) {
     verifyOctober((day) => dayStatus(ymd(2026, 10, day), initialLedger))
     verifyNovember((day) => dayStatus(ymd(2026, 11, day), initialLedger))
     verifyHistory()
+    verifySeptember(monthSummary(2026, 9, initialLedger).total)
   } catch (error) {
     console.error(error)
   }
