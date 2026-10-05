@@ -74,17 +74,16 @@ const rangeLabel = (period: Period, date: YMD) => {
 export function MapTab({
   state,
   initialDay,
-  openEvent,
+  initialPeriod = "day",
   openPayment,
 }: {
   state: LedgerState
   initialDay?: YMD
-  // 월 지도 일정에서 기존 이벤트 리포트로 이동한다
-  openEvent: (event: CalEvent) => void
+  initialPeriod?: Period
   // 핀의 결제 카드로 이동 (캘린더 탭의 날짜 시트가 열린다)
-  openPayment: (payment: Payment) => void
+  openPayment: (payment: Payment, returnToMonth?: YMD) => void
 }) {
-  const [period, setPeriod] = useState<Period>("day")
+  const [period, setPeriod] = useState<Period>(initialPeriod)
   const [date, setDate] = useState<YMD>(initialDay ?? TODAY)
   const [show, setShow] = useState({ payment: true, photo: true, event: true })
   const [selected, setSelected] = useState<Selected>()
@@ -323,7 +322,7 @@ export function MapTab({
         </div>
       </div>
       <div className="map-scroll">
-        <div className="map-filters">
+        {period !== "month" && <div className="map-filters">
           {(
             [
               ["payment", "결제"],
@@ -339,7 +338,7 @@ export function MapTab({
               {text}
             </Action>
           ))}
-        </div>
+        </div>}
         <div
           className={cx("map-canvas", view.k > 1 && "zoomed")}
           onClickCapture={swallowClickAfterGesture}
@@ -416,7 +415,7 @@ export function MapTab({
               {zone}
             </span>
           ))}
-          {show.event &&
+          {period !== "month" && show.event &&
             evs.map((event) => (
               <Action
                 className={cx(
@@ -425,10 +424,7 @@ export function MapTab({
                 )}
                 key={event.id}
                 label={event.title}
-                onClick={() => {
-                  if (period === "month") openEvent(event)
-                  else setSelected({ kind: "event", id: event.id })
-                }}
+                onClick={() => setSelected({ kind: "event", id: event.id })}
                 style={{
                   left: `${pinPoint(event.zone, event.id).x}%`,
                   top: `${pinPoint(event.zone, event.id).y - 7}%`,
@@ -437,7 +433,7 @@ export function MapTab({
                 <CalendarDays size={13} strokeWidth={1.8} />
               </Action>
             ))}
-          {show.photo &&
+          {period !== "month" && show.photo &&
             pics.map((photo) => (
               <Action
                 className={cx(
@@ -455,7 +451,7 @@ export function MapTab({
                 <Camera size={13} strokeWidth={1.8} />
               </Action>
             ))}
-          {period === "month" && show.payment &&
+          {period === "month" &&
             monthPlaces.map((item) => (
               <Action
                 className="map-place-bubble"
@@ -514,9 +510,7 @@ export function MapTab({
             })}
           </div>
           {((period === "month"
-            ? (show.payment ? monthPlaces.length : 0) +
-              (show.photo ? pics.length : 0) +
-              (show.event ? evs.length : 0)
+            ? monthPlaces.length
             : pays.length + pics.length + evs.length) === 0) && (
             <div className="map-empty">이 기간에는 지도에 표시할 기록이 없어요</div>
           )}
@@ -540,12 +534,16 @@ export function MapTab({
               </span>
             </>
           )}
-          <span>
-            <i className="photo" /> 사진
-          </span>
-          <span>
-            <i className="event" /> 일정
-          </span>
+          {period !== "month" && (
+            <>
+              <span>
+                <i className="photo" /> 사진
+              </span>
+              <span>
+                <i className="event" /> 일정
+              </span>
+            </>
+          )}
         </div>
         {chosenPayment && (
           <div className="map-preview">
@@ -592,7 +590,7 @@ export function MapTab({
             </div>
           </div>
         )}
-        {period === "month" && show.payment && (
+        {period === "month" && (
           <div className="map-month-places">
             <p className="section-title">{date.m}월 결제한 곳</p>
             <div className="map-place-list">
@@ -641,7 +639,7 @@ export function MapTab({
             </div>
             <div className="map-place-payments">
               {placeSelection.payments.map((payment) => (
-                <Action key={payment.id} onClick={() => openPayment(payment)}>
+                <Action key={payment.id} onClick={() => openPayment(payment, date)}>
                   <time>{label(payment.date)} {payment.time}</time>
                   <strong>{payment.merchant}</strong>
                   <span>{won(payment.amount)}</span>

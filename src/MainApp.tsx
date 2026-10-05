@@ -62,6 +62,8 @@ export function MainApp({
   const [sheetDay, setSheetDay] = useState<YMD>()
   const [focusPayment, setFocusPayment] = useState<string>()
   const [mapDay, setMapDay] = useState<YMD>()
+  const [mapPeriod, setMapPeriod] = useState<"day" | "month">("day")
+  const [returnToMonth, setReturnToMonth] = useState<YMD>()
   const [recordSheet, setRecordSheet] = useState(false)
   const [recordTarget, setRecordTarget] = useState<string>()
   const [recordKind, setRecordKind] = useState<RecordKind>("paymentCapture")
@@ -89,7 +91,8 @@ export function MainApp({
   )
   const toTabs = () => setView("tabs")
 
-  const openPayment = (payment: Payment) => {
+  const openPayment = (payment: Payment, monthContext?: YMD) => {
+    setReturnToMonth(monthContext)
     setTab("calendar")
     setView("tabs")
     setSheetDay(payment.date)
@@ -172,11 +175,8 @@ export function MainApp({
       return (
         <MapTab
           initialDay={mapDay}
-          key={mapDay ? `${mapDay.y}-${mapDay.m}-${mapDay.d}` : "all"}
-          openEvent={(item) => {
-            setEvent(item)
-            setView("eventReport")
-          }}
+          initialPeriod={mapPeriod}
+          key={mapDay ? `${mapPeriod}-${mapDay.y}-${mapDay.m}-${mapDay.d}` : "all"}
           openPayment={openPayment}
           state={state}
         />
@@ -364,6 +364,7 @@ export function MainApp({
             change={(next) => {
               setSheetDay(undefined)
               setFocusPayment(undefined)
+              setReturnToMonth(undefined)
               if (next !== "map") setMapDay(undefined)
               setTab(next)
             }}
@@ -377,11 +378,18 @@ export function MainApp({
           close={() => {
             setSheetDay(undefined)
             setFocusPayment(undefined)
+            if (returnToMonth) {
+              setMapDay(returnToMonth)
+              setMapPeriod("month")
+              setReturnToMonth(undefined)
+              setTab("map")
+            }
           }}
           day={sheetDay}
           focusPayment={focusPayment}
           move={(day) => {
             setFocusPayment(undefined)
+            setReturnToMonth(undefined)
             setSheetDay(day)
           }}
           openRecord={openRecord}
@@ -390,6 +398,8 @@ export function MainApp({
           showMap={(day) => {
             setSheetDay(undefined)
             setMapDay(day)
+            setMapPeriod("day")
+            setReturnToMonth(undefined)
             setTab("map")
           }}
           state={state}
