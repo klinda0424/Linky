@@ -171,7 +171,6 @@ export function MainApp({
       return (
         <HomePage
           openAlbum={() => setTab("album")}
-          openCalendar={() => setTab("calendar")}
           openDay={openDayInCalendar}
           openMap={() => {
             setMapDay(undefined)
