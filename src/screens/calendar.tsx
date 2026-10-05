@@ -43,6 +43,7 @@ import {
   photosOn,
   removedEvidenceOf,
   restoreDaySummary,
+  restoredOf,
   sameDay,
   splitReviewDays,
   weekday,
@@ -202,6 +203,7 @@ export function DaySheet({
   relinkPhoto,
   unlinkPhoto,
   verify,
+  confirmRestore,
 }: {
   day: YMD
   state: LedgerState
@@ -218,6 +220,7 @@ export function DaySheet({
   relinkPhoto: (photoId: string) => void
   unlinkPhoto: (photoId: string) => void
   verify: (paymentId: string) => void
+  confirmRestore: (paymentId: string) => void
 }) {
   const list = paymentsOn(day)
   const restored = list.filter((payment) => isRestored(payment, state)).length
@@ -338,6 +341,7 @@ export function DaySheet({
               relinkPhoto={relinkPhoto}
               unlinkPhoto={unlinkPhoto}
               verify={verify}
+              confirmRestore={confirmRestore}
             />
           ))}
           <DayReport day={day} state={state} />
@@ -369,6 +373,7 @@ function PayCard({
   relinkPhoto,
   unlinkPhoto,
   verify,
+  confirmRestore,
 }: {
   payment: Payment
   state: LedgerState
@@ -381,6 +386,7 @@ function PayCard({
   relinkPhoto: (photoId: string) => void
   unlinkPhoto: (photoId: string) => void
   verify: (paymentId: string) => void
+  confirmRestore: (paymentId: string) => void
 }) {
   // 행을 누르면 사진만 펼치고, "수정"을 눌러야 근거 편집이 열린다
   const [open, setOpen] = useState(false)
@@ -389,7 +395,9 @@ function PayCard({
   const people = payment.group
   const confirmed = state.splitConfirmed.includes(payment.id)
   const personal = (state.personal ?? []).includes(payment.id)
-  const verified = (state.verified ?? []).includes(payment.id)
+  // 복원 결과(장소·이동)가 있는 결제: 원본 → 복원 결과와 근거를 펼쳐 보여 준다
+  const restored = restoredOf(payment, state)
+  const verified = (state.verified ?? []).includes(payment.id) || Boolean(restored?.confirmed)
   const basis = groupBasis(payment, state)
   const removed = removedEvidenceOf(payment, state)
   const location = evidence.find((item) => item.kind === "location")
@@ -399,7 +407,7 @@ function PayCard({
   const photoIds = photo?.photoIds ?? []
   const Icon = payment.category ? categoryIcon[payment.category] : Receipt
   return (
-    <div className={cx("pay-row", focus && "focus", open && "open")} data-pay={payment.id}>
+    <div className={cx("pay-row", focus && "focus", open && "open", Boolean(restored) && "restored")} data-pay={payment.id}>
       <Action
         className="pay-main"
         onClick={() => {
@@ -412,7 +420,7 @@ function PayCard({
         </span>
         <div className="pay-text">
           <div className="pay-title">
-            <strong>{payment.merchant}</strong>
+            <strong>{restored?.label ?? payment.merchant}</strong>
             <time>{payment.time}</time>
           </div>
           <span className="pay-meta">
@@ -484,6 +492,40 @@ function PayCard({
           <Plus size={12} strokeWidth={2} /> 앨범에서 불러오기
         </Action>
       )}
+      {open && !editing && restored && (
+        <div className="pay-restore">
+          <div className="restore-original">
+            <span>원본</span>
+            <strong>{restored.original}</strong>
+            <b>{won(payment.amount)}</b>
+          </div>
+          <div className="restore-arrow" aria-hidden="true" />
+          <div className="restore-result">
+            <span>복원</span>
+            <strong>
+              {restored.label}
+              {restored.spot ? ` · ${restored.spot}` : ""}
+            </strong>
+          </div>
+          <ul className="restore-basis">
+            {restored.evidence.map((item) => (
+              <li key={item.key}>{item.text}</li>
+            ))}
+          </ul>
+          <div className="restore-actions">
+            <Action className="text-btn" onClick={() => setEditing(true)}>
+              수정
+            </Action>
+            <Action
+              className="pill primary"
+              disabled={verified}
+              onClick={() => confirmRestore(payment.id)}
+            >
+              {verified ? "확인했어요" : "맞아요"}
+            </Action>
+          </div>
+        </div>
+      )}
       {open && !editing && (
         <div className="pay-photos">
           {photoIds.length > 0 ? (
@@ -496,9 +538,11 @@ function PayCard({
           ) : (
             <span className="no-photo">사진 기록 없음</span>
           )}
-          <Action className="text-btn" onClick={() => setEditing(true)}>
-            수정
-          </Action>
+          {!restored && (
+            <Action className="text-btn" onClick={() => setEditing(true)}>
+              수정
+            </Action>
+          )}
         </div>
       )}
       {open && editing && (
@@ -554,7 +598,8 @@ function PayCard({
               className="pill primary"
               disabled={verified}
               onClick={() => {
-                verify(payment.id)
+                if (restored) confirmRestore(payment.id)
+                else verify(payment.id)
                 setEditing(false)
                 setOpen(false)
               }}

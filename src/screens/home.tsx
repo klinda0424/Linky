@@ -10,6 +10,7 @@ import {
   payments,
   photosOn,
   type Photo,
+  restoredOf,
   sameDay,
   shareOf,
   weekday,
@@ -54,7 +55,7 @@ function PaymentRow({
   return (
     <Action className="spending-row clickable" onClick={() => open(payment)}>
       <div>
-        <strong>{payment.merchant}</strong>
+        <strong>{restoredOf(payment, state)?.label ?? payment.merchant}</strong>
         <span>
           {showDate ? `${label(payment.date)} ` : ""}
           {payment.time}
