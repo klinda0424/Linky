@@ -481,7 +481,7 @@ function PayCard({
       )}
       {evidence.length === 0 && !open && (
         <Action className="pill add" onClick={() => openRecord(payment.id)}>
-          <Plus size={12} strokeWidth={2} /> 캡처·사진 추가
+          <Plus size={12} strokeWidth={2} /> 앨범에서 불러오기
         </Action>
       )}
       {open && !editing && (
@@ -548,7 +548,7 @@ function PayCard({
               </Action>
             )}
             <Action className="pill" onClick={() => openRecord(payment.id)}>
-              <Plus size={12} strokeWidth={2} /> 기록 추가
+              <Plus size={12} strokeWidth={2} /> 앨범에서 불러오기
             </Action>
             <Action
               className="pill primary"

@@ -5,8 +5,6 @@ export type MainTab = "home" | "calendar" | "mypage" | "map" | "album"
 export type MainView =
   | "tabs"
   | "search"
-  | "record"
-  | "recordAttach"
   | "photo"
   | "eventReport"
   | "profileInfo"

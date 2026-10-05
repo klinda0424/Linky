@@ -7,6 +7,7 @@ import {
   type Photo,
   type YMD,
   initialLedger,
+  payments,
 } from "@/lib/ledger"
 import { AlbumTab, EventReport, PhotoDetail } from "@/screens/album"
 import { CalendarHome, DaySheet } from "@/screens/calendar"
@@ -19,12 +20,7 @@ import {
   PrivacySettings,
   ProfileInfoSettings,
 } from "@/screens/profile"
-import {
-  type RecordKind,
-  RecordAttach,
-  RecordSheet,
-  addedText,
-} from "@/screens/record"
+import { AlbumPicker, addedPhotoText } from "@/screens/record"
 import { SearchScreen } from "@/screens/search"
 import {
   GroupSplitSheet,
@@ -65,9 +61,7 @@ export function MainApp({
   const [mapDay, setMapDay] = useState<YMD>()
   const [mapPeriod, setMapPeriod] = useState<"day" | "month">("day")
   const [returnToMonth, setReturnToMonth] = useState<YMD>()
-  const [recordSheet, setRecordSheet] = useState(false)
   const [recordTarget, setRecordTarget] = useState<string>()
-  const [recordKind, setRecordKind] = useState<RecordKind>("paymentCapture")
   const [splitting, setSplitting] = useState<Payment>()
   const [photo, setPhoto] = useState<Photo>()
   const [event, setEvent] = useState<CalEvent>()
@@ -91,6 +85,7 @@ export function MainApp({
     [ledger, permissions],
   )
   const toTabs = () => setView("tabs")
+  const recordPayment = payments.find((item) => item.id === recordTarget)
 
   const openPayment = (payment: Payment, monthContext?: YMD) => {
     setReturnToMonth(monthContext)
@@ -147,16 +142,16 @@ export function MainApp({
           ...value.added,
           [paymentId]: [
             ...current,
-            { kind: "added", text: text ?? addedText[recordKind] },
+            { kind: "added", text: text ?? addedPhotoText },
           ],
         },
       }
     })
     setView("tabs")
+    setRecordTarget(undefined)
   }
   const openRecord = (paymentId?: string) => {
     setRecordTarget(paymentId)
-    setRecordSheet(true)
   }
 
   // 홈에서 날짜·결제를 누르면 캘린더 탭의 날짜 시트로 이어진다
@@ -237,16 +232,6 @@ export function MainApp({
           <SearchScreen
             back={toTabs}
             openPayment={openPayment}
-            state={state}
-          />
-        )
-      case "recordAttach":
-        return (
-          <RecordAttach
-            attach={attach}
-            back={toTabs}
-            kind={recordKind}
-            paymentId={recordTarget}
             state={state}
           />
         )
@@ -433,14 +418,11 @@ export function MainApp({
           verify={verify}
         />
       )}
-      {recordSheet && (
-        <RecordSheet
-          close={() => setRecordSheet(false)}
-          pick={(kind) => {
-            setRecordKind(kind)
-            setRecordSheet(false)
-            setView("recordAttach")
-          }}
+      {recordPayment && (
+        <AlbumPicker
+          attach={attach}
+          close={() => setRecordTarget(undefined)}
+          payment={recordPayment}
         />
       )}
       {splitting && (
