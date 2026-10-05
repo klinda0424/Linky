@@ -2090,7 +2090,7 @@ p {
 
 .cal-cell i {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 11px;
   font-style: normal;
   font-weight: 400;
   letter-spacing: -0.3px;
@@ -3569,8 +3569,12 @@ p {
 
 .phone-row {
   display: grid;
-  grid-template-columns: 112px 1fr;
+  grid-template-columns: 112px minmax(0, 1fr);
   gap: 8px;
+}
+
+.phone-row input {
+  min-width: 0;
 }
 
 .carrier-field {
