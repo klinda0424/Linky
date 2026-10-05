@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react"
 import {
   CalendarDays,
+  Camera,
   Check,
   ChevronDown,
   CreditCard,
@@ -18,7 +19,18 @@ import {
   Toggle,
   cx,
 } from "@/components/common"
-import { type LedgerState, restoreSummary, won } from "@/lib/ledger"
+import {
+  type LedgerState,
+  TODAY,
+  dayFacts,
+  initialLedger,
+  label,
+  narrativeLine,
+  payments,
+  restoreSummary,
+  won,
+  ymd,
+} from "@/lib/ledger"
 import { type PermissionKey, type Tone } from "@/types"
 
 // ---------- 1. 개인 정보 ----------
@@ -122,6 +134,8 @@ export const permissions: Array<{
   icon: ReactNode
   collects: string
   purpose: string
+  // 실제로 쓰는 범위 (개인정보 고지·마이페이지에 그대로 표시)
+  scope?: string
 }> = [
   {
     key: "payment",
@@ -148,6 +162,7 @@ export const permissions: Array<{
     icon: <Image size={19} strokeWidth={1.5} />,
     collects: "사진 촬영 시각·위치 정보",
     purpose: "결제 시각 전후 30분 사진을 근거로 보여주기 위해",
+    scope: "결제 시각 ±30분 · 반경 500m 사진만 사용, 기기에 저장",
   },
   {
     key: "location",
@@ -207,55 +222,87 @@ export function Permissions({
   )
 }
 
-// ---------- 3. 개인정보 고지 (수집 항목·목적·저장 위치) ----------
+// ---------- 3. 개인정보 고지 (수집 항목·목적·사용 범위·저장 위치) ----------
+// 선택 항목은 여기서 동의하지 않을 수 있다. 동의하지 않은 소스는 권한을 끈 것과 같아 근거에서 빠진다.
 export function PrivacyNotice({
   values,
+  toggle,
   next,
   back,
 }: {
   values: Record<PermissionKey, boolean>
+  toggle: (key: PermissionKey) => void
   next: () => void
   back: () => void
 }) {
-  const active = permissions.filter((item) => values[item.key])
+  // 이 화면에 들어올 때 연동한 항목만 보여 준다 (여기서 거절해도 카드는 남아 다시 동의할 수 있다)
+  const [shown] = useState(() => permissions.filter((item) => values[item.key]))
   return (
     <Screen step={3} onBack={back}>
-      <PageTitle
-        title={"이렇게 수집하고\n보관해요"}
-        sub="연동한 항목만 아래에 표시돼요"
-      />
-      <div className="privacy-list">
-        {active.map((item) => (
-          <div className="main-card privacy-card" key={item.key}>
-            <div className="privacy-head">
-              <span className="icon-box neutral">{item.icon}</span>
-              <strong>{item.title}</strong>
+      <div className="onboarding-scroll">
+        <PageTitle
+          title={"이렇게 수집하고\n보관해요"}
+          sub="동의하지 않은 항목은 근거로 쓰지 않아요"
+        />
+        <div className="privacy-list">
+          {shown.map((item) => (
+            <div className="main-card privacy-card" key={item.key}>
+              <div className="privacy-head">
+                <span className="icon-box neutral">{item.icon}</span>
+                <strong>{item.title}</strong>
+                {item.required && <Badge>필수</Badge>}
+              </div>
+              <dl>
+                <div>
+                  <dt>수집 항목</dt>
+                  <dd>{item.collects}</dd>
+                </div>
+                <div>
+                  <dt>목적</dt>
+                  <dd>{item.purpose}</dd>
+                </div>
+                {item.scope && (
+                  <div>
+                    <dt>사용 범위</dt>
+                    <dd className="privacy-scope">{item.scope}</dd>
+                  </div>
+                )}
+              </dl>
+              {!item.required && (
+                <div className="privacy-decision">
+                  {values[item.key] ? (
+                    <Action className="privacy-reject" onClick={() => toggle(item.key)}>
+                      동의 안 함
+                    </Action>
+                  ) : (
+                    <>
+                      <p className="privacy-off">동의하지 않아 이 기록은 근거에서 빠져요</p>
+                      <Action className="privacy-reject" onClick={() => toggle(item.key)}>
+                        다시 동의
+                      </Action>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
-            <dl>
-              <div>
-                <dt>수집 항목</dt>
-                <dd>{item.collects}</dd>
-              </div>
-              <div>
-                <dt>목적</dt>
-                <dd>{item.purpose}</dd>
-              </div>
-            </dl>
-          </div>
-        ))}
-      </div>
-      <div className="info-banner">
-        <ShieldCheck size={15} strokeWidth={1.7} />
-        <span>
-          저장 위치: 내 기기 안에 암호화해 보관하고, 서버로 보내지 않아요
-        </span>
+          ))}
+        </div>
+        <div className="info-banner">
+          <ShieldCheck size={15} strokeWidth={1.7} />
+          <span>
+            저장 위치: 내 기기 안에 암호화해 보관하고, 서버로 보내지 않아요
+          </span>
+        </div>
       </div>
       <Footer button="동의하고 계속" onNext={next} />
     </Screen>
   )
 }
 
-// ---------- 4. 지출 내역 가져오기 ----------
+// ---------- 4. 지출 내역 가져오기: 결제내역 캡처 → 인식 결과 확인 → 틀린 줄 수정 ----------
+type Fix = { merchant: string; amount: number }
+const PREVIEW_ROWS = 5
+
 export function ImportExpenses({
   next,
   back,
@@ -263,42 +310,146 @@ export function ImportExpenses({
   next: () => void
   back: () => void
 }) {
-  // 가져오기 진행을 짧게 보여 준 뒤 다음 단계로 열어 준다 (목업)
-  const [done, setDone] = useState(false)
+  // 캡처에서 읽은 결과 = 이번 달(목업 기준일) 결제 목록. 수정한 값은 이 화면 안에서만 바뀐다 (목업)
+  const { y, m } = TODAY
+  const month = payments
+    .filter((payment) => payment.date.y === y && payment.date.m === m)
+    .sort((a, b) => a.date.d - b.date.d || a.time.localeCompare(b.time))
+  const [phase, setPhase] = useState<"upload" | "reading" | "confirm">("upload")
+  const [fixes, setFixes] = useState<Record<string, Fix>>({})
+  const [editing, setEditing] = useState<string>()
+  const [draft, setDraft] = useState<Fix>({ merchant: "", amount: 0 })
+  const [expanded, setExpanded] = useState(false)
   useEffect(() => {
-    const timer = window.setTimeout(() => setDone(true), 1400)
+    if (phase !== "reading") return
+    const timer = window.setTimeout(() => setPhase("confirm"), 1400)
     return () => window.clearTimeout(timer)
-  }, [])
-  const summary = restoreSummary(2026, 9, {
-    sources: { location: true, calendar: true, photos: true },
-    unlinked: {},
-    photoUnlinked: [],
-    added: {},
-    splitConfirmed: [],
-  })
+  }, [phase])
+
+  const valueOf = (id: string, merchant: string, amount: number) =>
+    fixes[id] ?? { merchant, amount }
+  const total = month.reduce(
+    (sum, payment) => sum + valueOf(payment.id, payment.merchant, payment.amount).amount,
+    0,
+  )
+  const rows = expanded ? month : month.slice(0, PREVIEW_ROWS)
+
+  if (phase !== "confirm")
+    return (
+      <Screen step={4} onBack={back}>
+        <PageTitle
+          title={"결제내역 캡처를\n올려주세요"}
+          sub={`카드·은행 앱의 ${m}월 이용내역 화면이면 돼요`}
+        />
+        <Action
+          className={cx("capture-zone", phase === "reading" && "recognizing")}
+          disabled={phase === "reading"}
+          onClick={() => setPhase("reading")}
+        >
+          <span className="capture-icon">
+            <Camera size={21} strokeWidth={1.5} />
+          </span>
+          <strong>{phase === "reading" ? "캡처를 읽는 중이에요" : "캡처 선택"}</strong>
+          <span>{phase === "reading" ? "날짜·가맹점·금액을 찾고 있어요" : "탭해서 선택 (목업)"}</span>
+        </Action>
+        <Footer button="인식 결과 확인" disabled onNext={() => undefined} />
+      </Screen>
+    )
+
   return (
     <Screen step={4} onBack={back}>
-      <div className="complete-content">
-        <span className={cx("complete-check", !done && "loading")}>
-          {done ? (
-            <Check size={30} strokeWidth={2.2} />
-          ) : (
-            <CreditCard size={28} strokeWidth={1.5} />
-          )}
-        </span>
-        <p className="complete-title">
-          {done ? "지출 내역을 가져왔어요" : "지출 내역을 가져오는 중이에요"}
-        </p>
-        {done && (
-          <div className="result-list">
-            <div className="result-row">
-              <p>9월 결제 {summary.count}건</p>
-              <strong>{won(summary.total)}</strong>
-            </div>
-          </div>
+      <div className="onboarding-scroll">
+        <PageTitle
+          title={`${m}월 결제 ${month.length}건을 읽었어요\n맞는지 확인해 주세요`}
+          sub={`합계 ${won(total)}`}
+        />
+        <div className="info-banner">
+          <Info size={15} strokeWidth={1.7} />
+          <span>잘못 읽힌 줄은 눌러서 고칠 수 있어요</span>
+        </div>
+        <div className="import-list">
+          {rows.map((payment) => {
+            const value = valueOf(payment.id, payment.merchant, payment.amount)
+            if (editing === payment.id)
+              return (
+                <div className="import-row editing" key={payment.id}>
+                  <span className="import-date">
+                    {label(payment.date)} {payment.time}
+                  </span>
+                  <div className="text-field">
+                    <input
+                      aria-label="가맹점"
+                      onChange={(event) => {
+                        const merchant = event.currentTarget.value
+                        setDraft((current) => ({ ...current, merchant }))
+                      }}
+                      value={draft.merchant}
+                    />
+                  </div>
+                  <div className="text-field">
+                    <input
+                      aria-label="금액"
+                      inputMode="numeric"
+                      onChange={(event) => {
+                        const amount = Number(event.currentTarget.value.replace(/[^0-9]/g, ""))
+                        setDraft((current) => ({ ...current, amount }))
+                      }}
+                      value={draft.amount ? draft.amount.toLocaleString("ko-KR") : ""}
+                    />
+                    <span>원</span>
+                  </div>
+                  <div className="import-edit-actions">
+                    <Action className="secondary-button" onClick={() => setEditing(undefined)}>
+                      취소
+                    </Action>
+                    <Action
+                      className="primary-button"
+                      disabled={!draft.merchant.trim() || draft.amount <= 0}
+                      onClick={() => {
+                        setFixes((current) => ({
+                          ...current,
+                          [payment.id]: { merchant: draft.merchant.trim(), amount: draft.amount },
+                        }))
+                        setEditing(undefined)
+                      }}
+                    >
+                      저장
+                    </Action>
+                  </div>
+                </div>
+              )
+            return (
+              <Action
+                className="import-row"
+                key={payment.id}
+                onClick={() => {
+                  setDraft(value)
+                  setEditing(payment.id)
+                }}
+              >
+                <div>
+                  <span className="import-date">
+                    {label(payment.date)} {payment.time}
+                  </span>
+                  <strong>{value.merchant}</strong>
+                </div>
+                {fixes[payment.id] && <Badge>수정함</Badge>}
+                <p>{won(value.amount)}</p>
+              </Action>
+            )
+          })}
+        </div>
+        {month.length > PREVIEW_ROWS && (
+          <Action className="import-more" onClick={() => setExpanded((value) => !value)}>
+            {expanded ? "접기" : `나머지 ${month.length - PREVIEW_ROWS}건 보기`}
+          </Action>
         )}
       </div>
-      <Footer button="지난달 복원하기" disabled={!done} onNext={next} />
+      <Footer
+        button={`맞아요, ${m}월 복원하기`}
+        disabled={editing !== undefined}
+        onNext={next}
+      />
     </Screen>
   )
 }
@@ -345,6 +496,9 @@ export function RestoreResult({
 }
 
 // ---------- 6. 리포트 톤 선택 ----------
+// 미리보기는 10월 시연일(10/12)의 실제 하루 리포트 문구를 그대로 보여 준다
+const PREVIEW_DAY = ymd(2026, 10, 12)
+
 export function ToneOptions({
   tone,
   setTone,
@@ -352,6 +506,7 @@ export function ToneOptions({
   tone?: Tone
   setTone: (tone: Tone) => void
 }) {
+  const facts = dayFacts(PREVIEW_DAY, initialLedger)
   return (
     <div className="tone-cards">
       <Action
@@ -363,7 +518,7 @@ export function ToneOptions({
           {tone === "narrative" && <Check size={15} strokeWidth={2.2} />}
         </div>
         <div className="tone-preview">
-          “토요일, 성수. 지은이랑 약속, 사진 3장, 4.5만원.”
+          “{narrativeLine(PREVIEW_DAY, initialLedger)}.”
         </div>
         <p>하루의 사실을 한 문장으로 이어서 보여줘요</p>
       </Action>
@@ -376,7 +531,9 @@ export function ToneOptions({
           {tone === "numeric" && <Check size={15} strokeWidth={2.2} />}
         </div>
         <div className="tone-preview numeric-preview">
-          <strong>결제 3건 · 45,000원 · 복원 3건</strong>
+          <strong>
+            결제 {facts.count}건 · {won(facts.total)} · 복원 {facts.restored}건
+          </strong>
         </div>
         <p>건수와 금액 중심으로 간결하게 보여줘요</p>
       </Action>

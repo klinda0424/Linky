@@ -121,6 +121,11 @@ export function SettlementInbox({
           </div>
         </div>
         <p className="section-title settlement-list-title">포함된 결제</p>
+        {summary.items.length === 0 && (
+          <p className="settlement-empty">
+            모든 결제를 제외해서 정산할 결제가 없어요. 정산표의 수정에서 다시 넣을 수 있어요
+          </p>
+        )}
         <div className="settlement-items">
           {summary.items.map(({ name, category, amount, payer }) => (
             <div className="settlement-item" key={name}>
@@ -159,6 +164,7 @@ export function SettlementTable({
   excluded: string[]
 }) {
   const summary = summarize(excluded)
+  const empty = summary.items.length === 0
   // 민지만 아직 대기 (입금 확인 시연용)
   const people = MEMBERS.map(
     (name) =>
@@ -186,14 +192,16 @@ export function SettlementTable({
                 <strong>{name}</strong>
                 <span>낸 금액 {amount}</span>
               </div>
-              <StatusChip type={status} />
+              {!empty && <StatusChip type={status} />}
             </div>
           ))}
         </div>
         <div className="warning-banner">
           <Info size={16} strokeWidth={1.6} />
           <p>
-            {excluded.length > 0
+            {empty
+              ? `모든 결제를 제외해서 정산할 금액이 ${won(summary.total)}이에요. 수정에서 다시 넣을 수 있어요`
+              : excluded.length > 0
               ? `${excluded.length}건을 제외하고 다시 계산했어요`
               : "잘못 묶인 항목이 있나요? 모임과 상관없는 결제는 제외할 수 있어요"}
           </p>
@@ -201,8 +209,8 @@ export function SettlementTable({
         </div>
       </div>
       <div className="main-footer">
-        <Action className="primary-button" onClick={proceed}>
-          정산 진행하기
+        <Action className="primary-button" disabled={empty} onClick={proceed}>
+          {empty ? "정산할 결제가 없어요" : "정산 진행하기"}
         </Action>
       </div>
     </div>
@@ -242,6 +250,27 @@ export function SettlementEdit({
         <strong>1인당 {perPerson.toLocaleString()}원</strong>
       </div>
       <div className="edit-list">
+        {items.length === 0 && (
+          <div className="settlement-zero">
+            <strong>정산할 금액이 {won(total)}이에요</strong>
+            <p>
+              모든 결제를 제외해서 친구에게 받을 돈도, 보낼 돈도 없어요.
+              완료하면 정산을 진행하지 않아요.
+            </p>
+            <Action
+              className="secondary-button"
+              onClick={() =>
+                setItems(
+                  settlementItems.map(
+                    (item) => [item.name, item.category, item.amount] as [string, string, number],
+                  ),
+                )
+              }
+            >
+              제외한 결제 다시 넣기
+            </Action>
+          </div>
+        )}
         {items.map(([name, category, amount], index) => (
           <div className="swipe-shell" key={name}>
             <div

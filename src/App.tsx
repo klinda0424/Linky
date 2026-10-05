@@ -54,7 +54,9 @@ export default function App() {
         <Permissions back={back} next={next} toggle={toggle} values={permissions} />
       )
     if (step === 3)
-      return <PrivacyNotice back={back} next={next} values={permissions} />
+      return (
+        <PrivacyNotice back={back} next={next} toggle={toggle} values={permissions} />
+      )
     if (step === 4) return <ImportExpenses back={back} next={next} />
     if (step === 5)
       return (
