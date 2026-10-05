@@ -3101,6 +3101,19 @@ p {
 }
 
 /* 본인인증 (온보딩 1단계) */
+.dev-skip {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  z-index: 3;
+  padding: 4px 8px;
+  transform: translateX(-50%);
+  color: var(--disabled);
+  font-size: 10px;
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
 .identity-form {
   gap: 18px;
 }

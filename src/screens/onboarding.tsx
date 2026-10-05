@@ -51,6 +51,15 @@ const formatPhone = (value: string) =>
       ? `${value.slice(0, 3)}-${value.slice(3)}`
       : `${value.slice(0, 3)}-${value.slice(3, value.length - 4)}-${value.slice(-4)}`
 
+// 개발·시연용: 본인확인 입력을 건너뛰고 닉네임 단계로 간다
+function DevSkip({ onClick }: { onClick: () => void }) {
+  return (
+    <Action className="dev-skip" onClick={onClick}>
+      개발자용 · 본인확인 건너뛰기
+    </Action>
+  )
+}
+
 export function BasicInfo({
   nickname,
   setNickname,
@@ -159,6 +168,7 @@ export function BasicInfo({
           disabled={code.length !== 6 || seconds === 0}
           onNext={() => setPhase("nickname")}
         />
+        <DevSkip onClick={() => setPhase("nickname")} />
       </Screen>
     )
 
@@ -259,6 +269,7 @@ export function BasicInfo({
           setPhase("code")
         }}
       />
+      <DevSkip onClick={() => setPhase("nickname")} />
       {picking && (
         <div className="main-overlay" onClick={() => setPicking(false)}>
           <div className="carrier-sheet" onClick={(event) => event.stopPropagation()}>
