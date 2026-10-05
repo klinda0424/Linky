@@ -27,10 +27,10 @@ export function MainHeader({
   )
 }
 
-// 하단 탭 3개: 홈 · 캘린더 · 마이페이지. 기록 입력은 탭이 아니라 캘린더의 시트로 연다.
+// 하단 탭 3개: 캘린더 · 홈(가운데) · 마이페이지. 기록 입력은 탭이 아니라 캘린더의 시트로 연다.
 const tabs: Array<[MainTab, string, ReactNode]> = [
-  ["home", "홈", <Home size={21} strokeWidth={1.5} />],
   ["calendar", "캘린더", <CalendarDays size={21} strokeWidth={1.5} />],
+  ["home", "홈", <Home size={21} strokeWidth={1.5} />],
   ["mypage", "마이페이지", <UserRound size={21} strokeWidth={1.5} />],
 ]
 
