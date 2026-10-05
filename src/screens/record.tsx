@@ -8,6 +8,7 @@ import {
   isRestored,
   label,
   payments,
+  recognizedPurchase,
   won,
 } from "@/lib/ledger"
 
@@ -23,7 +24,7 @@ export const recordTiles: Array<{
   {
     key: "paymentCapture",
     label: "결제 캡처",
-    description: "카드 앱·영수증 화면",
+    description: "카드 앱·영수증·주문내역 화면",
     icon: <CreditCard size={22} strokeWidth={1.5} />,
   },
   {
@@ -102,11 +103,20 @@ export function RecordAttach({
   paymentId?: string
   state: LedgerState
   back: () => void
-  attach: (paymentId: string) => void
+  // text가 있으면 캡처에서 읽은(또는 사용자가 고친) 문구를 근거로 붙인다
+  attach: (paymentId: string, text?: string) => void
 }) {
   const tile = recordTiles.find((item) => item.key === kind) ?? recordTiles[0]
   const [uploaded, setUploaded] = useState(false)
   const [target, setTarget] = useState<string | undefined>(paymentId)
+  const [editing, setEditing] = useState(false)
+  const [text, setText] = useState("")
+  // 결제 캡처에서 읽은 구매 품목 (목업 인식). 읽은 내용이 있으면 사용자가 맞는지 확인한다.
+  const targetPayment = payments.find((payment) => payment.id === target)
+  const recognized =
+    uploaded && kind === "paymentCapture" && targetPayment
+      ? recognizedPurchase(targetPayment)
+      : undefined
   // 근거가 없는 결제를 먼저 보여 준다
   const candidates = [...payments]
     .filter((payment: Payment) => !isRestored(payment, state))
@@ -128,8 +138,30 @@ export function RecordAttach({
             )}
           </span>
           <strong>{uploaded ? `${tile.label} 1건을 올렸어요` : `${tile.label}을 올려주세요`}</strong>
-          <span>{uploaded ? "아래에서 연결할 결제를 골라 주세요" : "탭해서 선택 (목업)"}</span>
+          <span>
+            {uploaded
+              ? recognized
+                ? "캡처에서 읽은 내용을 확인해 주세요"
+                : "아래에서 연결할 결제를 골라 주세요"
+              : "탭해서 선택 (목업)"}
+          </span>
         </Action>
+        {recognized && (
+          <div className="main-card recognize-card">
+            <small>캡처에서 읽은 내용</small>
+            {editing ? (
+              <input
+                aria-label="구매 품목"
+                autoFocus
+                onChange={(event) => setText(event.currentTarget.value)}
+                placeholder="구매 품목을 적어 주세요"
+                value={text}
+              />
+            ) : (
+              <strong>{recognized}, 맞나요?</strong>
+            )}
+          </div>
+        )}
         {!paymentId && (
           <>
             <p className="section-title">근거가 없는 결제</p>
@@ -155,13 +187,34 @@ export function RecordAttach({
         )}
       </div>
       <div className="main-footer">
-        <Action
-          className="primary-button"
-          disabled={!uploaded || !target}
-          onClick={() => target && attach(target)}
-        >
-          결제에 연결하기
-        </Action>
+        {recognized ? (
+          <div className="recognize-actions">
+            <Action
+              className="secondary-button"
+              onClick={() => {
+                setEditing(!editing)
+                setText(recognized)
+              }}
+            >
+              {editing ? "취소" : "수정"}
+            </Action>
+            <Action
+              className="primary-button"
+              disabled={editing && !text.trim()}
+              onClick={() => target && attach(target, editing ? text.trim() : recognized)}
+            >
+              {editing ? "확인" : "맞아요"}
+            </Action>
+          </div>
+        ) : (
+          <Action
+            className="primary-button"
+            disabled={!uploaded || !target}
+            onClick={() => target && attach(target)}
+          >
+            결제에 연결하기
+          </Action>
+        )}
       </div>
     </div>
   )
