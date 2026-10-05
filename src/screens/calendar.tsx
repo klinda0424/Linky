@@ -1,17 +1,25 @@
 import { useEffect, useRef, useState, type TouchEvent } from "react"
 import {
+  Bus,
   CalendarDays,
   Camera,
+  Check,
   ChevronLeft,
   ChevronRight,
   MapPin,
+  Package,
   Plus,
+  Receipt,
   Route,
   Search,
+  ShoppingBag,
+  Ticket,
   Users,
+  Utensils,
 } from "lucide-react"
 import { Action, cx } from "@/components/common"
 import {
+  type Category,
   type LedgerState,
   type Payment,
   type YMD,
@@ -272,16 +280,9 @@ export function DaySheet({
           >
             <ChevronLeft size={19} strokeWidth={1.6} />
           </Action>
-          <div>
-            <strong>
-              {label(day)} ({weekday(day)})
-            </strong>
-            <span>
-              내 지출 {won(dayMine(day, state))}
-              {dayMine(day, state) !== dayTotal(day) && ` · 결제 ${won(dayTotal(day))}`} · 복원{" "}
-              {restored}/{list.length}건
-            </span>
-          </div>
+          <span>
+            {label(day)} {weekday(day)}요일
+          </span>
           <Action
             className="day-arrow"
             disabled={!next}
@@ -291,28 +292,32 @@ export function DaySheet({
             <ChevronRight size={19} strokeWidth={1.6} />
           </Action>
         </div>
-        <Action className="route-button" onClick={() => showMap(day)}>
-          <Route size={16} strokeWidth={1.6} /> 이날 동선 지도로 보기
-        </Action>
+        <div className="day-total">
+          <strong>{won(dayMine(day, state))}</strong>
+          <span>
+            {dayMine(day, state) !== dayTotal(day) && `결제 ${won(dayTotal(day))} · `}결제{" "}
+            {list.length}건 · 복원 {restored}건
+          </span>
+        </div>
+        <div className="day-chips">
+          <Action className="day-chip map" onClick={() => showMap(day)}>
+            <Route size={13} strokeWidth={1.8} /> 동선 보기
+          </Action>
+          {dayEvents.map((event) => (
+            <span className="day-chip" key={event.id}>
+              <CalendarDays size={13} strokeWidth={1.6} /> {event.title}
+            </span>
+          ))}
+          {dayPhotos.length > 0 && (
+            <span className="day-chip">
+              <Camera size={13} strokeWidth={1.6} /> 사진 {dayPhotos.length}장
+            </span>
+          )}
+          {dayEvents.length + dayPhotos.length === 0 && (
+            <span className="day-chip muted">이날 일정·사진 기록 없음</span>
+          )}
+        </div>
         <div className="day-scroll" ref={scroller}>
-          <div className="my-records">
-            <p>이날의 내 기록</p>
-            <div>
-              {dayEvents.length + dayPhotos.length === 0 && (
-                <span className="record-chip muted">기록 없음</span>
-              )}
-              {dayEvents.map((event) => (
-                <span className="record-chip" key={event.id}>
-                  <CalendarDays size={13} strokeWidth={1.6} /> {event.title}
-                </span>
-              ))}
-              {dayPhotos.length > 0 && (
-                <span className="record-chip">
-                  <Camera size={13} strokeWidth={1.6} /> 사진 {dayPhotos.length}장
-                </span>
-              )}
-            </div>
-          </div>
           {list.map((payment) => (
             <PayCard
               focus={activeFocus === payment.id}
@@ -336,7 +341,16 @@ export function DaySheet({
   )
 }
 
-// ---------- 결제 카드 ----------
+// ---------- 결제 행 ----------
+// 한 줄 요약(가맹점·금액, 시각·근거 아이콘) → 누르면 근거 확인·수정이 펼쳐진다
+const categoryIcon: Record<Category, typeof Utensils> = {
+  "식비·카페": Utensils,
+  쇼핑: ShoppingBag,
+  "문화·여가": Ticket,
+  "생활·기타": Package,
+  교통: Bus,
+}
+
 function PayCard({
   payment,
   state,
@@ -363,7 +377,6 @@ function PayCard({
   verify: (paymentId: string) => void
 }) {
   const [open, setOpen] = useState(false)
-  const [editing, setEditing] = useState(false)
   const evidence = evidenceOf(payment, state)
   const people = payment.group
   const confirmed = state.splitConfirmed.includes(payment.id)
@@ -376,173 +389,143 @@ function PayCard({
   const photo = evidence.find((item) => item.kind === "photo")
   const added = evidence.filter((item) => item.kind === "added")
   const photoIds = photo?.photoIds ?? []
+  const Icon = payment.category ? categoryIcon[payment.category] : Receipt
   return (
-    <div className={cx("pay-card", focus && "focus")} data-pay={payment.id}>
-      <div className="pay-top">
-        <time>{payment.time}</time>
-        <strong>{payment.merchant}</strong>
-        <b>{won(payment.amount)}</b>
-        {people && !personal && (
-          <Action
-            className={cx("group-badge", confirmed && "confirmed")}
-            onClick={() => openSplit(payment)}
-          >
-            <Users size={12} strokeWidth={1.8} />
-            {confirmed ? `그룹 · ${people.length}명` : "그룹 지출?"}
-          </Action>
-        )}
-      </div>
-      {people && confirmed && (
-        <p className="split-line">
-          결제 {won(payment.amount)} / 내 몫{" "}
-          {won(Math.round(payment.amount / people.length))}
-        </p>
-      )}
-      {people && !confirmed && !personal && (
-        <div className="group-notice">
-          <p>
-            {basis.source} {basis.count}명, 그룹 결제 같아요
-          </p>
-          <span>
-            {basis.detail ? `내 일정 · ${basis.detail}` : "결제에 함께 묶인 인원 기준"}
-          </span>
-          <div>
-            <Action className="mini-primary" onClick={() => openSplit(payment)}>
-              맞아요
-            </Action>
-            <Action className="mini-secondary" onClick={() => markPersonal(payment.id)}>
-              아니요
-            </Action>
-          </div>
-        </div>
-      )}
-      {personal && <p className="split-line">개인 지출로 기록했어요</p>}
-      <div className="pay-dotted" />
-      {evidence.length === 0 ? (
-        <div className="pay-empty">
-          <p>기록 없음</p>
-          <Action className="mini-secondary" onClick={() => openRecord(payment.id)}>
-            캡처·사진 추가
-          </Action>
-        </div>
-      ) : (
-        <div className="pay-context">
-          {location && (
-            <div>
-              <MapPin size={14} strokeWidth={1.6} />
-              <span>{payment.place}</span>
-              <small>결제 당시 내 위치</small>
-            </div>
-          )}
-          {calendar.map((item) => (
-            <div key={item.key}>
-              <CalendarDays size={14} strokeWidth={1.6} />
-              <span>{item.text.replace("내 일정 · ", "")}</span>
-              <small>내 일정</small>
-            </div>
-          ))}
-          {photoIds.length > 0 && (
-            <div>
-              <Camera size={14} strokeWidth={1.6} />
-              <span className="thumbs">
-                {photoIds.slice(0, 3).map((id, i) => (
-                  <i className={`photo-thumb t${i % 5}`} key={id} />
-                ))}
-                {photoIds.length > 3 && <em>+{photoIds.length - 3}</em>}
+    <div className={cx("pay-row", focus && "focus", open && "open")} data-pay={payment.id}>
+      <Action className="pay-main" onClick={() => setOpen(!open)}>
+        <span className="pay-icon">
+          <Icon size={17} strokeWidth={1.7} />
+        </span>
+        <div className="pay-text">
+          <strong>{payment.merchant}</strong>
+          <span className="pay-meta">
+            <time>{payment.time}</time>
+            {location && (
+              <span>
+                <MapPin size={11} strokeWidth={1.8} />
+                {payment.place}
               </span>
-              <small>사진 {photoIds.length}장</small>
-            </div>
+            )}
+            {calendar.length > 0 && (
+              <span>
+                <CalendarDays size={11} strokeWidth={1.8} />
+                {calendar[0].text.replace("내 일정 · ", "").replace(/ \(.*\)$/, "")}
+              </span>
+            )}
+            {photoIds.length > 0 && (
+              <span>
+                <Camera size={11} strokeWidth={1.8} />
+                {photoIds.length}
+              </span>
+            )}
+            {added.length > 0 && (
+              <span>
+                <Plus size={11} strokeWidth={1.8} />
+                {added[0].text}
+              </span>
+            )}
+            {evidence.length === 0 && <span className="none">기록 없음</span>}
+            {verified && (
+              <span className="ok">
+                <Check size={11} strokeWidth={2.2} />
+                확인함
+              </span>
+            )}
+          </span>
+        </div>
+        <div className="pay-amount">
+          <b>{won(payment.amount)}</b>
+          {people && confirmed && (
+            <small>내 몫 {won(Math.round(payment.amount / people.length))}</small>
           )}
-          {added.map((item) => (
-            <div key={item.key}>
-              <Plus size={14} strokeWidth={1.6} />
-              <span>{item.text}</span>
-              <small>추가한 기록</small>
-            </div>
-          ))}
+          {personal && <small className="muted">개인 지출</small>}
+        </div>
+      </Action>
+      {people && !confirmed && !personal && (
+        <div className="pay-suggest">
+          <Users size={14} strokeWidth={1.8} />
+          <p>
+            {basis.source} {basis.count}명 · 그룹 결제 같아요
+          </p>
+          <Action className="pill primary" onClick={() => openSplit(payment)}>
+            맞아요
+          </Action>
+          <Action className="pill" onClick={() => markPersonal(payment.id)}>
+            아니요
+          </Action>
         </div>
       )}
-      <div className="pay-foot">
-        {evidence.length > 0 && (
-          <Action className="evidence-dots" onClick={() => setOpen(!open)}>
-            근거 {evidence.length}개
-          </Action>
-        )}
-        <Action className="edit-link" onClick={() => setEditing(!editing)}>
-          {editing ? "완료" : "수정"}
+      {evidence.length === 0 && !open && (
+        <Action className="pill add" onClick={() => openRecord(payment.id)}>
+          <Plus size={12} strokeWidth={2} /> 캡처·사진 추가
         </Action>
-        {verified && !editing && <span className="verified-chip">✓ 확인함</span>}
-      </div>
-      {open && evidence.length > 0 && (
-        <ul className="evidence-list">
-          {evidence.map((item) => (
-            <li key={item.key}>{item.text}</li>
-          ))}
-        </ul>
       )}
-      {editing && (
-        <div className="evidence-editor">
-          <p>연결된 기록을 끊거나 새로 붙일 수 있어요</p>
+      {open && (
+        <div className="pay-detail">
+          {photoIds.length > 0 && (
+            <div className="thumbs">
+              {photoIds.slice(0, 4).map((id, i) => (
+                <i className={`photo-thumb t${i % 5}`} key={id} />
+              ))}
+              {photoIds.length > 4 && <em>+{photoIds.length - 4}</em>}
+            </div>
+          )}
+          {evidence.length === 0 && <p className="detail-note">연결된 근거가 없어요</p>}
           {evidence.map((item) =>
             item.kind === "photo" ? (
               (item.photoIds ?? []).map((id) => {
                 const found = photos.find((photo) => photo.id === id)
                 return (
-                  <div key={id}>
+                  <div className="detail-row" key={id}>
                     <span>
                       사진 · {found?.title} {found?.time}
                     </span>
-                    <Action className="mini-secondary" onClick={() => unlinkPhoto(id)}>
+                    <Action className="text-btn" onClick={() => unlinkPhoto(id)}>
                       제외
                     </Action>
                   </div>
                 )
               })
             ) : (
-              <div key={item.key}>
+              <div className="detail-row" key={item.key}>
                 <span>{item.text}</span>
-                <Action
-                  className="mini-secondary"
-                  onClick={() => unlink(payment.id, item.key)}
-                >
-                  연결 해제
+                <Action className="text-btn" onClick={() => unlink(payment.id, item.key)}>
+                  해제
                 </Action>
               </div>
             ),
           )}
-          {removed.length > 0 && (
-            <div className="evidence-removed">
-              <p>제외한 기록</p>
-              {removed.map((item) => (
-                <div key={item.key}>
-                  <span>{item.text}</span>
-                  <Action
-                    className="mini-secondary"
-                    onClick={() =>
-                      item.photoId ? relinkPhoto(item.photoId) : relink(payment.id, item.key)
-                    }
-                  >
-                    되돌리기
-                  </Action>
-                </div>
-              ))}
+          {removed.map((item) => (
+            <div className="detail-row removed" key={item.key}>
+              <span>{item.text}</span>
+              <Action
+                className="text-btn"
+                onClick={() =>
+                  item.photoId ? relinkPhoto(item.photoId) : relink(payment.id, item.key)
+                }
+              >
+                되돌리기
+              </Action>
             </div>
+          ))}
+          {(removed.length > 0 || evidence.length > 0) && (
+            <p className="detail-note">근거 {evidence.length}개</p>
           )}
-          <p className="evidence-recount">
-            {evidence.length > 0
-              ? `근거 ${evidence.length}개로 다시 계산했어요`
-              : "연결된 근거가 없어 기록 없음으로 돌아갔어요"}
-          </p>
-          <div className="evidence-actions">
-            <Action className="mini-primary" onClick={() => openRecord(payment.id)}>
-              기록 추가
+          <div className="detail-actions">
+            {people && confirmed && (
+              <Action className="pill" onClick={() => openSplit(payment)}>
+                <Users size={12} strokeWidth={2} /> {people.length}명 나눔 보기
+              </Action>
+            )}
+            <Action className="pill" onClick={() => openRecord(payment.id)}>
+              <Plus size={12} strokeWidth={2} /> 기록 추가
             </Action>
             <Action
-              className="mini-primary"
+              className="pill primary"
               disabled={verified}
               onClick={() => {
                 verify(payment.id)
-                setEditing(false)
+                setOpen(false)
               }}
             >
               {verified ? "확인했어요" : "맞아요"}
@@ -558,10 +541,8 @@ function PayCard({
 function DayReport({ day, state }: { day: YMD; state: LedgerState }) {
   return (
     <div className="day-report">
-      <p className="section-title">하루 리포트</p>
-      <div className="main-card report-line">
-        <p>{narrativeLine(day, state)}</p>
-      </div>
+      <span>하루 리포트</span>
+      <p>{narrativeLine(day, state)}</p>
     </div>
   )
 }
