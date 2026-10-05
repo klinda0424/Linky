@@ -32,6 +32,7 @@ import {
 } from "@/lib/ledger"
 import {
   MEMBERS,
+  meeting,
   type Member,
   settlementItems,
   settlementPeriod,
@@ -211,29 +212,52 @@ export function SettlementList({
   )
 }
 
+// 정산 대기함 = 그룹 결제 확인: 결제가 그룹 지출로 보이는 근거와 인원·1인당을 보여 주고 "맞아요 / 아니요"를 받는다
 export function SettlementInbox({
   back,
   openTable,
   excluded,
+  state: stateProp,
+  notGroup,
 }: {
   back: () => void
   openTable: () => void
   excluded: string[]
+  state?: LedgerState
+  // "아니요 → 개인 지출". 연결되어 있을 때만 버튼을 보인다
+  notGroup?: () => void
 }) {
+  const state = stateProp ?? initialLedger
   const summary = summarize(excluded)
+  const basis = meeting ? groupBasis(meeting, state) : undefined
   return (
     <div className="main-page sub-page">
-      <MainHeader back={back} title="정산 대기함" />
+      <MainHeader back={back} title="그룹 결제 확인" />
       <div className="settlement-scroll">
         <PageTitle
           sub={settlementPeriod}
-          title={`${settlementTitle} 정산을\n시작할게요`}
+          title={
+            meeting
+              ? `${meeting.merchant} ${man(meeting.amount)},\n그룹 지출 같아요`
+              : `${settlementTitle}\n그룹 지출 같아요`
+          }
         />
+        {basis && (
+          <div className="group-basis">
+            <span>근거</span>
+            <p>
+              {basis.source} {basis.count}명
+              {basis.detail ? ` · ${basis.detail}` : ""}
+            </p>
+          </div>
+        )}
         <div className="settlement-summary">
           <div>
             <span>정산 대기</span>
             <strong>{won(summary.total)}</strong>
-            <p>{summary.items.length}건의 결제 · {MEMBERS.length}명</p>
+            <p>
+              1인당 {won(summary.perPerson)} · {MEMBERS.length}명
+            </p>
           </div>
           <div className="stacked-avatars">
             {MEMBERS.map((name) => (
@@ -264,9 +288,14 @@ export function SettlementInbox({
           ))}
         </div>
       </div>
-      <div className="main-footer">
+      <div className={cx("main-footer", notGroup && "split-footer")}>
+        {notGroup && (
+          <Action className="secondary-button" onClick={notGroup}>
+            아니요, 개인 지출
+          </Action>
+        )}
         <Action className="primary-button" onClick={openTable}>
-          정산표 보기
+          맞아요, 정산표 보기
         </Action>
       </div>
     </div>

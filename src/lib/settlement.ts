@@ -13,7 +13,7 @@ export type SettlementItem = {
 export const MEMBERS: readonly Member[] = ["나", "지은", "민지", "수진"]
 
 // 정산 대상 모임: 10월 4일 대학 동기 모임 (합정, 4명). 내가 낸 술자리는 캘린더의 같은 결제(mock/october.ts)다.
-const meeting = octoberPayments.find(
+export const meeting = octoberPayments.find(
   (payment) => payment.date.d === 4 && payment.group?.length === MEMBERS.length,
 )
 export const settlementTitle = "대학 동기 모임"
