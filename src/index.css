@@ -605,7 +605,7 @@ p {
   left: 0;
   z-index: 5;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   align-items: center;
   border-top: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.98);
@@ -1698,33 +1698,6 @@ p {
 .arc-stats strong {
   font-size: 14px;
   font-weight: 700;
-}
-
-.recognize-card {
-  margin-top: 14px;
-  padding: 14px 16px;
-}
-
-.recognize-card small {
-  color: var(--sub);
-  font-size: 12px;
-}
-
-.recognize-card strong {
-  margin-top: 4px;
-  display: block;
-  font-size: 18px;
-}
-
-.recognize-card input {
-  width: 100%;
-  margin-top: 6px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--background);
-  font: inherit;
-  font-size: 16px;
 }
 
 .album-actions {
@@ -4004,4 +3977,125 @@ p {
 
 .album-actions {
   margin-top: 14px;
+}
+
+/* ---------- 리포트 탭 · 홈 카드 ---------- */
+.report-scroll {
+  height: calc(100% - 56px);
+  padding: 4px var(--page-padding) 92px;
+  overflow-y: auto;
+}
+
+.report-main {
+  margin-top: 10px;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.report-line {
+  margin-top: 8px;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.report-pair {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.report-pair > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.report-pair span {
+  color: var(--sub);
+  font-size: 12px;
+}
+
+.report-pair strong {
+  font-size: 17px;
+}
+
+.report-preview {
+  background: var(--primary-soft);
+  border-color: var(--primary-border);
+}
+
+.report-link {
+  width: 100%;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.settle-alert {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--primary-soft);
+  border-color: var(--primary-border);
+  text-align: left;
+}
+
+.settle-alert > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.settle-alert strong {
+  font-size: 15px;
+}
+
+.settle-alert span {
+  color: var(--sub);
+  font-size: 13px;
+}
+
+.home-more {
+  min-height: 32px;
+  padding: 0 4px;
+  color: var(--primary-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.home-sub {
+  margin-top: 4px;
+  color: var(--sub);
+  font-size: 12px;
+}
+
+.route-chips {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.route-chips span {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 13px;
+}
+
+.home-thumbs {
+  margin-top: 10px;
+}
+
+.home-thumbs .photo-thumb {
+  display: block;
+  width: 56px;
+  height: 56px;
 }

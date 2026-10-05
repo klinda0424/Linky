@@ -5,7 +5,6 @@ import {
   FileText,
   Info,
   Link2,
-  Receipt,
   ShieldCheck,
   UserRound,
 } from "lucide-react"
@@ -24,27 +23,24 @@ export function MyPage({
   openInfo,
   openConnections,
   openPrivacy,
-  openSettlement,
   openNotifications,
 }: {
   name: string
   openInfo: () => void
   openConnections: () => void
   openPrivacy: () => void
-  openSettlement: () => void
   openNotifications: () => void
 }) {
   const items: Array<[string, ReactNode, () => void]> = [
     ["회원 정보", <UserRound size={18} strokeWidth={1.5} />, openInfo],
     ["연동 서비스 관리", <Link2 size={18} strokeWidth={1.5} />, openConnections],
-    ["개인정보·권한", <ShieldCheck size={18} strokeWidth={1.5} />, openPrivacy],
-    ["정산 내역", <Receipt size={18} strokeWidth={1.5} />, openSettlement],
+    ["개인정보 & 권한", <ShieldCheck size={18} strokeWidth={1.5} />, openPrivacy],
     ["알림 설정", <Bell size={18} strokeWidth={1.5} />, openNotifications],
   ]
   return (
     <>
       <div className="main-simple-header">
-        <p>마이페이지</p>
+        <p>프로필</p>
       </div>
       <div className="mypage-scroll">
         <div className="profile-top">

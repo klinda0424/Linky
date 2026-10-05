@@ -10,7 +10,6 @@ import {
   verifyNovember,
 } from "@/mock/november"
 import {
-  capturedPurchases,
   octoberConfirmedSplitIds,
   octoberEvents,
   octoberPayments,
@@ -347,13 +346,6 @@ export function restoreDaySummary(y: number, m: number, state: LedgerState) {
     none: count("none"),
   }
 }
-
-// 결제 캡처 인식 목업: 해당 결제에서 인식되는 구매 품목 (없으면 undefined)
-export const recognizedPurchase = (payment: Payment) =>
-  capturedPurchases.find(
-    (item) =>
-      payment.date.m === 10 && payment.date.d === item.day && payment.time === item.time,
-  )?.text
 
 // 사용자가 끊은 근거 목록: 결제 카드에서 되돌릴 수 있게 한다
 export type RemovedEvidence = { key: string; text: string; photoId?: string }
