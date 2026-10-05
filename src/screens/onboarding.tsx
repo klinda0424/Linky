@@ -1,12 +1,10 @@
 import { useEffect, useState, type ReactNode } from "react"
 import {
   CalendarDays,
-  Camera,
   Check,
   ChevronDown,
   CreditCard,
   Image,
-  Info,
   MapPin,
   ShieldCheck,
 } from "lucide-react"
@@ -20,51 +18,84 @@ import {
   cx,
 } from "@/components/common"
 import {
-  type LedgerState,
-  TODAY,
   dayFacts,
   initialLedger,
-  label,
   narrativeLine,
-  payments,
-  restoreDaySummary,
-  restoreSummary,
   won,
   ymd,
 } from "@/lib/ledger"
 import { type PermissionKey, type Tone } from "@/types"
 
-// ---------- 1. 개인 정보 ----------
-export const jobOptions = ["대학생", "직장인", "취준생", "기타"]
+// ---------- 1. 본인인증 → 닉네임 ----------
+// 금융앱 가입처럼 이름·생년월일·휴대폰으로 본인을 확인한다 (목업: 실제 인증·저장 없음).
+// 앱이 보관하는 값은 닉네임뿐이다.
+const carriers = ["SKT", "KT", "LG U+", "SKT 알뜰폰", "KT 알뜰폰", "LG U+ 알뜰폰"]
 
-export const birthYears = Array.from({ length: 75 }, (_, index) =>
-  String(2010 - index),
-)
+const identityTerms = [
+  "개인정보 수집·이용 동의",
+  "고유식별정보 처리 동의",
+  "통신사 이용약관 동의",
+  "본인확인 서비스 이용약관 동의",
+]
+
+const digits = (value: string, max: number) => value.replace(/[^0-9]/g, "").slice(0, max)
+const formatPhone = (value: string) =>
+  value.length < 4
+    ? value
+    : value.length < 8
+      ? `${value.slice(0, 3)}-${value.slice(3)}`
+      : `${value.slice(0, 3)}-${value.slice(3, value.length - 4)}-${value.slice(-4)}`
+
+// 개발·시연용: 본인확인 입력을 건너뛰고 닉네임 단계로 간다
+function DevSkip({ onClick }: { onClick: () => void }) {
+  return (
+    <Action className="dev-skip" onClick={onClick}>
+      개발자용 · 본인확인 건너뛰기
+    </Action>
+  )
+}
 
 export function BasicInfo({
   nickname,
   setNickname,
-  birthYear,
-  setBirthYear,
-  job,
-  setJob,
   next,
 }: {
   nickname: string
   setNickname: (value: string) => void
-  birthYear: string
-  setBirthYear: (value: string) => void
-  job: string
-  setJob: (value: string) => void
   next: () => void
 }) {
-  return (
-    <Screen step={1}>
-      <PageTitle
-        title={"Linky가 시작하려면\n세 가지만 알려주세요"}
-        sub="리포트 문구를 맞추는 데만 써요"
-      />
-      <div className="form-list">
+  const [phase, setPhase] = useState<"identity" | "code" | "nickname">("identity")
+  const [name, setName] = useState("")
+  const [birth, setBirth] = useState("")
+  const [genderDigit, setGenderDigit] = useState("")
+  const [carrier, setCarrier] = useState<string>()
+  const [phone, setPhone] = useState("")
+  const [termsOpen, setTermsOpen] = useState(false)
+  const [agreed, setAgreed] = useState(false)
+  const [picking, setPicking] = useState(false)
+  const [code, setCode] = useState("")
+  const [seconds, setSeconds] = useState(180)
+  useEffect(() => {
+    if (phase !== "code" || seconds <= 0) return
+    const timer = window.setTimeout(() => setSeconds((value) => value - 1), 1000)
+    return () => window.clearTimeout(timer)
+  }, [phase, seconds])
+
+  const identityReady =
+    name.trim().length >= 2 &&
+    birth.length === 6 &&
+    /^[1-4]$/.test(genderDigit) &&
+    Boolean(carrier) &&
+    phone.length >= 10 &&
+    agreed
+
+  if (phase === "nickname")
+    return (
+      <Screen step={1}>
+        <PageTitle
+          title={"Linky에서 쓸\n닉네임을 정해주세요"}
+          sub="본인인증을 마쳤어요. 닉네임은 마이페이지에서 바꿀 수 있어요"
+        />
         <div className="field">
           <p className="field-label">닉네임</p>
           <div className="text-field">
@@ -83,44 +114,180 @@ export function BasicInfo({
             <span>{nickname.length}/10</span>
           </div>
         </div>
+        <Footer button="다음" disabled={!nickname.trim()} onNext={next} />
+      </Screen>
+    )
+
+  if (phase === "code")
+    return (
+      <Screen step={1}>
+        <PageTitle
+          title={"문자로 받은\n인증번호를 입력해주세요"}
+          sub={`${carrier} ${formatPhone(phone)}로 보냈어요`}
+        />
         <div className="field">
-          <p className="field-label">출생연도</p>
-          <div className="select-field">
-            <select
-              aria-label="출생연도"
-              onChange={(event) => setBirthYear(event.currentTarget.value)}
-              value={birthYear}
-            >
-              {birthYears.map((year) => (
-                <option key={year} value={year}>
-                  {year}년
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={17} strokeWidth={1.5} />
+          <p className="field-label">인증번호</p>
+          <div className="text-field">
+            <input
+              aria-label="인증번호"
+              autoComplete="one-time-code"
+              inputMode="numeric"
+              onChange={(event) => setCode(digits(event.currentTarget.value, 6))}
+              placeholder="6자리 숫자"
+              value={code}
+            />
+            <span className={cx("code-timer", seconds === 0 && "expired")}>
+              {seconds > 0
+                ? `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`
+                : "시간 초과"}
+            </span>
+          </div>
+          <p className="field-hint">프로토타입이라 아무 숫자 6자리나 입력하면 돼요</p>
+        </div>
+        <div className="identity-links">
+          <Action
+            className="text-link"
+            onClick={() => {
+              setCode("")
+              setSeconds(180)
+            }}
+          >
+            인증번호 다시 받기
+          </Action>
+          <Action className="text-link" onClick={() => setPhase("identity")}>
+            정보 다시 입력
+          </Action>
+        </div>
+        <Footer
+          button="확인"
+          disabled={code.length !== 6 || seconds === 0}
+          onNext={() => setPhase("nickname")}
+        />
+        <DevSkip onClick={() => setPhase("nickname")} />
+      </Screen>
+    )
+
+  return (
+    <Screen step={1}>
+      <div className="onboarding-scroll">
+        <PageTitle
+          title={"본인 확인을 위해\n정보를 입력해주세요"}
+          sub="입력한 정보는 본인 확인에만 쓰고 Linky에 저장하지 않아요"
+        />
+        <div className="form-list identity-form">
+          <div className="field">
+            <p className="field-label">이름</p>
+            <div className="text-field">
+              <input
+                aria-label="이름"
+                autoComplete="name"
+                onChange={(event) => setName(event.currentTarget.value.slice(0, 20))}
+                placeholder="실명 입력"
+                value={name}
+              />
+            </div>
+          </div>
+          <div className="field">
+            <p className="field-label">주민등록번호 앞 7자리</p>
+            <div className="text-field resident-field">
+              <input
+                aria-label="생년월일 6자리"
+                inputMode="numeric"
+                onChange={(event) => setBirth(digits(event.currentTarget.value, 6))}
+                placeholder="생년월일 6자리"
+                value={birth}
+              />
+              <i>-</i>
+              <input
+                aria-label="주민등록번호 뒷자리 첫 숫자"
+                className="gender-digit"
+                inputMode="numeric"
+                onChange={(event) => setGenderDigit(digits(event.currentTarget.value, 1))}
+                value={genderDigit}
+              />
+              <span className="resident-mask">●●●●●●</span>
+            </div>
+          </div>
+          <div className="field">
+            <p className="field-label">휴대폰 번호</p>
+            <div className="phone-row">
+              <Action className="select-field carrier-field" onClick={() => setPicking(true)}>
+                <span className={cx(!carrier && "placeholder")}>{carrier ?? "통신사"}</span>
+                <ChevronDown size={17} strokeWidth={1.5} />
+              </Action>
+              <div className="text-field">
+                <input
+                  aria-label="휴대폰 번호"
+                  autoComplete="tel"
+                  inputMode="numeric"
+                  onChange={(event) => setPhone(digits(event.currentTarget.value, 11))}
+                  placeholder="010-0000-0000"
+                  value={formatPhone(phone)}
+                />
+              </div>
+            </div>
           </div>
         </div>
-        <div className="field">
-          <p className="field-label">직업 상태</p>
-          <div className="job-grid">
-            {jobOptions.map((item) => (
-              <Action
-                className={cx("choice-chip", job === item && "selected")}
-                key={item}
-                onClick={() => setJob(item)}
-              >
-                {item}
-              </Action>
-            ))}
+        <div className="identity-terms">
+          <div className="term-row">
+            <Action className="term-toggle" onClick={() => setAgreed((value) => !value)}>
+              <CheckMark on={agreed} />
+              <span>
+                <em className="required">(필수)</em> 본인확인 약관 전체 동의
+              </span>
+            </Action>
+            <Action
+              className={cx("term-more", termsOpen && "open")}
+              label="본인확인 약관 자세히 보기"
+              onClick={() => setTermsOpen((value) => !value)}
+            >
+              <ChevronDown size={17} strokeWidth={1.6} />
+            </Action>
           </div>
+          {termsOpen && (
+            <ul className="identity-term-list">
+              {identityTerms.map((term) => (
+                <li key={term}>
+                  <em className="required">(필수)</em> {term}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
       <Footer
-        button="다음"
-        caption="입력한 정보는 나중에 마이페이지에서 바꿀 수 있어요"
-        disabled={!nickname || !job}
-        onNext={next}
+        button="인증번호 받기"
+        disabled={!identityReady}
+        onNext={() => {
+          setCode("")
+          setSeconds(180)
+          setPhase("code")
+        }}
       />
+      <DevSkip onClick={() => setPhase("nickname")} />
+      {picking && (
+        <div className="main-overlay" onClick={() => setPicking(false)}>
+          <div className="carrier-sheet" onClick={(event) => event.stopPropagation()}>
+            <div className="sheet-grip" />
+            <p className="sheet-title">통신사를 선택해주세요</p>
+            <div className="carrier-list">
+              {carriers.map((item) => (
+                <Action
+                  className={cx("carrier-option", carrier === item && "selected")}
+                  key={item}
+                  onClick={() => {
+                    setCarrier(item)
+                    setPicking(false)
+                  }}
+                >
+                  {item}
+                  {carrier === item && <Check size={16} strokeWidth={2.2} />}
+                </Action>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </Screen>
   )
 }
@@ -163,7 +330,7 @@ export const permissions: Array<{
     icon: <Image size={19} strokeWidth={1.5} />,
     collects: "사진 촬영 시각·위치 정보",
     purpose: "결제 시각 전후 30분 사진을 근거로 보여주기 위해",
-    scope: "결제 시각 ±30분 · 반경 500m 사진만 사용, 기기에 저장",
+    scope: "결제 시각 ±30분 · 반경 500m 사진만 사용",
   },
   {
     key: "location",
@@ -223,8 +390,9 @@ export function Permissions({
   )
 }
 
-// ---------- 3. 개인정보 고지 (수집 항목·목적·사용 범위·저장 위치) ----------
+// ---------- 3. 개인정보 고지 (소스별 수집 항목·사용 범위·저장 위치, 한 줄씩) ----------
 // 선택 항목은 여기서 동의하지 않을 수 있다. 동의하지 않은 소스는 권한을 끈 것과 같아 근거에서 빠진다.
+// 목적까지 담은 자세한 설명은 마이페이지 > 개인정보·권한에 있다.
 export function PrivacyNotice({
   values,
   toggle,
@@ -236,73 +404,99 @@ export function PrivacyNotice({
   next: () => void
   back: () => void
 }) {
-  // 이 화면에 들어올 때 연동한 항목만 보여 준다 (여기서 거절해도 카드는 남아 다시 동의할 수 있다)
+  // 이 화면에 들어올 때 연동한 항목만 보여 준다 (여기서 거절해도 줄은 남아 다시 동의할 수 있다)
   const [shown] = useState(() => permissions.filter((item) => values[item.key]))
   return (
     <Screen step={3} onBack={back}>
-      <div className="onboarding-scroll">
-        <PageTitle
-          title={"이렇게 수집하고\n보관해요"}
-          sub="동의하지 않은 항목은 근거로 쓰지 않아요"
-        />
-        <div className="privacy-list">
-          {shown.map((item) => (
-            <div className="main-card privacy-card" key={item.key}>
-              <div className="privacy-head">
-                <span className="icon-box neutral">{item.icon}</span>
-                <strong>{item.title}</strong>
-                {item.required && <Badge>필수</Badge>}
+      <PageTitle
+        title={"이렇게 수집하고\n보관해요"}
+        sub="동의하지 않은 항목은 근거로 쓰지 않아요"
+      />
+      <div className="main-card notice-list">
+        {shown.map((item) => {
+          const off = !values[item.key]
+          return (
+            <div className={cx("notice-row", off && "off")} key={item.key}>
+              <span className="icon-box neutral">{item.icon}</span>
+              <div className="notice-copy">
+                <strong>
+                  {item.title}
+                  {item.required && <Badge>필수</Badge>}
+                </strong>
+                <span>{off ? "동의하지 않음 · 근거에서 빠져요" : item.collects}</span>
+                {item.scope && !off && <span className="privacy-scope">{item.scope}</span>}
               </div>
-              <dl>
-                <div>
-                  <dt>수집 항목</dt>
-                  <dd>{item.collects}</dd>
-                </div>
-                <div>
-                  <dt>목적</dt>
-                  <dd>{item.purpose}</dd>
-                </div>
-                {item.scope && (
-                  <div>
-                    <dt>사용 범위</dt>
-                    <dd className="privacy-scope">{item.scope}</dd>
-                  </div>
-                )}
-              </dl>
               {!item.required && (
-                <div className="privacy-decision">
-                  {values[item.key] ? (
-                    <Action className="privacy-reject" onClick={() => toggle(item.key)}>
-                      동의 안 함
-                    </Action>
-                  ) : (
-                    <>
-                      <p className="privacy-off">동의하지 않아 이 기록은 근거에서 빠져요</p>
-                      <Action className="privacy-reject" onClick={() => toggle(item.key)}>
-                        다시 동의
-                      </Action>
-                    </>
-                  )}
-                </div>
+                <Action className="privacy-reject" onClick={() => toggle(item.key)}>
+                  {off ? "다시 동의" : "동의 안 함"}
+                </Action>
               )}
             </div>
-          ))}
-        </div>
-        <div className="info-banner">
-          <ShieldCheck size={15} strokeWidth={1.7} />
-          <span>
-            저장 위치: 내 기기 안에 암호화해 보관하고, 서버로 보내지 않아요
-          </span>
-        </div>
+          )
+        })}
+      </div>
+      <div className="info-banner">
+        <ShieldCheck size={15} strokeWidth={1.7} />
+        <span>내 기기 안에 암호화해 저장하고, 서버로 보내지 않아요</span>
       </div>
       <Footer button="동의하고 계속" onNext={next} />
     </Screen>
   )
 }
 
-// ---------- 4. 지출 내역 가져오기: 결제내역 캡처 → 인식 결과 확인 → 틀린 줄 수정 ----------
-type Fix = { merchant: string; amount: number }
-const PREVIEW_ROWS = 5
+// ---------- 4. 지출 내역 가져오기: 금융앱식 약관 동의 → 불러오기 → 결과 ----------
+type ImportTerm = {
+  key: string
+  required: boolean
+  title: string
+  // 펼쳐서 보는 요약 (수집 항목·목적·보관)
+  detail: Array<[string, string]>
+}
+
+const importTerms: ImportTerm[] = [
+  {
+    key: "service",
+    required: true,
+    title: "결제내역 불러오기 서비스 이용약관",
+    detail: [
+      ["내용", "연결한 카드·계좌의 결제내역을 Linky로 불러와 날짜별로 보여줘요"],
+      ["해지", "마이페이지 > 연동 서비스 관리에서 언제든 끊을 수 있어요"],
+    ],
+  },
+  {
+    key: "collect",
+    required: true,
+    title: "개인(신용)정보 수집·이용 동의",
+    detail: [
+      ["수집 항목", "결제 일시·금액·가맹점명"],
+      ["목적", "잊은 결제를 날짜별로 모아 보여주기 위해"],
+      ["보관", "내 기기 안에 암호화해 저장, 연동 해제 시 삭제"],
+    ],
+  },
+  {
+    key: "inquiry",
+    required: true,
+    title: "개인(신용)정보 조회 동의",
+    detail: [
+      ["조회 대상", "연결한 카드사·은행의 결제내역"],
+      ["조회 기간", "최근 1개월"],
+    ],
+  },
+  {
+    key: "auto",
+    required: false,
+    title: "새 결제 자동 불러오기",
+    detail: [["내용", "앱을 열 때 새로 생긴 결제를 자동으로 불러와요. 끄면 직접 새로고침해요"]],
+  },
+]
+
+function CheckMark({ on, size = 22 }: { on: boolean; size?: number }) {
+  return (
+    <span className={cx("term-check", on && "on")} style={{ width: size, height: size }}>
+      <Check size={size * 0.62} strokeWidth={2.6} />
+    </span>
+  )
+}
 
 export function ImportExpenses({
   next,
@@ -311,49 +505,33 @@ export function ImportExpenses({
   next: () => void
   back: () => void
 }) {
-  // 캡처에서 읽은 결과 = 이번 달(목업 기준일) 결제 목록. 수정한 값은 이 화면 안에서만 바뀐다 (목업)
-  const { y, m } = TODAY
-  const month = payments
-    .filter((payment) => payment.date.y === y && payment.date.m === m)
-    .sort((a, b) => a.date.d - b.date.d || a.time.localeCompare(b.time))
-  const [phase, setPhase] = useState<"upload" | "reading" | "confirm">("upload")
-  const [fixes, setFixes] = useState<Record<string, Fix>>({})
-  const [editing, setEditing] = useState<string>()
-  const [draft, setDraft] = useState<Fix>({ merchant: "", amount: 0 })
-  const [expanded, setExpanded] = useState(false)
+  const [agreed, setAgreed] = useState<Record<string, boolean>>({})
+  const [opened, setOpened] = useState<string>()
+  const [phase, setPhase] = useState<"agree" | "loading" | "done">("agree")
+  const allAgreed = importTerms.every((term) => agreed[term.key])
+  const requiredAgreed = importTerms.every((term) => !term.required || agreed[term.key])
   useEffect(() => {
-    if (phase !== "reading") return
-    const timer = window.setTimeout(() => setPhase("confirm"), 1400)
+    if (phase !== "loading") return
+    const timer = window.setTimeout(() => setPhase("done"), 1400)
     return () => window.clearTimeout(timer)
   }, [phase])
 
-  const valueOf = (id: string, merchant: string, amount: number) =>
-    fixes[id] ?? { merchant, amount }
-  const total = month.reduce(
-    (sum, payment) => sum + valueOf(payment.id, payment.merchant, payment.amount).amount,
-    0,
-  )
-  const rows = expanded ? month : month.slice(0, PREVIEW_ROWS)
-
-  if (phase !== "confirm")
+  if (phase !== "agree")
     return (
       <Screen step={4} onBack={back}>
-        <PageTitle
-          title={"결제내역 캡처를\n올려주세요"}
-          sub={`카드·은행 앱의 ${m}월 이용내역 화면이면 돼요`}
-        />
-        <Action
-          className={cx("capture-zone", phase === "reading" && "recognizing")}
-          disabled={phase === "reading"}
-          onClick={() => setPhase("reading")}
-        >
-          <span className="capture-icon">
-            <Camera size={21} strokeWidth={1.5} />
+        <div className="import-status">
+          <span className={cx("complete-check", phase === "loading" && "loading")}>
+            {phase === "done" ? (
+              <Check size={30} strokeWidth={2.2} />
+            ) : (
+              <CreditCard size={28} strokeWidth={1.5} />
+            )}
           </span>
-          <strong>{phase === "reading" ? "캡처를 읽는 중이에요" : "캡처 선택"}</strong>
-          <span>{phase === "reading" ? "날짜·가맹점·금액을 찾고 있어요" : "탭해서 선택 (목업)"}</span>
-        </Action>
-        <Footer button="인식 결과 확인" disabled onNext={() => undefined} />
+          <p className="complete-title">
+            {phase === "done" ? "결제내역을 불러왔어요" : "결제내역을 불러오는 중이에요"}
+          </p>
+        </div>
+        <Footer button="다음" disabled={phase !== "done"} onNext={next} />
       </Screen>
     )
 
@@ -361,160 +539,86 @@ export function ImportExpenses({
     <Screen step={4} onBack={back}>
       <div className="onboarding-scroll">
         <PageTitle
-          title={`${m}월 결제 ${month.length}건을 읽었어요\n맞는지 확인해 주세요`}
-          sub={`합계 ${won(total)}`}
+          title={"카드·계좌 결제내역을\n불러올게요"}
+          sub="아래 약관에 동의하면 바로 불러와요"
         />
-        <div className="info-banner">
-          <Info size={15} strokeWidth={1.7} />
-          <span>잘못 읽힌 줄은 눌러서 고칠 수 있어요</span>
-        </div>
-        <div className="import-list">
-          {rows.map((payment) => {
-            const value = valueOf(payment.id, payment.merchant, payment.amount)
-            if (editing === payment.id)
-              return (
-                <div className="import-row editing" key={payment.id}>
-                  <span className="import-date">
-                    {label(payment.date)} {payment.time}
-                  </span>
-                  <div className="text-field">
-                    <input
-                      aria-label="가맹점"
-                      onChange={(event) => {
-                        const merchant = event.currentTarget.value
-                        setDraft((current) => ({ ...current, merchant }))
-                      }}
-                      value={draft.merchant}
-                    />
-                  </div>
-                  <div className="text-field">
-                    <input
-                      aria-label="금액"
-                      inputMode="numeric"
-                      onChange={(event) => {
-                        const amount = Number(event.currentTarget.value.replace(/[^0-9]/g, ""))
-                        setDraft((current) => ({ ...current, amount }))
-                      }}
-                      value={draft.amount ? draft.amount.toLocaleString("ko-KR") : ""}
-                    />
-                    <span>원</span>
-                  </div>
-                  <div className="import-edit-actions">
-                    <Action className="secondary-button" onClick={() => setEditing(undefined)}>
-                      취소
-                    </Action>
-                    <Action
-                      className="primary-button"
-                      disabled={!draft.merchant.trim() || draft.amount <= 0}
-                      onClick={() => {
-                        setFixes((current) => ({
-                          ...current,
-                          [payment.id]: { merchant: draft.merchant.trim(), amount: draft.amount },
-                        }))
-                        setEditing(undefined)
-                      }}
-                    >
-                      저장
-                    </Action>
-                  </div>
-                </div>
-              )
-            return (
-              <Action
-                className="import-row"
-                key={payment.id}
-                onClick={() => {
-                  setDraft(value)
-                  setEditing(payment.id)
-                }}
-              >
-                <div>
-                  <span className="import-date">
-                    {label(payment.date)} {payment.time}
-                  </span>
-                  <strong>{value.merchant}</strong>
-                </div>
-                {fixes[payment.id] && <Badge>수정함</Badge>}
-                <p>{won(value.amount)}</p>
-              </Action>
+        <Action
+          className="term-all"
+          onClick={() =>
+            setAgreed(
+              Object.fromEntries(importTerms.map((term) => [term.key, !allAgreed])),
             )
-          })}
+          }
+        >
+          <CheckMark on={allAgreed} size={26} />
+          <strong>약관 전체 동의</strong>
+        </Action>
+        <div className="term-list">
+          {importTerms.map((term) => (
+            <div className="term-item" key={term.key}>
+              <div className="term-row">
+                <Action
+                  className="term-toggle"
+                  onClick={() =>
+                    setAgreed((current) => ({ ...current, [term.key]: !current[term.key] }))
+                  }
+                >
+                  <CheckMark on={Boolean(agreed[term.key])} />
+                  <span>
+                    <em className={cx(term.required && "required")}>
+                      ({term.required ? "필수" : "선택"})
+                    </em>{" "}
+                    {term.title}
+                  </span>
+                </Action>
+                <Action
+                  className={cx("term-more", opened === term.key && "open")}
+                  label={`${term.title} 자세히 보기`}
+                  onClick={() => setOpened(opened === term.key ? undefined : term.key)}
+                >
+                  <ChevronDown size={17} strokeWidth={1.6} />
+                </Action>
+              </div>
+              {opened === term.key && (
+                <dl className="term-detail">
+                  {term.detail.map(([name, value]) => (
+                    <div key={name}>
+                      <dt>{name}</dt>
+                      <dd>{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+            </div>
+          ))}
         </div>
-        {month.length > PREVIEW_ROWS && (
-          <Action className="import-more" onClick={() => setExpanded((value) => !value)}>
-            {expanded ? "접기" : `나머지 ${month.length - PREVIEW_ROWS}건 보기`}
-          </Action>
-        )}
       </div>
       <Footer
-        button={`맞아요, ${m}월 복원하기`}
-        disabled={editing !== undefined}
-        onNext={next}
+        button={requiredAgreed ? "동의하고 불러오기" : "필수 약관에 동의해 주세요"}
+        caption="선택 항목은 동의하지 않아도 불러올 수 있어요"
+        disabled={!requiredAgreed}
+        onNext={() => setPhase("loading")}
       />
     </Screen>
   )
 }
 
-// ---------- 5. 일괄 복원 결과 (일 기준) ----------
-export function RestoreResult({
-  state,
-  next,
-  back,
-}: {
-  state: LedgerState
-  next: () => void
-  back: () => void
-}) {
-  // 가져온 달(목업 기준일의 달)을 날짜 단위로 집계한다. 근거 종류별 건수는 결제 단위다.
-  const { y, m } = TODAY
-  const days = restoreDaySummary(y, m, state)
-  const byKind = restoreSummary(y, m, state)
-  const monthLength = new Date(y, m, 0).getDate()
-  const dayRows: Array<[string, number]> = [
-    ["복원 완료", days.complete],
-    ["부분 복원", days.partial],
-    ["기록 없음", days.none],
-  ]
-  const kindRows: Array<[string, number]> = [
-    ["내 위치", byKind.kinds.location],
-    ["내 일정", byKind.kinds.calendar],
-    ["내 사진", byKind.kinds.photo],
-  ]
+// ---------- 5. 시작 (마지막 단계) ----------
+// 복원 결과는 온보딩에서 따로 보여 주지 않고, 시작하면 캘린더 월뷰에서 바로 보인다.
+export function Welcome({ next, back }: { next: () => void; back: () => void }) {
   return (
     <Screen step={5} onBack={back}>
-      <div className="onboarding-scroll">
-        <PageTitle
-          title={`${days.paidDays === monthLength ? `${monthLength}일 모두` : `${m}월 ${days.paidDays}일`} 지출이 있었어요.\n${days.complete}일은 내 기록으로 채웠어요`}
-          sub="내 캘린더·사진·위치 기록에서만 찾았어요"
-        />
-        <div className="main-card restore-result">
-          {dayRows.map(([name, value]) => (
-            <div className="result-row" key={name}>
-              <p>{name}</p>
-              <strong>{value}일</strong>
-            </div>
-          ))}
-        </div>
-        <p className="restore-kind-title">근거로 쓴 기록 (결제 {byKind.count}건 중)</p>
-        <div className="main-card restore-result">
-          {kindRows.map(([name, value]) => (
-            <div className="result-row" key={name}>
-              <p>{name}</p>
-              <strong>{value > 0 ? `${value}건` : "기록 없음"}</strong>
-            </div>
-          ))}
-        </div>
-        <div className="info-banner">
-          <Info size={15} strokeWidth={1.7} />
-          <span>근거가 없는 결제는 추측하지 않고 “기록 없음”으로 둬요</span>
-        </div>
+      <div className="import-status welcome">
+        <span className="welcome-mark">L</span>
+        <p className="complete-title">{"Linky와 함께\n흩어진 지출 맥락을 모아봐요"}</p>
+        <p className="welcome-sub">내 일정·사진·위치 기록을 결제 옆에 이어 붙여 둘게요</p>
       </div>
-      <Footer button="리포트 톤 고르기" onNext={next} />
+      <Footer button="Linky 시작하기" onNext={next} />
     </Screen>
   )
 }
 
-// ---------- 6. 리포트 톤 선택 ----------
+// ---------- 리포트 톤 미리보기 (마이페이지에서만 사용, 온보딩 단계 없음) ----------
 // 미리보기는 10월 시연일(10/12)의 실제 하루 리포트 문구를 그대로 보여 준다
 const PREVIEW_DAY = ymd(2026, 10, 12)
 
@@ -557,33 +661,5 @@ export function ToneOptions({
         <p>건수와 금액 중심으로 간결하게 보여줘요</p>
       </Action>
     </div>
-  )
-}
-
-export function ToneSelection({
-  tone,
-  setTone,
-  next,
-  back,
-}: {
-  tone?: Tone
-  setTone: (tone: Tone) => void
-  next: () => void
-  back: () => void
-}) {
-  return (
-    <Screen step={6} onBack={back}>
-      <PageTitle
-        title={"하루 리포트를 어떤 방식으로\n받아볼까요?"}
-        sub="같은 기록을 다른 모양으로 보여줘요"
-      />
-      <ToneOptions setTone={setTone} tone={tone} />
-      <Footer
-        button="Linky 시작하기"
-        caption="마이페이지 > 리포트 톤 설정에서 언제든 바꿀 수 있어요"
-        disabled={!tone}
-        onNext={next}
-      />
-    </Screen>
   )
 }
