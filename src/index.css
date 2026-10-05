@@ -1861,6 +1861,101 @@ p {
   font-size: 11px;
 }
 
+.group-notice {
+  margin: 8px 0 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--primary-border);
+  border-radius: 10px;
+  background: var(--primary-soft);
+}
+
+.group-notice p {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.group-notice span {
+  margin-top: 2px;
+  display: block;
+  color: var(--sub);
+  font-size: 11px;
+}
+
+.group-notice div {
+  margin-top: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.group-notice .mini-primary,
+.group-notice .mini-secondary,
+.evidence-actions .mini-primary {
+  min-height: 32px;
+  padding: 0 14px;
+  flex: none;
+}
+
+.evidence-recount {
+  margin-top: 6px;
+  color: var(--sub);
+  font-size: 11px;
+}
+
+.evidence-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.verified-chip {
+  color: var(--primary-text);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.search-month {
+  margin: 14px 0 6px;
+  color: var(--sub);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.search-photos {
+  margin: 10px 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.search-photos .photo-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+}
+
+.search-photos span {
+  color: var(--sub);
+  font-size: 12px;
+}
+
+.search-map {
+  height: 170px;
+  margin-top: 10px;
+  background: var(--surface);
+}
+
+.search-map .map-pin {
+  width: 14px;
+  height: 14px;
+  border-width: 1.5px;
+}
+
+.search-map-note {
+  margin-top: 6px;
+  color: var(--sub);
+  font-size: 11px;
+}
+
 .cal-weekdays,
 .cal-grid {
   display: grid;
