@@ -36,14 +36,8 @@ export default function App() {
     if (step === 1)
       return (
         <BasicInfo
-          birthYear={profile.birthYear}
-          job={profile.job}
           next={next}
           nickname={profile.nickname}
-          setBirthYear={(birthYear) =>
-            setProfile((value) => ({ ...value, birthYear }))
-          }
-          setJob={(job) => setProfile((value) => ({ ...value, job }))}
           setNickname={(nickname) =>
             setProfile((value) => ({ ...value, nickname }))
           }

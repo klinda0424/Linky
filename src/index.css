@@ -3100,6 +3100,164 @@ p {
   white-space: nowrap;
 }
 
+/* 본인인증 (온보딩 1단계) */
+.identity-form {
+  gap: 18px;
+}
+
+.resident-field > i {
+  color: var(--sub);
+  font-style: normal;
+}
+
+.resident-field > input:first-child {
+  flex: 0 0 auto;
+  width: 104px;
+}
+
+.resident-field > input.gender-digit {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--background);
+  text-align: center;
+}
+
+.resident-field > .resident-mask {
+  color: var(--disabled);
+  font-size: 11px;
+  letter-spacing: 2px;
+}
+
+.phone-row {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: 8px;
+}
+
+.carrier-field {
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.carrier-field .placeholder {
+  color: var(--disabled);
+}
+
+.identity-terms {
+  margin-top: 22px;
+  padding: 4px 0;
+  border-top: 1px solid var(--border);
+}
+
+.identity-terms .term-toggle {
+  padding-left: 0;
+}
+
+.identity-term-list {
+  margin: 0 0 6px 34px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-radius: 10px;
+  background: var(--surface);
+  list-style: none;
+  font-size: 12px;
+}
+
+.identity-term-list em,
+.identity-terms em {
+  font-style: normal;
+}
+
+.identity-term-list em.required {
+  color: var(--primary-text);
+  font-weight: 600;
+}
+
+.carrier-sheet {
+  width: 100%;
+  padding: 10px 20px 28px;
+  border-radius: 24px 24px 0 0;
+  background: var(--background);
+  animation: sheet-up 0.26s ease;
+}
+
+.carrier-list {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.carrier-option {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  font-size: 15px;
+}
+
+.carrier-option.selected {
+  color: var(--primary-text);
+  font-weight: 600;
+}
+
+.field-hint {
+  margin-top: 8px;
+  color: var(--sub);
+  font-size: 11px;
+}
+
+.code-timer {
+  color: var(--primary-text) !important;
+  font-size: 13px !important;
+  font-weight: 600;
+}
+
+.code-timer.expired {
+  color: var(--warning) !important;
+}
+
+.identity-links {
+  margin-top: 18px;
+  display: flex;
+  gap: 18px;
+}
+
+.identity-links .text-link {
+  color: var(--sub);
+  font-size: 12px;
+  text-decoration: underline;
+}
+
+/* 마이페이지 회원 정보: 본인인증 상태 */
+.identity-status {
+  margin-top: 18px;
+  padding: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--primary-text);
+}
+
+.identity-status strong {
+  display: block;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.identity-status span {
+  color: var(--sub);
+  font-size: 11px;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
 /* 지출 내역 가져오기: 금융앱식 약관 동의 */
 .term-check {
   display: inline-flex;
