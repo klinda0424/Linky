@@ -2928,6 +2928,111 @@ p {
   font-size: 12px;
 }
 
+/* 내용이 길어지는 온보딩 단계: 하단 버튼 위까지 스크롤 */
+.onboarding-scroll {
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.onboarding-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.privacy-scope {
+  color: var(--primary-text);
+  font-weight: 600;
+  word-break: keep-all;
+}
+
+.privacy-decision {
+  margin-top: 10px;
+  padding-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.privacy-decision .privacy-off {
+  margin-top: 0;
+}
+
+.privacy-reject {
+  margin-left: auto;
+  color: var(--sub);
+  font-size: 12px;
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
+.import-list {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border);
+}
+
+.import-row {
+  min-height: 56px;
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.import-row:not(.editing) > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.import-row strong {
+  display: block;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.import-date {
+  color: var(--sub);
+  font-size: 11px;
+}
+
+.import-row > p {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.import-row.editing {
+  padding: 12px 0;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.import-edit-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.import-edit-actions .primary-button,
+.import-edit-actions .secondary-button {
+  height: 42px;
+}
+
+.import-more {
+  padding: 14px 0 4px;
+  color: var(--primary-text);
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .restore-result {
   margin-bottom: 14px;
   padding: 6px 14px;

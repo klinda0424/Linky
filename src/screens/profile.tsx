@@ -169,9 +169,17 @@ export function PrivacySettings({
                   <dt>목적</dt>
                   <dd>{item.purpose}</dd>
                 </div>
+                {item.scope && (
+                  <div>
+                    <dt>사용 범위</dt>
+                    <dd className="privacy-scope">{item.scope}</dd>
+                  </div>
+                )}
               </dl>
               {!values[item.key] && (
-                <p className="privacy-off">수집을 해제했어요. 새 기록은 가져오지 않아요.</p>
+                <p className="privacy-off">
+                  수집을 해제했어요. 이 기록은 결제 근거에서 빠져요.
+                </p>
               )}
             </div>
           ))}
