@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronRight, Image, Map, Search } from "lucide-react"
+import { ChevronRight, Image, Map, Search } from "lucide-react"
 import { Action, cx } from "@/components/common"
 import {
   TODAY,
@@ -76,7 +76,6 @@ export function HomePage({
   openPayment,
   openAlbum,
   openMap,
-  openCalendar,
 }: {
   state: LedgerState
   openSearch: () => void
@@ -84,7 +83,6 @@ export function HomePage({
   openPayment: (payment: Payment) => void
   openAlbum: () => void
   openMap: () => void
-  openCalendar: () => void
 }) {
   const week = weekOf(TODAY)
   const todayList = paymentsOn(TODAY)
@@ -165,10 +163,6 @@ export function HomePage({
         </div>
 
         <div className="home-shortcuts">
-          <Action className="home-shortcut" onClick={openCalendar}>
-            <CalendarDays size={18} strokeWidth={1.5} />
-            <span>캘린더</span>
-          </Action>
           <Action className="home-shortcut" onClick={openMap}>
             <Map size={18} strokeWidth={1.5} />
             <span>동선 지도</span>
