@@ -91,8 +91,17 @@ export function CalendarHome({
     m > 1 ? restoreDaySummary(y, m - 1, { ...state, added: {} }) : undefined
   return (
     <>
+      {/* 1줄: 서비스 로고(누르는 요소 아님) + 검색 / 2줄: 연월 이동 */}
+      <div className="cal-brandbar">
+        <div className="brand cal-brand">
+          <span className="brand-mark">L</span>
+          <span>Linky</span>
+        </div>
+        <Action className="cal-icon" label="검색" onClick={openSearch}>
+          <Search size={20} strokeWidth={1.6} />
+        </Action>
+      </div>
       <div className="cal-top">
-        <span />
         <div className="cal-month">
           <Action
             className="cal-arrow"
@@ -114,9 +123,6 @@ export function CalendarHome({
             <ChevronRight size={18} strokeWidth={1.6} />
           </Action>
         </div>
-        <Action className="cal-icon" label="검색" onClick={openSearch}>
-          <Search size={20} strokeWidth={1.6} />
-        </Action>
       </div>
       <div className="cal-body">
         <div className="cal-summary">

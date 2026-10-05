@@ -1881,12 +1881,25 @@ p {
 }
 
 /* ---------- 캘린더 ---------- */
-.cal-top {
-  height: 56px;
+.cal-brandbar {
+  height: 44px;
   padding: 0 var(--page-padding);
-  display: grid;
-  grid-template-columns: 70px 1fr 70px;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+}
+
+.cal-brand {
+  height: auto;
+  white-space: nowrap;
+}
+
+.cal-top {
+  height: 44px;
+  padding: 0 var(--page-padding);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .cal-icon {
@@ -1928,7 +1941,7 @@ p {
 }
 
 .cal-body {
-  height: calc(100% - 56px);
+  height: calc(100% - 88px);
   padding: 4px var(--page-padding) 92px;
   overflow-y: auto;
 }
