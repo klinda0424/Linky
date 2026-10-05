@@ -3072,24 +3072,63 @@ p {
   display: none;
 }
 
+/* 온보딩 개인정보 고지: 소스별 한 줄 */
+.notice-list {
+  padding: 4px 14px;
+}
+
+.notice-row {
+  padding: 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.notice-row:last-child {
+  border-bottom: 0;
+}
+
+.notice-copy {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.notice-row strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.notice-copy > span {
+  color: var(--sub);
+  font-size: 12px;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
+.notice-copy > span.privacy-scope {
+  color: var(--primary-text);
+  font-size: 11px;
+}
+
+.notice-row.off .icon-box,
+.notice-row.off strong {
+  opacity: 0.45;
+}
+
+.notice-row.off .notice-copy > span {
+  color: var(--warning);
+}
+
 .privacy-scope {
   color: var(--primary-text);
   font-weight: 600;
   word-break: keep-all;
-}
-
-.privacy-decision {
-  margin-top: 10px;
-  padding-top: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  border-top: 1px solid var(--border);
-}
-
-.privacy-decision .privacy-off {
-  margin-top: 0;
 }
 
 .privacy-reject {

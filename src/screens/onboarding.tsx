@@ -395,8 +395,9 @@ export function Permissions({
   )
 }
 
-// ---------- 3. 개인정보 고지 (수집 항목·목적·사용 범위·저장 위치) ----------
+// ---------- 3. 개인정보 고지 (소스별 수집 항목·사용 범위·저장 위치, 한 줄씩) ----------
 // 선택 항목은 여기서 동의하지 않을 수 있다. 동의하지 않은 소스는 권한을 끈 것과 같아 근거에서 빠진다.
+// 목적까지 담은 자세한 설명은 마이페이지 > 개인정보·권한에 있다.
 export function PrivacyNotice({
   values,
   toggle,
@@ -408,64 +409,40 @@ export function PrivacyNotice({
   next: () => void
   back: () => void
 }) {
-  // 이 화면에 들어올 때 연동한 항목만 보여 준다 (여기서 거절해도 카드는 남아 다시 동의할 수 있다)
+  // 이 화면에 들어올 때 연동한 항목만 보여 준다 (여기서 거절해도 줄은 남아 다시 동의할 수 있다)
   const [shown] = useState(() => permissions.filter((item) => values[item.key]))
   return (
     <Screen step={3} onBack={back}>
-      <div className="onboarding-scroll">
-        <PageTitle
-          title={"이렇게 수집하고\n보관해요"}
-          sub="동의하지 않은 항목은 근거로 쓰지 않아요"
-        />
-        <div className="privacy-list">
-          {shown.map((item) => (
-            <div className="main-card privacy-card" key={item.key}>
-              <div className="privacy-head">
-                <span className="icon-box neutral">{item.icon}</span>
-                <strong>{item.title}</strong>
-                {item.required && <Badge>필수</Badge>}
+      <PageTitle
+        title={"이렇게 수집하고\n보관해요"}
+        sub="동의하지 않은 항목은 근거로 쓰지 않아요"
+      />
+      <div className="main-card notice-list">
+        {shown.map((item) => {
+          const off = !values[item.key]
+          return (
+            <div className={cx("notice-row", off && "off")} key={item.key}>
+              <span className="icon-box neutral">{item.icon}</span>
+              <div className="notice-copy">
+                <strong>
+                  {item.title}
+                  {item.required && <Badge>필수</Badge>}
+                </strong>
+                <span>{off ? "동의하지 않음 · 근거에서 빠져요" : item.collects}</span>
+                {item.scope && !off && <span className="privacy-scope">{item.scope}</span>}
               </div>
-              <dl>
-                <div>
-                  <dt>수집 항목</dt>
-                  <dd>{item.collects}</dd>
-                </div>
-                <div>
-                  <dt>목적</dt>
-                  <dd>{item.purpose}</dd>
-                </div>
-                {item.scope && (
-                  <div>
-                    <dt>사용 범위</dt>
-                    <dd className="privacy-scope">{item.scope}</dd>
-                  </div>
-                )}
-              </dl>
               {!item.required && (
-                <div className="privacy-decision">
-                  {values[item.key] ? (
-                    <Action className="privacy-reject" onClick={() => toggle(item.key)}>
-                      동의 안 함
-                    </Action>
-                  ) : (
-                    <>
-                      <p className="privacy-off">동의하지 않아 이 기록은 근거에서 빠져요</p>
-                      <Action className="privacy-reject" onClick={() => toggle(item.key)}>
-                        다시 동의
-                      </Action>
-                    </>
-                  )}
-                </div>
+                <Action className="privacy-reject" onClick={() => toggle(item.key)}>
+                  {off ? "다시 동의" : "동의 안 함"}
+                </Action>
               )}
             </div>
-          ))}
-        </div>
-        <div className="info-banner">
-          <ShieldCheck size={15} strokeWidth={1.7} />
-          <span>
-            저장 위치: 내 기기 안에 암호화해 보관하고, 서버로 보내지 않아요
-          </span>
-        </div>
+          )
+        })}
+      </div>
+      <div className="info-banner">
+        <ShieldCheck size={15} strokeWidth={1.7} />
+        <span>내 기기 안에 암호화해 저장하고, 서버로 보내지 않아요</span>
       </div>
       <Footer button="동의하고 계속" onNext={next} />
     </Screen>
