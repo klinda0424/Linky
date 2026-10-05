@@ -2,18 +2,19 @@
 @import "tailwindcss";
 
 :root {
-  --primary: #0084FF;
-  --primary-hover: #006FD6;
-  --primary-text: #006FD6;
-  --primary-soft: #E6F3FF;
-  --primary-border: #99CEFF;
-  --primary-disabled: #99CEFF;
-  --on-primary: #ffffff;
+  --primary: #b8e62e;
+  --primary-hover: #a6d41f;
+  --primary-text: #4f6b0a;
+  --primary-soft: #f4fbdd;
+  --primary-border: #d3ef82;
+  --primary-disabled: #e4f5ae;
+  --primary-strong: #7fa012;
+  --on-primary: #1a1a1a;
 
   --background: #ffffff;
   --surface: #f6f6f7;
   --border: #ececee;
-  --text: #111111;
+  --text: #1a1a1a;
   --sub: #8b8b92;
   --disabled: #b5b5bb;
   --toast: #1c1c1e;
@@ -44,12 +45,23 @@ body,
   min-height: 100%;
 }
 
+@theme {
+  --font-sans: "Pretendard Variable", Pretendard, sans-serif;
+}
+
 body {
   margin: 0;
   color: var(--text);
   background: #e9e9eb;
-  font-family: var(--font-sans);
+  font-family: "Pretendard Variable", Pretendard, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
 }
 
 p {
@@ -80,7 +92,7 @@ p {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1;
   font-weight: 700;
 }
@@ -89,7 +101,7 @@ p {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 8px;
+  font-size: 11px;
 }
 
 .status-symbols i {
@@ -136,7 +148,7 @@ p {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -149,7 +161,7 @@ p {
   border-radius: 6px;
   background: var(--primary);
   color: var(--on-primary);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
 }
 
@@ -194,7 +206,7 @@ p {
 .step-count {
   color: var(--sub);
   text-align: right;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .page-content {
@@ -218,7 +230,7 @@ p {
 .sub {
   margin-top: 6px;
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.45;
   font-weight: 400;
 }
@@ -229,7 +241,7 @@ p {
 
 .field-label {
   margin-bottom: 7px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -241,7 +253,7 @@ p {
   align-items: center;
   border-radius: 10px;
   background: var(--surface);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
 }
 
@@ -252,7 +264,7 @@ p {
 .text-field > span {
   flex: 0 0 auto;
   color: var(--disabled);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .text-field > input,
@@ -294,7 +306,7 @@ p {
   border: 1.5px solid transparent;
   border-radius: 10px;
   background: var(--surface);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .choice-chip.selected,
@@ -319,7 +331,7 @@ p {
   margin-bottom: 9px;
   color: var(--sub);
   text-align: center;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.35;
 }
 
@@ -331,7 +343,7 @@ p {
   border-radius: 12px;
   background: var(--primary);
   color: var(--on-primary);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
 }
 
@@ -351,7 +363,7 @@ p {
   align-items: flex-end;
   justify-content: center;
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .list-cards {
@@ -394,14 +406,14 @@ p {
 }
 
 .label-row strong {
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.2;
   font-weight: 600;
 }
 
 .label-row small {
   color: var(--sub);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 400;
 }
 
@@ -412,7 +424,7 @@ p {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .badge {
@@ -420,7 +432,7 @@ p {
   border-radius: 4px;
   background: var(--surface);
   color: var(--sub);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 400;
 }
 
@@ -519,7 +531,7 @@ p {
 }
 
 .result-row p {
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.4;
   font-weight: 500;
 }
@@ -535,7 +547,7 @@ p {
   background: var(--primary-soft);
   color: var(--sub);
   text-align: left;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .main-page {
@@ -593,7 +605,7 @@ p {
   left: 0;
   z-index: 5;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   align-items: center;
   border-top: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.98);
@@ -607,7 +619,7 @@ p {
   justify-content: center;
   gap: 4px;
   color: var(--disabled);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .bottom-tab.active {
@@ -648,7 +660,7 @@ p {
 .sheet-sub {
   margin-top: 5px;
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .record-tiles {
@@ -682,13 +694,13 @@ p {
 }
 
 .record-tile strong {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
 }
 
 .record-tile > span:last-child {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.2;
 }
 
@@ -701,7 +713,7 @@ p {
 .main-subheader > p,
 .main-simple-header > p {
   text-align: center;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -727,7 +739,7 @@ p {
 .sub-heading,
 .section-title {
   margin-bottom: 13px;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
 }
 
@@ -739,7 +751,7 @@ p {
   background: var(--surface);
   outline: none;
   white-space: nowrap;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
 }
 
@@ -760,7 +772,7 @@ p {
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--background);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
 }
 
@@ -789,19 +801,19 @@ p {
   justify-content: center;
   border-radius: 50%;
   background: var(--pink);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
 }
 
 .profile-top strong {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
 }
 
 .profile-top p {
   margin-top: 4px;
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .profile-list {
@@ -830,7 +842,7 @@ p {
 
 .profile-row strong {
   flex: 1;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
 }
 
@@ -868,7 +880,7 @@ p {
   border-radius: 10px;
   background: var(--primary-soft);
   color: var(--sub);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.45;
 }
 
@@ -889,7 +901,7 @@ p {
 .settings-sub {
   margin: 5px 0 20px;
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .mini-secondary,
@@ -899,7 +911,7 @@ p {
   align-items: center;
   justify-content: center;
   border-radius: 9px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -923,7 +935,7 @@ p {
   border-radius: 8px;
   background: var(--surface);
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .filter-chip.selected {
@@ -962,13 +974,13 @@ p {
 }
 
 .capture-zone strong {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
 }
 
 .capture-zone > span:last-child {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 /* 날짜 시트(.sheet-dim) 위에서 열리므로 그보다 위에 둔다 */
@@ -996,7 +1008,7 @@ p {
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .person-avatar {
@@ -1008,7 +1020,7 @@ p {
   justify-content: center;
   border: 2px solid var(--background);
   border-radius: 50%;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -1039,7 +1051,7 @@ p {
   border-radius: 10px;
   background: var(--surface);
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.4;
 }
 
@@ -1059,7 +1071,7 @@ p {
 
 .split-result span {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .split-result p {
@@ -1068,7 +1080,7 @@ p {
   align-items: center;
   gap: 6px;
   color: var(--sub);
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .split-result p strong {
@@ -1107,19 +1119,19 @@ p {
 
 .split-history strong {
   display: block;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
 }
 
 .split-history span {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .split-history p {
   color: var(--sub);
   text-align: right;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .split-history p strong {
@@ -1138,7 +1150,7 @@ p {
 
 .per-person span {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .per-person strong {
@@ -1176,7 +1188,7 @@ p {
 .settlement-summary span,
 .settlement-summary p {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .settlement-summary strong {
@@ -1204,7 +1216,7 @@ p {
   margin-bottom: 12px;
   word-break: keep-all;
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
 }
 
@@ -1221,7 +1233,7 @@ p {
 }
 
 .settlement-zero strong {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
 }
 
@@ -1229,13 +1241,13 @@ p {
   margin-bottom: 6px;
   word-break: keep-all;
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
 }
 
 .settlement-zero .secondary-button {
   height: 44px;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .settlement-items {
@@ -1261,7 +1273,7 @@ p {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -1272,11 +1284,11 @@ p {
   border-radius: 4px;
   background: var(--surface);
   color: var(--sub);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .settlement-item > p {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -1284,7 +1296,7 @@ p {
   padding: 4px 6px;
   flex: 0 0 auto;
   border-radius: 4px;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
 }
 
@@ -1324,11 +1336,11 @@ p {
 
 .table-total span {
   color: var(--sub);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .table-total strong {
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 700;
 }
 
@@ -1363,13 +1375,13 @@ p {
 }
 
 .people-settlement strong {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 
 .people-settlement div span {
   color: var(--sub);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .warning-banner {
@@ -1386,12 +1398,12 @@ p {
 
 .warning-banner p {
   color: var(--text);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.45;
 }
 
 .warning-banner .action {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   text-decoration: underline;
 }
@@ -1411,12 +1423,12 @@ p {
 .edit-banner span {
   max-width: 205px;
   color: var(--sub);
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.45;
 }
 
 .edit-banner strong {
-  font-size: 11px;
+  font-size: 12px;
   white-space: nowrap;
 }
 
@@ -1457,18 +1469,18 @@ p {
 
 .edit-row div strong {
   display: block;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 
 .edit-row div span,
 .edit-row small {
   color: var(--sub);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .edit-row p {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -1484,7 +1496,7 @@ p {
   justify-content: center;
   background: var(--pending);
   color: var(--background);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -1496,7 +1508,7 @@ p {
   gap: 8px;
   border-radius: 12px;
   background: var(--primary-soft);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.45;
 }
 
@@ -1510,7 +1522,7 @@ p {
 .receive-card > span,
 .receive-card > p {
   color: var(--sub);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .receive-card > strong {
@@ -1536,11 +1548,11 @@ p {
 
 .receive-card div span {
   color: var(--sub);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .receive-card div strong {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -1565,7 +1577,7 @@ p {
 
 .deposit-list strong {
   flex: 1;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -1573,7 +1585,7 @@ p {
 .deposit-waiting {
   padding: 4px 6px;
   border-radius: 4px;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
 }
 
@@ -1608,7 +1620,7 @@ p {
 .result-comparison > p {
   margin-top: 18px;
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .result-comparison > svg {
@@ -1636,7 +1648,7 @@ p {
 .result-comparison > span:last-child {
   margin-top: 15px;
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .focused-search {
@@ -1654,7 +1666,7 @@ p {
   min-width: 0;
   flex: 1;
   outline: none;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .focused-search > div:empty::before {
@@ -1674,7 +1686,7 @@ p {
   border: 1px solid var(--border);
   border-radius: 9px;
   background: var(--background);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 @keyframes sheet-up {
@@ -1721,7 +1733,7 @@ p {
 
 .arc-empty {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.6;
 }
 
@@ -1736,7 +1748,7 @@ p {
 
 .arc-hero > span {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -1747,7 +1759,7 @@ p {
 
 .arc-hero > p {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
 }
 
@@ -1768,11 +1780,11 @@ p {
 
 .arc-stats span {
   color: var(--sub);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .arc-stats strong {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -1783,13 +1795,13 @@ p {
 
 .recognize-card small {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .recognize-card strong {
   margin-top: 4px;
   display: block;
-  font-size: 17px;
+  font-size: 18px;
 }
 
 .recognize-card input {
@@ -1800,7 +1812,7 @@ p {
   border-radius: 10px;
   background: var(--background);
   font: inherit;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .recognize-actions {
@@ -1844,13 +1856,13 @@ p {
 }
 
 .arc-rows strong {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
 }
 
 .arc-rows span {
   color: var(--sub);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.4;
 }
 
@@ -1858,13 +1870,13 @@ p {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 
 .arc-rows small {
   color: var(--sub);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 400;
 }
 
@@ -1922,7 +1934,7 @@ p {
 .cal-month strong {
   min-width: 96px;
   text-align: center;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
 }
 
@@ -1959,13 +1971,13 @@ p {
 .cal-summary span {
   display: block;
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .cal-summary strong {
   margin-top: 3px;
   display: block;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 700;
 }
 
@@ -1977,13 +1989,13 @@ p {
   margin-top: 2px;
   display: block;
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .search-month {
   margin: 14px 0 6px;
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -2002,7 +2014,7 @@ p {
 
 .search-photos span {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .search-map {
@@ -2020,7 +2032,7 @@ p {
 .search-map-note {
   margin-top: 6px;
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 /* 달력: 칸 배경 없이 큰 날짜 + 그날 내 지출 전체 금액. 화면 가장자리에서 14px 띄우고, 6자리 금액도 한 줄에 들어가게 한다 */
@@ -2039,7 +2051,7 @@ p {
 .cal-weekdays span {
   text-align: center;
   color: var(--disabled);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .cal-cell {
@@ -2064,7 +2076,7 @@ p {
   justify-content: center;
   border-radius: 10px;
   color: #3a3a3f;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 500;
 }
 
@@ -2078,7 +2090,7 @@ p {
 
 .cal-cell i {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 400;
   letter-spacing: -0.3px;
@@ -2109,7 +2121,7 @@ p {
   justify-content: center;
   gap: 14px;
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .cal-legend span {
@@ -2159,7 +2171,7 @@ p {
 
 .day-head > span {
   color: var(--sub);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
 }
 
@@ -2190,7 +2202,7 @@ p {
 
 .day-total span {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .day-chips {
@@ -2216,7 +2228,7 @@ p {
   border-radius: 15px;
   background: var(--surface);
   color: var(--text);
-  font-size: 12px;
+  font-size: 13px;
   white-space: nowrap;
 }
 
@@ -2285,7 +2297,7 @@ p {
 
 .pay-photos .no-photo {
   color: var(--disabled);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .pay-icon {
@@ -2314,7 +2326,7 @@ p {
 .pay-title strong {
   min-width: 0;
   overflow: hidden;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2323,7 +2335,7 @@ p {
 .pay-title time {
   flex: none;
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .pay-meta {
@@ -2333,7 +2345,7 @@ p {
   gap: 8px;
   overflow: hidden;
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
   white-space: nowrap;
 }
 
@@ -2358,14 +2370,14 @@ p {
 
 .pay-amount b {
   display: block;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
 }
 
 .pay-amount s {
   display: block;
   color: var(--disabled);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .pay-amount b.mine {
@@ -2377,14 +2389,14 @@ p {
 }
 
 .pay-amount b.mine em {
-  font-size: 11px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 600;
 }
 
 .pay-amount small {
   color: var(--primary-text);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -2404,7 +2416,7 @@ p {
   border-radius: 15px;
   background: var(--background);
   box-shadow: inset 0 0 0 1px var(--border);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -2440,7 +2452,7 @@ p {
   min-width: 0;
   flex: 1 1 calc(100% - 24px);
   color: var(--text);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   line-height: 1.35;
 }
@@ -2463,7 +2475,7 @@ p {
 
 .thumbs em {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
   font-style: normal;
 }
 
@@ -2483,7 +2495,7 @@ p {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.4;
 }
 
@@ -2499,14 +2511,14 @@ p {
   display: flex;
   align-items: center;
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
 .detail-note {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .detail-actions {
@@ -2527,13 +2539,13 @@ p {
 
 .day-report > span {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
 .day-report > p {
   margin-top: 4px;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.6;
 }
 
@@ -2541,7 +2553,7 @@ p {
   padding: 5px 0;
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .report-numbers > div > span {
@@ -2559,7 +2571,7 @@ p {
   grid-template-columns: 78px 1fr 40px;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .report-bars span {
@@ -2606,7 +2618,7 @@ p {
   justify-content: center;
   border-radius: 8px;
   color: var(--sub);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -2627,7 +2639,7 @@ p {
 .map-range strong {
   min-width: 150px;
   text-align: center;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
 }
 
@@ -2686,7 +2698,7 @@ p {
   border: 1px solid var(--border);
   border-radius: 16px;
   background: var(--background);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -2701,7 +2713,7 @@ p {
   position: absolute;
   transform: translate(-50%, 0);
   color: #7d8087;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   pointer-events: none;
 }
@@ -2717,7 +2729,7 @@ p {
   border: 2px solid var(--background);
   border-radius: 50%;
   color: #ffffff;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   box-shadow: 0 1px 4px rgba(17, 17, 17, 0.25);
 }
@@ -2749,7 +2761,7 @@ p {
   left: 50%;
   transform: translateX(-50%);
   color: var(--text);
-  font-size: 10px;
+  font-size: 11px;
   font-style: normal;
   font-weight: 600;
   white-space: nowrap;
@@ -2790,7 +2802,7 @@ p {
 }
 
 .map-place-bubble strong {
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .map-place-bubble span {
@@ -2799,7 +2811,7 @@ p {
   left: 50%;
   transform: translateX(-50%);
   color: var(--text);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
   text-shadow: 0 1px 2px var(--background);
@@ -2814,7 +2826,7 @@ p {
   border-radius: 10px;
   background: var(--glass);
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
   text-align: center;
 }
 
@@ -2824,7 +2836,7 @@ p {
   flex-wrap: wrap;
   gap: 4px 12px;
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .map-legend span {
@@ -2876,19 +2888,19 @@ p {
 .map-preview small {
   display: block;
   color: var(--primary-text);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
 .map-preview strong {
   margin-top: 3px;
   display: block;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .map-preview span {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .map-preview .mini-primary {
@@ -2928,7 +2940,7 @@ p {
 
 .map-place-list span {
   grid-area: place;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -2936,12 +2948,12 @@ p {
   grid-area: count;
   margin-top: 2px;
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .map-place-list strong {
   grid-area: amount;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -2953,7 +2965,7 @@ p {
 .map-place-list > p {
   padding: 16px;
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .map-missing-chip {
@@ -2963,7 +2975,7 @@ p {
   border-radius: 18px;
   background: var(--surface);
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -3000,14 +3012,14 @@ p {
 }
 
 .map-place-sheet-head strong {
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.45;
 }
 
 .map-place-sheet-head span {
   margin-top: 4px;
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .map-place-sheet-head > .action {
@@ -3043,21 +3055,21 @@ p {
 .map-place-payments time {
   grid-area: time;
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .map-place-payments strong {
   grid-area: merchant;
   margin-top: 2px;
   overflow: hidden;
-  font-size: 13px;
+  font-size: 14px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .map-place-payments span {
   grid-area: amount;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -3065,7 +3077,7 @@ p {
   grid-area: share;
   margin-top: 3px;
   color: var(--primary-text);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -3088,7 +3100,7 @@ p {
   padding: 7px 11px;
   border-radius: 14px;
   background: var(--surface);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .map-places b {
@@ -3114,7 +3126,7 @@ p {
 
 .album-top span {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .album-scroll {
@@ -3137,12 +3149,12 @@ p {
 
 .album-head strong {
   display: block;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .album-head span {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .album-grid {
@@ -3189,7 +3201,7 @@ p {
   position: absolute;
   right: 6px;
   bottom: 4px;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .photo-detail {
@@ -3212,12 +3224,12 @@ p {
 
 .photo-meta strong {
   display: block;
-  font-size: 16px;
+  font-size: 17px;
 }
 
 .photo-meta span {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .linked-pay {
@@ -3235,16 +3247,16 @@ p {
 
 .linked-pay strong {
   display: block;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .linked-pay span {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .linked-pay b {
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .linked-pay > svg {
@@ -3262,16 +3274,16 @@ p {
 
 .report-pay strong {
   display: block;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .report-pay span {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .report-pay p {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
 }
 
@@ -3282,7 +3294,7 @@ p {
 
 .route-text {
   color: var(--text);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.6;
 }
 
@@ -3300,7 +3312,7 @@ p {
   background: transparent;
   outline: none;
   font: inherit;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .search-content .section-title {
@@ -3364,13 +3376,13 @@ p {
 
 .settlement-history strong {
   display: block;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .settlement-history span,
 .settlement-history p {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .settlement-history > svg {
@@ -3402,7 +3414,7 @@ p {
 
 .privacy-head strong {
   flex: 1;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .privacy-card dl {
@@ -3416,7 +3428,7 @@ p {
   display: grid;
   grid-template-columns: 62px 1fr;
   gap: 8px;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
 }
 
@@ -3431,7 +3443,7 @@ p {
 .privacy-off {
   margin-top: 10px;
   color: var(--warning);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 /* 내용이 길어지는 온보딩 단계: 하단 버튼 위까지 스크롤 */
@@ -3474,19 +3486,19 @@ p {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .notice-copy > span {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.4;
   word-break: keep-all;
 }
 
 .notice-copy > span.privacy-scope {
   color: var(--primary-text);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .notice-row.off .icon-box,
@@ -3507,7 +3519,7 @@ p {
 .privacy-reject {
   margin-left: auto;
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
   text-decoration: underline;
   white-space: nowrap;
 }
@@ -3521,7 +3533,7 @@ p {
   padding: 4px 8px;
   transform: translateX(-50%);
   color: var(--disabled);
-  font-size: 10px;
+  font-size: 11px;
   text-decoration: underline;
   white-space: nowrap;
 }
@@ -3551,7 +3563,7 @@ p {
 
 .resident-field > .resident-mask {
   color: var(--disabled);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 2px;
 }
 
@@ -3589,7 +3601,7 @@ p {
   border-radius: 10px;
   background: var(--surface);
   list-style: none;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .identity-term-list em,
@@ -3622,7 +3634,7 @@ p {
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--border);
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .carrier-option.selected {
@@ -3633,12 +3645,12 @@ p {
 .field-hint {
   margin-top: 8px;
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .code-timer {
   color: var(--primary-text) !important;
-  font-size: 13px !important;
+  font-size: 14px !important;
   font-weight: 600;
 }
 
@@ -3654,7 +3666,7 @@ p {
 
 .identity-links .text-link {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
   text-decoration: underline;
 }
 
@@ -3673,12 +3685,12 @@ p {
 .identity-status strong {
   display: block;
   color: var(--text);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .identity-status span {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.5;
   word-break: keep-all;
 }
@@ -3717,7 +3729,7 @@ p {
 .welcome-sub {
   margin-top: 8px;
   color: var(--sub);
-  font-size: 13px;
+  font-size: 14px;
   word-break: keep-all;
 }
 
@@ -3756,7 +3768,7 @@ p {
 }
 
 .term-all strong {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
 }
 
@@ -3780,7 +3792,7 @@ p {
   flex: 1;
   align-items: center;
   gap: 12px;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.4;
   word-break: keep-all;
 }
@@ -3827,7 +3839,7 @@ p {
   display: grid;
   grid-template-columns: 58px 1fr;
   gap: 8px;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.5;
 }
 
@@ -3841,11 +3853,181 @@ p {
 }
 
 .result-row strong {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
 }
 
 .complete-check.loading {
   background: var(--surface);
   color: var(--sub);
+}
+
+/* ---------- 홈 (이번 주 · 오늘 지출 · 하루 리포트) ---------- */
+.main-scroll {
+  height: calc(100% - 44px);
+  padding: 4px var(--page-padding) 92px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.main-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.block-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.block-heading > strong {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.block-heading > span {
+  color: var(--sub);
+  font-size: 12px;
+}
+
+.week-grid {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.week-day {
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--sub);
+  font-size: 11px;
+}
+
+.week-day strong {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.week-day.today strong {
+  background: var(--primary);
+  color: var(--on-primary);
+  font-weight: 700;
+}
+
+.week-day i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.week-day i.has-payment {
+  background: var(--sub);
+}
+
+.spending-top > div > span {
+  color: var(--sub);
+  font-size: 12px;
+}
+
+.spending-top > div > p {
+  margin-top: 4px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.spending-list {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.spending-row {
+  min-height: 51px;
+  padding: 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.spending-row:last-child {
+  border-bottom: 0;
+}
+
+.spending-row > div {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.spending-row strong,
+.spending-row > p {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.spending-row > div span {
+  color: var(--sub);
+  font-size: 11px;
+}
+
+.spending-row > p s {
+  margin-right: 6px;
+  color: var(--disabled);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.spending-row .row-chevron {
+  flex: 0 0 auto;
+  margin-left: -4px;
+  color: var(--disabled);
+}
+
+.home-recent-title {
+  margin: 10px 0 2px;
+  color: var(--sub);
+  font-size: 12px;
+}
+
+.report-quote {
+  margin-top: 11px;
+  padding: 13px;
+  border-radius: 10px;
+  background: var(--primary-soft);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.home-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.home-shortcut {
+  min-height: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
 }

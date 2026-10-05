@@ -398,7 +398,7 @@ export function MapTab({
                   fill="none"
                   key={index}
                   points={points.map((point) => `${point.x},${point.y}`).join(" ")}
-                  stroke="#0084FF"
+                  stroke="var(--primary-strong)"
                   strokeDasharray="5 5"
                   strokeWidth="2"
                   vectorEffect="non-scaling-stroke"

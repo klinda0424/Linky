@@ -10,6 +10,7 @@ import {
 } from "@/lib/ledger"
 import { AlbumTab, EventReport, PhotoDetail } from "@/screens/album"
 import { CalendarHome, DaySheet } from "@/screens/calendar"
+import { HomePage } from "@/screens/home"
 import { MapTab } from "@/screens/map"
 import {
   ConnectionSettings,
@@ -55,7 +56,7 @@ export function MainApp({
     update: (value: Record<PermissionKey, boolean>) => Record<PermissionKey, boolean>,
   ) => void
 }) {
-  const [tab, setTab] = useState<MainTab>("calendar")
+  const [tab, setTab] = useState<MainTab>("home")
   const [view, setView] = useState<MainView>("tabs")
   const [ledger, setLedger] = useState<LedgerState>(initialLedger)
   // 날짜 시트: 캘린더 탭 위에 열린다. 지도 핀·검색에서 넘어오면 해당 결제를 강조한다.
@@ -158,7 +159,30 @@ export function MainApp({
     setRecordSheet(true)
   }
 
+  // 홈에서 날짜·결제를 누르면 캘린더 탭의 날짜 시트로 이어진다
+  const openDayInCalendar = (day: YMD) => {
+    setFocusPayment(undefined)
+    setSheetDay(day)
+    setTab("calendar")
+  }
+
   const tabScreen = () => {
+    if (tab === "home")
+      return (
+        <HomePage
+          openAlbum={() => setTab("album")}
+          openCalendar={() => setTab("calendar")}
+          openDay={openDayInCalendar}
+          openMap={() => {
+            setMapDay(undefined)
+            setMapPeriod("day")
+            setTab("map")
+          }}
+          openPayment={(payment) => openPayment(payment)}
+          openSearch={() => setView("search")}
+          state={state}
+        />
+      )
     if (tab === "calendar")
       return (
         <CalendarHome
