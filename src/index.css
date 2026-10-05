@@ -2123,8 +2123,9 @@ p {
 }
 
 /* 복원 상태 3종: 완료 = 진한 채움 / 부분 = 옅은 채움 / 미복원 = 회색 */
+/* 흰 글자 명암비 4.5:1 확보를 위해 셀 채움은 --primary-hover(4.95:1)를 쓴다 */
 .cal-cell.complete {
-  background: var(--primary);
+  background: var(--primary-hover);
   color: var(--on-primary);
 }
 
@@ -2170,7 +2171,7 @@ p {
 }
 
 .cal-legend i.complete {
-  background: var(--primary);
+  background: var(--primary-hover);
 }
 
 .cal-legend i.partial {
