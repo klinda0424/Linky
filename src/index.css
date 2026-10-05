@@ -3166,6 +3166,13 @@ p {
   font-weight: 600;
 }
 
+.restore-kind-title {
+  margin: 4px 0 8px;
+  color: var(--sub);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .restore-result {
   margin-bottom: 14px;
   padding: 6px 14px;
