@@ -1886,6 +1886,7 @@ p {
   padding: 0 var(--page-padding);
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 
 .cal-brand {
@@ -1896,9 +1897,9 @@ p {
 .cal-top {
   height: 44px;
   padding: 0 var(--page-padding);
-  display: grid;
-  grid-template-columns: 36px 1fr 36px;
+  display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .cal-icon {
