@@ -2337,6 +2337,26 @@ p {
   font-weight: 700;
 }
 
+.pay-amount s {
+  display: block;
+  color: var(--disabled);
+  font-size: 12px;
+}
+
+.pay-amount b.mine {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 4px;
+  color: var(--primary-text);
+}
+
+.pay-amount b.mine em {
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+}
+
 .pay-amount small {
   color: var(--primary-text);
   font-size: 11px;

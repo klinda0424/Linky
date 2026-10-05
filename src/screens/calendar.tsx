@@ -442,9 +442,17 @@ function PayCard({
           </span>
         </div>
         <div className="pay-amount">
-          <b>{won(payment.amount)}</b>
-          {people && confirmed && (
-            <small>내 몫 {won(Math.round(payment.amount / people.length))}</small>
+          {people && confirmed ? (
+            <>
+              {/* 나눈 결제: 원래 결제 금액은 취소선, 내 몫을 굵게 */}
+              <s>{won(payment.amount)}</s>
+              <b className="mine">
+                <em>내 몫</em>
+                {won(Math.round(payment.amount / people.length))}
+              </b>
+            </>
+          ) : (
+            <b>{won(payment.amount)}</b>
           )}
           {personal && <small className="muted">개인 지출</small>}
         </div>
