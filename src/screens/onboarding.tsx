@@ -39,11 +39,11 @@ const formatPhone = (value: string) =>
       ? `${value.slice(0, 3)}-${value.slice(3)}`
       : `${value.slice(0, 3)}-${value.slice(3, value.length - 4)}-${value.slice(-4)}`
 
-// 개발·시연용: 본인확인 입력을 건너뛰고 닉네임 단계로 간다
+// 개발·시연용: 온보딩 전체를 건너뛰고 바로 메인 앱(캘린더)으로 간다
 function DevSkip({ onClick }: { onClick: () => void }) {
   return (
     <Action className="dev-skip" onClick={onClick}>
-      개발자용 · 본인확인 건너뛰기
+      개발자용 · 온보딩 건너뛰기
     </Action>
   )
 }
@@ -52,10 +52,13 @@ export function BasicInfo({
   nickname,
   setNickname,
   next,
+  skipAll,
 }: {
   nickname: string
   setNickname: (value: string) => void
   next: () => void
+  // 개발자용: 온보딩 전체 건너뛰기
+  skipAll: () => void
 }) {
   const [phase, setPhase] = useState<"identity" | "code" | "nickname">("identity")
   const [name, setName] = useState("")
@@ -156,7 +159,7 @@ export function BasicInfo({
           disabled={code.length !== 6 || seconds === 0}
           onNext={() => setPhase("nickname")}
         />
-        <DevSkip onClick={() => setPhase("nickname")} />
+        <DevSkip onClick={skipAll} />
       </Screen>
     )
 
@@ -257,7 +260,7 @@ export function BasicInfo({
           setPhase("code")
         }}
       />
-      <DevSkip onClick={() => setPhase("nickname")} />
+      <DevSkip onClick={skipAll} />
       {picking && (
         <div className="main-overlay" onClick={() => setPicking(false)}>
           <div className="carrier-sheet" onClick={(event) => event.stopPropagation()}>
