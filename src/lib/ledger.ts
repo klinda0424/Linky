@@ -355,12 +355,64 @@ export const recognizedPurchase = (payment: Payment) =>
       payment.date.m === 10 && payment.date.d === item.day && payment.time === item.time,
   )?.text
 
+// 사용자가 끊은 근거 목록: 결제 카드에서 되돌릴 수 있게 한다
+export type RemovedEvidence = { key: string; text: string; photoId?: string }
+export function removedEvidenceOf(payment: Payment, state: LedgerState): RemovedEvidence[] {
+  const items: RemovedEvidence[] = []
+  for (const key of state.unlinked[payment.id] ?? []) {
+    if (key === "loc" && payment.place)
+      items.push({ key, text: `결제 당시 내 위치 · ${payment.place}` })
+    else if (key.startsWith("cal:")) {
+      const event = events.find((item) => `cal:${item.id}` === key)
+      if (event) items.push({ key, text: `내 일정 · ${event.title}` })
+    } else if (key.startsWith("add:")) {
+      const added = state.added[payment.id]?.[Number(key.slice(4))]
+      if (added) items.push({ key, text: added.text })
+    }
+  }
+  if (state.sources.photos)
+    for (const photo of photos)
+      if (
+        sameDay(photo.date, payment.date) &&
+        Math.abs(minutes(photo.time) - minutes(payment.time)) <= 30 &&
+        state.photoUnlinked.includes(photo.id)
+      )
+        items.push({ key: `photo:${photo.id}`, text: `사진 · ${photo.title} ${photo.time}`, photoId: photo.id })
+  return items
+}
+
 // 그룹 결제 알림의 인원 근거: 같은 날 일정에 사람이 적혀 있으면 일정 인원(나 포함), 없으면 결제에 묶인 인원
 export function groupBasis(payment: Payment, state: LedgerState) {
   const event = eventsFor(payment, state).find((item) => item.people?.length)
   if (event?.people) return { count: event.people.length + 1, source: "일정 인원", detail: event.title }
   const count = payment.group?.length ?? 1
   return { count, source: "함께 결제한 인원", detail: undefined }
+}
+
+// 지출이 큰 날: 한 달에서 내 지출이 큰 상위 3일 (동률 포함)
+export function bigSpendDays(y: number, m: number, state: LedgerState, limit = 3) {
+  const totals = paidDaysOf(y, m)
+    .map((date) => ({ day: date.d, mine: dayMine(date, state) }))
+    .filter((item) => item.mine > 0)
+    .sort((a, b) => b.mine - a.mine)
+  const cutoff = totals[Math.min(limit, totals.length) - 1]?.mine ?? Infinity
+  return new Set(totals.filter((item) => item.mine >= cutoff).map((item) => item.day))
+}
+
+// 나눔 검토가 필요한 날: 그룹 결제로 보이지만 아직 분할을 확정하지도, 개인 지출로 두지도 않은 결제가 있는 날
+export function splitReviewDays(y: number, m: number, state: LedgerState) {
+  return new Set(
+    paidDaysOf(y, m)
+      .filter((date) =>
+        paymentsOn(date).some(
+          (payment) =>
+            payment.group &&
+            !state.splitConfirmed.includes(payment.id) &&
+            !(state.personal ?? []).includes(payment.id),
+        ),
+      )
+      .map((date) => date.d),
+  )
 }
 
 // 결제가 있는 날 목록 (바텀시트 좌우 이동용)
@@ -387,6 +439,8 @@ export function dayFacts(date: YMD, state: LedgerState) {
   ).length
   return {
     total: dayTotal(date),
+    // 내 지출: 확정한 분할만 차감한 값
+    mine: dayMine(date, state),
     count: list.length,
     restored: list.filter((payment) => isRestored(payment, state)).length,
     mainPlace,
@@ -400,11 +454,20 @@ export function dayFacts(date: YMD, state: LedgerState) {
 
 export function narrativeLine(date: YMD, state: LedgerState) {
   const facts = dayFacts(date, state)
-  const head = `${weekday(date)}요일${facts.mainPlace ? `, ${facts.mainPlace}` : ""}.`
+  // 일정 제목에 이미 장소가 들어 있으면 장소를 다시 쓰지 않는다
+  const placeInTitle =
+    facts.mainPlace !== undefined &&
+    facts.eventTitles.some((title) => title.includes(facts.mainPlace ?? ""))
+  const head = `${weekday(date)}요일${facts.mainPlace && !placeInTitle ? `, ${facts.mainPlace}` : ""}.`
+  // 분할을 확정했으면 내 지출을 앞에 두고 결제 총액을 괄호로 덧붙인다
+  const spent =
+    facts.mine !== facts.total
+      ? `내 지출 ${man(facts.mine)}원 (결제 ${man(facts.total)}원)`
+      : `${man(facts.total)}원`
   const parts = [
     ...facts.eventTitles,
     ...(facts.photoCount > 0 ? [`사진 ${facts.photoCount}장`] : []),
-    `${man(facts.total)}원`,
+    spent,
   ]
   const hasRecord = facts.eventTitles.length + facts.photoCount > 0 || facts.mainPlace
   return `${head} ${parts.join(", ")}${hasRecord ? "" : " · 연결된 기록 없음"}`

@@ -1962,7 +1962,7 @@ p {
   margin-top: 2px;
   display: block;
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .group-notice {
@@ -1982,7 +1982,7 @@ p {
   margin-top: 2px;
   display: block;
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .group-notice div {
@@ -1993,16 +1993,37 @@ p {
 
 .group-notice .mini-primary,
 .group-notice .mini-secondary,
-.evidence-actions .mini-primary {
-  min-height: 32px;
-  padding: 0 14px;
+.evidence-actions .mini-primary,
+.evidence-editor .mini-secondary,
+.evidence-removed .mini-secondary {
+  min-height: 44px;
+  padding: 0 18px;
   flex: none;
 }
 
 .evidence-recount {
   margin-top: 6px;
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
+}
+
+.evidence-removed {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+}
+
+.evidence-removed > p {
+  color: var(--sub);
+  font-size: 12px;
+}
+
+.evidence-removed > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
 }
 
 .evidence-actions {
@@ -2013,7 +2034,7 @@ p {
 
 .verified-chip {
   color: var(--primary-text);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -2077,16 +2098,32 @@ p {
   font-size: 11px;
 }
 
+/* 복원 상태에 따른 색 구분은 쓰지 않는다. 지출이 큰 날·나눔 검토 필요한 날만 아이콘으로 표시한다. */
 .cal-cell {
-  height: 50px;
-  padding: 5px 2px 3px;
+  position: relative;
+  height: 84px;
+  padding: 8px 2px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
   border: 1px solid transparent;
-  border-radius: 9px;
-  font-size: 12px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.cal-cell.paid {
+  background: var(--surface);
+}
+
+.cal-flags {
+  position: absolute;
+  top: 33px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 3px;
+  color: var(--primary-text);
 }
 
 .cal-cell.blank {
@@ -2098,26 +2135,9 @@ p {
 }
 
 .cal-cell i {
-  font-size: 10px;
+  font-size: 11px;
   font-style: normal;
   font-weight: 600;
-}
-
-/* 복원 상태 3종: 완료 = 진한 채움 / 부분 = 옅은 채움 / 미복원 = 회색 */
-/* 흰 글자 명암비 4.5:1 확보를 위해 셀 채움은 --primary-hover(4.95:1)를 쓴다 */
-.cal-cell.complete {
-  background: var(--primary-hover);
-  color: var(--on-primary);
-}
-
-.cal-cell.partial {
-  border-color: var(--primary-border);
-  background: var(--primary-soft);
-}
-
-.cal-cell.none {
-  background: var(--surface);
-  color: var(--disabled);
 }
 
 .cal-cell.today b {
@@ -2144,25 +2164,8 @@ p {
   gap: 5px;
 }
 
-.cal-legend i {
-  width: 12px;
-  height: 12px;
-  border: 1px solid transparent;
-  border-radius: 4px;
-}
-
-.cal-legend i.complete {
-  background: var(--primary-hover);
-}
-
-.cal-legend i.partial {
-  border-color: var(--primary-border);
-  background: var(--primary-soft);
-}
-
-.cal-legend i.none {
-  background: var(--surface);
-  border-color: var(--border);
+.cal-legend svg {
+  color: var(--primary-text);
 }
 
 /* ---------- 날짜 바텀시트 ---------- */
@@ -2417,18 +2420,19 @@ p {
 }
 
 .pay-foot {
-  margin-top: 11px;
+  margin-top: 2px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .evidence-dots {
+  min-height: 44px;
   display: flex;
   align-items: center;
   gap: 7px;
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .evidence-dots.disabled {
@@ -2436,9 +2440,13 @@ p {
 }
 
 .edit-link {
+  min-height: 44px;
   margin-left: auto;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
