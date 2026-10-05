@@ -111,6 +111,19 @@ export function MainApp({
         ? value.photoUnlinked
         : [...value.photoUnlinked, id],
     }))
+  const relink = (paymentId: string, key: string) =>
+    setLedger((value) => ({
+      ...value,
+      unlinked: {
+        ...value.unlinked,
+        [paymentId]: (value.unlinked[paymentId] ?? []).filter((item) => item !== key),
+      },
+    }))
+  const relinkPhoto = (id: string) =>
+    setLedger((value) => ({
+      ...value,
+      photoUnlinked: value.photoUnlinked.filter((item) => item !== id),
+    }))
   const verify = (paymentId: string) =>
     setLedger((value) => ({
       ...value,
@@ -377,6 +390,8 @@ export function MainApp({
           }}
           state={state}
           unlink={unlink}
+          relink={relink}
+          relinkPhoto={relinkPhoto}
           unlinkPhoto={unlinkPhoto}
           verify={verify}
         />

@@ -1962,7 +1962,7 @@ p {
   margin-top: 2px;
   display: block;
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .group-notice {
@@ -1982,7 +1982,7 @@ p {
   margin-top: 2px;
   display: block;
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .group-notice div {
@@ -1993,16 +1993,37 @@ p {
 
 .group-notice .mini-primary,
 .group-notice .mini-secondary,
-.evidence-actions .mini-primary {
-  min-height: 32px;
-  padding: 0 14px;
+.evidence-actions .mini-primary,
+.evidence-editor .mini-secondary,
+.evidence-removed .mini-secondary {
+  min-height: 44px;
+  padding: 0 18px;
   flex: none;
 }
 
 .evidence-recount {
   margin-top: 6px;
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
+}
+
+.evidence-removed {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+}
+
+.evidence-removed > p {
+  color: var(--sub);
+  font-size: 12px;
+}
+
+.evidence-removed > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
 }
 
 .evidence-actions {
@@ -2013,7 +2034,7 @@ p {
 
 .verified-chip {
   color: var(--primary-text);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -2417,18 +2438,19 @@ p {
 }
 
 .pay-foot {
-  margin-top: 11px;
+  margin-top: 2px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .evidence-dots {
+  min-height: 44px;
   display: flex;
   align-items: center;
   gap: 7px;
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .evidence-dots.disabled {
@@ -2436,9 +2458,13 @@ p {
 }
 
 .edit-link {
+  min-height: 44px;
   margin-left: auto;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
   text-decoration: underline;
   text-underline-offset: 3px;
 }

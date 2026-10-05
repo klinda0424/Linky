@@ -17,6 +17,7 @@ import {
   type YMD,
   TODAY,
   daysWithPayments,
+  dayMine,
   dayStatus,
   dayTotal,
   eventsOn,
@@ -33,6 +34,7 @@ import {
   paymentsOn,
   photos,
   photosOn,
+  removedEvidenceOf,
   restoreDaySummary,
   sameDay,
   weekday,
@@ -131,7 +133,8 @@ export function CalendarHome({
               return <span className="cal-cell blank" key={`b${cellIndex}`} />
             const date = ymd(y, m, day)
             const status = dayStatus(date, state)
-            const total = dayTotal(date)
+            // 셀에는 내 지출(확정한 분할만 차감)을 보여 준다
+            const mine = dayMine(date, state)
             return (
               <Action
                 className={cx(
@@ -144,7 +147,7 @@ export function CalendarHome({
                 onClick={() => openDay(date)}
               >
                 <b>{day}</b>
-                {total > 0 && <i>{man(total)}</i>}
+                {mine > 0 && <i>{man(mine)}</i>}
               </Action>
             )
           })}
@@ -177,6 +180,8 @@ export function DaySheet({
   openSplit,
   markPersonal,
   unlink,
+  relink,
+  relinkPhoto,
   unlinkPhoto,
   verify,
 }: {
@@ -191,6 +196,8 @@ export function DaySheet({
   openSplit: (payment: Payment) => void
   markPersonal: (paymentId: string) => void
   unlink: (paymentId: string, key: string) => void
+  relink: (paymentId: string, key: string) => void
+  relinkPhoto: (photoId: string) => void
   unlinkPhoto: (photoId: string) => void
   verify: (paymentId: string) => void
 }) {
@@ -266,7 +273,9 @@ export function DaySheet({
               {label(day)} ({weekday(day)})
             </strong>
             <span>
-              {won(dayTotal(day))} · 복원 {restored}/{list.length}건
+              내 지출 {won(dayMine(day, state))}
+              {dayMine(day, state) !== dayTotal(day) && ` · 결제 ${won(dayTotal(day))}`} · 복원{" "}
+              {restored}/{list.length}건
             </span>
           </div>
           <Action
@@ -310,6 +319,8 @@ export function DaySheet({
               payment={payment}
               state={state}
               unlink={unlink}
+              relink={relink}
+              relinkPhoto={relinkPhoto}
               unlinkPhoto={unlinkPhoto}
               verify={verify}
             />
@@ -330,6 +341,8 @@ function PayCard({
   openSplit,
   markPersonal,
   unlink,
+  relink,
+  relinkPhoto,
   unlinkPhoto,
   verify,
 }: {
@@ -340,6 +353,8 @@ function PayCard({
   openSplit: (payment: Payment) => void
   markPersonal: (paymentId: string) => void
   unlink: (paymentId: string, key: string) => void
+  relink: (paymentId: string, key: string) => void
+  relinkPhoto: (photoId: string) => void
   unlinkPhoto: (photoId: string) => void
   verify: (paymentId: string) => void
 }) {
@@ -351,6 +366,7 @@ function PayCard({
   const personal = (state.personal ?? []).includes(payment.id)
   const verified = (state.verified ?? []).includes(payment.id)
   const basis = groupBasis(payment, state)
+  const removed = removedEvidenceOf(payment, state)
   const location = evidence.find((item) => item.kind === "location")
   const calendar = evidence.filter((item) => item.kind === "calendar")
   const photo = evidence.find((item) => item.kind === "photo")
@@ -489,6 +505,24 @@ function PayCard({
                 </Action>
               </div>
             ),
+          )}
+          {removed.length > 0 && (
+            <div className="evidence-removed">
+              <p>제외한 기록</p>
+              {removed.map((item) => (
+                <div key={item.key}>
+                  <span>{item.text}</span>
+                  <Action
+                    className="mini-secondary"
+                    onClick={() =>
+                      item.photoId ? relinkPhoto(item.photoId) : relink(payment.id, item.key)
+                    }
+                  >
+                    되돌리기
+                  </Action>
+                </div>
+              ))}
+            </div>
           )}
           <p className="evidence-recount">
             {evidence.length > 0
