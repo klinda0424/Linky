@@ -290,6 +290,7 @@ export function MainApp({
             back={toTabs}
             completed={settled}
             open={() => setView("settlement")}
+            state={state}
           />
         )
       case "settlement":
@@ -403,15 +404,22 @@ export function MainApp({
       {splitting && (
         <GroupSplitSheet
           close={() => setSplitting(undefined)}
+          // 확인하면 원장만 갱신하고, 시트는 반영 결과(S4-3)를 보여 준 뒤 사용자가 닫는다
           confirm={() => {
             const id = splitting.id
-            setLedger((value) => ({
-              ...value,
-              splitConfirmed: [...value.splitConfirmed, id],
-            }))
+            setLedger((value) =>
+              value.splitConfirmed.includes(id)
+                ? value
+                : { ...value, splitConfirmed: [...value.splitConfirmed, id] },
+            )
+          }}
+          openHistory={() => {
             setSplitting(undefined)
+            setSheetDay(undefined)
+            setView("settlementList")
           }}
           payment={splitting}
+          state={state}
         />
       )}
     </>
