@@ -4619,9 +4619,9 @@ p {
   background: var(--primary-soft);
 }
 
-/* 정산해야 하는 그룹 결제 카드: 연한 연두 테두리 */
+/* 정산해야 하는 그룹 결제 카드: 라임 테두리 */
 .pay-tl-item .pay-card.pending {
-  border-color: var(--primary-border);
+  border: 1.5px solid var(--primary);
 }
 
 .pay-chip {
