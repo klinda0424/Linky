@@ -4357,13 +4357,13 @@ p {
 
 /* 링키가 찾았어요 */
 .hm-found {
-  margin-bottom: 20px;
-  padding: 18px 18px 14px;
+  margin-bottom: 16px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   border: 1px solid var(--primary-border);
-  border-radius: 20px;
+  border-radius: 16px;
   background: var(--primary-soft);
 }
 
@@ -4371,12 +4371,12 @@ p {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
   text-align: left;
 }
 
 .hm-found-title {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 700;
 }
 
@@ -4392,14 +4392,14 @@ p {
 }
 
 .hm-found-body p {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
-  line-height: 1.45;
+  line-height: 1.4;
   word-break: keep-all;
 }
 
 .hm-found-amount {
-  padding: 10px 0;
+  padding: 6px 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -4408,40 +4408,41 @@ p {
 }
 
 .hm-found-amount span {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
 }
 
 .hm-found-amount b {
-  font-size: 22px;
+  font-size: 17px;
   font-weight: 700;
 }
 
 .hm-found-body small {
   color: var(--sub);
-  font-size: 12px;
-  line-height: 1.45;
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .hm-found-actions {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 6px;
 }
 
 .hm-found-actions .pill {
-  height: 38px;
-  padding: 0 20px;
-  border-radius: 19px;
-  font-size: 14px;
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 15px;
+  font-size: 13px;
 }
 
 .hm-found-link {
-  align-self: flex-end;
+  margin-left: auto;
   display: inline-flex;
   align-items: center;
   gap: 2px;
   color: var(--text);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 3px;
