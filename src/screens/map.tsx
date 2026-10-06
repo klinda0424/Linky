@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type MouseEvent, type TouchEvent } from "react"
 import { Camera, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react"
 import { Action, cx } from "@/components/common"
+import { MainHeader } from "@/components/layout"
 import {
   type CalEvent,
   type LedgerState,
@@ -72,11 +73,13 @@ const rangeLabel = (period: Period, date: YMD) => {
 }
 
 export function MapTab({
+  back,
   state,
   initialDay,
   initialPeriod = "day",
   openPayment,
 }: {
+  back: () => void
   state: LedgerState
   initialDay?: YMD
   initialPeriod?: Period
@@ -288,6 +291,7 @@ export function MapTab({
       : undefined
   return (
     <>
+      <MainHeader back={back} title="동선 지도" />
       <div className="map-top">
         <div className="map-period">
           {(

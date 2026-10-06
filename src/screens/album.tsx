@@ -39,10 +39,12 @@ const tile = (index: number) => `photo-thumb t${index % 5}`
 
 // ---------- 앨범 탭: 결제와 연결된 사진만, 일정별 묶음 ----------
 export function AlbumTab({
+  back,
   state,
   openPhoto,
   openEvent,
 }: {
+  back: () => void
   state: LedgerState
   openPhoto: (photo: Photo) => void
   openEvent: (event: CalEvent) => void
@@ -75,11 +77,9 @@ export function AlbumTab({
   groups.sort((a, b) => b.list[0].date.m * 100 + b.list[0].date.d - (a.list[0].date.m * 100 + a.list[0].date.d))
   return (
     <>
-      <div className="album-top">
-        <strong>앨범</strong>
-        <span>결제와 연결된 사진 {linked.length}장</span>
-      </div>
+      <MainHeader back={back} title="앨범" />
       <div className="album-scroll">
+        <p className="album-count">결제와 연결된 사진 {linked.length}장</p>
         {groups.length === 0 && (
           <div className="main-card arc-empty">
             결제와 연결된 사진이 아직 없어요. 사진을 추가하면 같은 시각의 결제에
@@ -112,7 +112,6 @@ export function AlbumTab({
                   label={`${photo.title} 사진`}
                   onClick={() => openPhoto(photo)}
                 >
-                  <Camera size={20} strokeWidth={1.4} />
                   <small>{photo.time}</small>
                 </Action>
               ))}
