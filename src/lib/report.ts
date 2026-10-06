@@ -44,6 +44,8 @@ const groupSum = (list: Payment[], state: LedgerState, keyFn: (p: Payment) => st
   return [...map.entries()].sort((a, b) => b[1] - a[1])
 }
 
+const weekdayNames = ["일", "월", "화", "수", "목", "금", "토"]
+
 // 주간 리포트: 이번 주 총액·지출일수·카테고리·어디서 썼는지
 export function weeklyReport(state: LedgerState) {
   const from = sundayOf(TODAY)
@@ -55,12 +57,23 @@ export function weeklyReport(state: LedgerState) {
     total: sum(list, state),
     count: list.length,
     paidDays: new Set(list.map((payment) => keyOf(payment.date))).size,
+    // 일~토 하루별 내 지출 (막대 그래프용)
+    daily: Array.from({ length: 7 }, (_, index) => {
+      const date = addDays(from, index)
+      return {
+        date,
+        weekday: weekdayNames[index],
+        value: sum(
+          list.filter((payment) => keyOf(payment.date) === keyOf(date)),
+          state,
+        ),
+        today: keyOf(date) === keyOf(TODAY),
+      }
+    }),
     categories: groupSum(list, state, categoryOf),
     places: groupSum(list, state, (payment) => payment.zone).slice(0, 3),
   }
 }
-
-const weekdayNames = ["일", "월", "화", "수", "목", "금", "토"]
 
 // 내 지출 패턴: 이번 달 주말 비중, 가장 많이 쓴 요일, 가장 자주 간 장소의 한 번 평균
 export function patternReport(state: LedgerState) {
@@ -84,6 +97,13 @@ export function patternReport(state: LedgerState) {
     month: TODAY.m,
     weekendPercent: Math.round((weekend / total) * 100),
     topWeekday: byDay[0]?.[0],
+    // 월~일 순서의 요일별 내 지출 (막대 그래프용)
+    byWeekday: ["월", "화", "수", "목", "금", "토", "일"].map((name) => ({
+      weekday: name,
+      value: byDay.find(([day]) => day === name)?.[1] ?? 0,
+    })),
+    weekend,
+    total,
     place,
     placeVisits: placeList?.length ?? 0,
     placeAverage: placeList ? Math.round(sum(placeList, state) / placeList.length) : 0,
@@ -175,6 +195,7 @@ export function monthlyReport(state: LedgerState) {
     mine: summary.mine,
     restoredCount: list.filter((payment) => isRestored(payment, state)).length,
     count: list.length,
+    categoryAmounts: groupSum(list, state, categoryOf),
     categories: groupSum(list, state, categoryOf).map(
       ([category, amount]) => [category, Math.round((amount / (mineTotal || 1)) * 100)] as const,
     ),
