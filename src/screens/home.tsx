@@ -1,5 +1,6 @@
-import { ChevronRight, Search } from "lucide-react"
+import { ChevronRight } from "lucide-react"
 import { Action, cx } from "@/components/common"
+import { HeaderActions } from "@/components/layout"
 import {
   TODAY,
   isRestored,
@@ -77,6 +78,7 @@ function PaymentRow({
 export function HomePage({
   state,
   openSearch,
+  openProfile,
   openDay,
   openPayment,
   openAlbum,
@@ -89,6 +91,7 @@ export function HomePage({
 }: {
   state: LedgerState
   openSearch: () => void
+  openProfile: () => void
   openDay: (day: YMD) => void
   openPayment: (payment: Payment) => void
   openAlbum: () => void
@@ -140,9 +143,7 @@ export function HomePage({
           <span className="brand-mark">L</span>
           <span>Linky</span>
         </div>
-        <Action className="cal-icon" label="검색" onClick={openSearch}>
-          <Search size={20} strokeWidth={1.6} />
-        </Action>
+        <HeaderActions openProfile={openProfile} openSearch={openSearch} />
       </div>
       <div className="main-scroll">
         {foundTransfer && (

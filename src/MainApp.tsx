@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react"
+import { UserRound } from "lucide-react"
+import { Action } from "@/components/common"
 import { BottomTabs } from "@/components/layout"
 import {
   type CalEvent,
@@ -244,6 +246,7 @@ export function MainApp({
                 })()
           }
           openPayment={(payment) => openPayment(payment)}
+          openProfile={() => setView("profile")}
           openSearch={() => setView("search")}
           state={state}
         />
@@ -255,6 +258,7 @@ export function MainApp({
             setFocusPayment(undefined)
             setSheetDay(day)
           }}
+          openProfile={() => setView("profile")}
           openSearch={() => setView("search")}
           sheetDay={sheetDay}
           state={state}
@@ -291,15 +295,7 @@ export function MainApp({
           state={state}
         />
       )
-    return (
-      <MyPage
-        name={profile.nickname || "소연"}
-        openConnections={() => setView("connections")}
-        openInfo={() => setView("profileInfo")}
-        openNotifications={() => setView("notifications")}
-        openPrivacy={() => setView("privacy")}
-      />
-    )
+    return null
   }
 
   const fullScreen = () => {
@@ -336,13 +332,24 @@ export function MainApp({
             state={state}
           />
         ) : null
+      case "profile":
+        return (
+          <MyPage
+            back={toTabs}
+            name={profile.nickname || "소연"}
+            openConnections={() => setView("connections")}
+            openInfo={() => setView("profileInfo")}
+            openNotifications={() => setView("notifications")}
+            openPrivacy={() => setView("privacy")}
+          />
+        )
       case "profileInfo":
         return (
           <ProfileInfoSettings
-            back={toTabs}
+            back={() => setView("profile")}
             save={(value) => {
               setProfile(value)
-              toTabs()
+              setView("profile")
             }}
             value={profile}
           />
@@ -350,7 +357,7 @@ export function MainApp({
       case "connections":
         return (
           <ConnectionSettings
-            back={toTabs}
+            back={() => setView("profile")}
             toggle={(key) =>
               setPermissions((value) => ({ ...value, [key]: !value[key] }))
             }
@@ -360,7 +367,7 @@ export function MainApp({
       case "privacy":
         return (
           <PrivacySettings
-            back={toTabs}
+            back={() => setView("profile")}
             toggle={(key) =>
               setPermissions((value) => ({ ...value, [key]: !value[key] }))
             }
@@ -370,7 +377,7 @@ export function MainApp({
       case "notifications":
         return (
           <NotificationSettings
-            back={toTabs}
+            back={() => setView("profile")}
             toggle={(key) =>
               setNotifications((value) => ({ ...value, [key]: !value[key] }))
             }
@@ -467,7 +474,18 @@ export function MainApp({
     <>
       {view === "tabs" ? (
         <>
-          <div className="main-page">{tabScreen()}</div>
+          <div className="main-page">
+            {tabScreen()}
+            {tab === "report" && (
+              <Action
+                className="cal-icon report-profile"
+                label="프로필"
+                onClick={() => setView("profile")}
+              >
+                <UserRound size={20} strokeWidth={1.6} />
+              </Action>
+            )}
+          </div>
           <BottomTabs
             active={tab}
             change={(next) => {

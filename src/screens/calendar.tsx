@@ -11,13 +11,13 @@ import {
   Plus,
   Receipt,
   Route,
-  Search,
   ShoppingBag,
   Ticket,
   Users,
   Utensils,
 } from "lucide-react"
 import { Action, cx } from "@/components/common"
+import { HeaderActions } from "@/components/layout"
 import {
   type Category,
   type LedgerState,
@@ -60,11 +60,13 @@ export function CalendarHome({
   sheetDay,
   openDay,
   openSearch,
+  openProfile,
 }: {
   state: LedgerState
   sheetDay?: YMD
   openDay: (day: YMD) => void
   openSearch: () => void
+  openProfile: () => void
 }) {
   // 첫 화면은 오늘이 속한 달, 월 이동 화살표로 1~11월을 둘러본다
   const [index, setIndex] = useState(() =>
@@ -99,9 +101,7 @@ export function CalendarHome({
           <span className="brand-mark">L</span>
           <span>Linky</span>
         </div>
-        <Action className="cal-icon" label="검색" onClick={openSearch}>
-          <Search size={20} strokeWidth={1.6} />
-        </Action>
+        <HeaderActions openProfile={openProfile} openSearch={openSearch} />
       </div>
       <div className="cal-top">
         <div className="cal-month">

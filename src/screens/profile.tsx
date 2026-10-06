@@ -17,14 +17,16 @@ import {
   type ProfileDetails,
 } from "@/types"
 
-// ---------- 마이페이지 (탭) ----------
+// ---------- 프로필 (상단 우측 아이콘에서 열린다) ----------
 export function MyPage({
+  back,
   name,
   openInfo,
   openConnections,
   openPrivacy,
   openNotifications,
 }: {
+  back: () => void
   name: string
   openInfo: () => void
   openConnections: () => void
@@ -38,10 +40,8 @@ export function MyPage({
     ["알림 설정", <Bell size={18} strokeWidth={1.5} />, openNotifications],
   ]
   return (
-    <>
-      <div className="main-simple-header">
-        <p>프로필</p>
-      </div>
+    <div className="main-page sub-page">
+      <MainHeader back={back} title="프로필" />
       <div className="mypage-scroll">
         <div className="profile-top">
           <span>{name.slice(0, 1)}</span>
@@ -60,7 +60,7 @@ export function MyPage({
           ))}
         </div>
       </div>
-    </>
+    </div>
   )
 }
 
