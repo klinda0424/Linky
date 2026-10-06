@@ -61,6 +61,7 @@ export function MainApp({
 }) {
   const [tab, setTab] = useState<MainTab>("home")
   const [view, setView] = useState<MainView>("tabs")
+  const [homeDay, setHomeDay] = useState<YMD>(TODAY)
   const [ledger, setLedger] = useState<LedgerState>(initialLedger)
   // 날짜 시트: 캘린더 탭 위에 열린다. 지도 핀·검색에서 넘어오면 해당 결제를 강조한다.
   const [sheetDay, setSheetDay] = useState<YMD>()
@@ -206,21 +207,14 @@ export function MainApp({
     setRecordTarget(paymentId)
   }
 
-  // 홈에서 날짜·결제를 누르면 캘린더 탭의 날짜 시트로 이어진다
-  const openDayInCalendar = (day: YMD) => {
-    setFocusPayment(undefined)
-    setSheetDay(day)
-    setTab("calendar")
-  }
-
   const tabScreen = () => {
     if (tab === "home")
       return (
         <HomePage
+          day={homeDay}
           openAlbum={() => setTab("album")}
-          openDay={openDayInCalendar}
-          openMap={() => {
-            setMapDay(TODAY)
+          openMap={(day) => {
+            setMapDay(day)
             setMapPeriod("day")
             setTab("map")
           }}
@@ -254,6 +248,7 @@ export function MainApp({
           openPayment={(payment) => openPayment(payment)}
           openProfile={() => setView("profile")}
           openSearch={() => setView("search")}
+          selectDay={setHomeDay}
           state={state}
         />
       )

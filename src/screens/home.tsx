@@ -145,12 +145,12 @@ const periodOf = (time: string) => {
   return hour < 12 ? "오전" : hour < 17 ? "낮" : hour < 21 ? "저녁" : "밤"
 }
 
-function dayStory(list: Payment[], photoCount: number, state: LedgerState) {
-  const dayEvents = eventsOn(TODAY, state)
+function dayStory(day: YMD, list: Payment[], photoCount: number, state: LedgerState) {
+  const dayEvents = eventsOn(day, state)
   const items = [
     ...(state.sources.location
       ? stays
-          .filter((stay) => sameDay(stay.date, TODAY))
+          .filter((stay) => sameDay(stay.date, day))
           .map((stay) => ({ time: stay.from, text: `${stay.name}에`, verb: "머물렀" }))
       : []),
     ...dayEvents.map((event) => ({
@@ -184,18 +184,19 @@ function dayStory(list: Payment[], photoCount: number, state: LedgerState) {
     return `${prefix}${item.text} ${item.verb}${index < items.length - 1 ? "고" : "어요"}`
   })
   if (parts.length === 0) return ""
-  const photos = photoCount > 0 ? ` 오늘 남긴 사진은 ${photoCount}장이에요.` : ""
+  const photoSubject = sameDay(day, TODAY) ? "오늘" : "이날"
+  const photos = photoCount > 0 ? ` ${photoSubject} 남긴 사진은 ${photoCount}장이에요.` : ""
   return `${parts.join(", ")}.${photos}`
 }
 
 // ---------- 오늘의 동선: 체류 구간과 결제 위치를 시간순으로 잇는 미니 지도 ----------
 type Stop = { key: string; zone: string; seed: string }
 
-function routeStops(list: Payment[], state: LedgerState): Stop[] {
+function routeStops(day: YMD, list: Payment[], state: LedgerState): Stop[] {
   if (!state.sources.location) return []
   const steps = [
     ...stays
-      .filter((stay) => sameDay(stay.date, TODAY))
+      .filter((stay) => sameDay(stay.date, day))
       .map((stay) => ({
         id: stay.id,
         time: stay.from,
@@ -222,7 +223,7 @@ function routeStops(list: Payment[], state: LedgerState): Stop[] {
   return stops
 }
 
-function RouteMap({ stops, onOpen }: { stops: Stop[]; onOpen: () => void }) {
+function RouteMap({ day, stops, onOpen }: { day: YMD; stops: Stop[]; onOpen: () => void }) {
   // 방문 순서대로 카드 안에 고르게 펼친다 (라벨이 겹치지 않게 위아래로 번갈아 놓는다)
   const points = stops.map((stop, index) => ({
     ...stop,
@@ -231,9 +232,9 @@ function RouteMap({ stops, onOpen }: { stops: Stop[]; onOpen: () => void }) {
   }))
   const path = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ")
   return (
-    <Action className="hm-route" label="오늘의 동선 지도로 보기" onClick={onOpen}>
+    <Action className="hm-route" label={`${label(day)} 동선 지도로 보기`} onClick={onOpen}>
       <span className="hm-route-date">
-        {label(TODAY)}
+        {label(day)}
       </span>
       <svg aria-hidden="true" preserveAspectRatio="none" viewBox="0 0 100 100">
         {points.length > 1 && <path d={path} />}
@@ -250,10 +251,11 @@ function RouteMap({ stops, onOpen }: { stops: Stop[]; onOpen: () => void }) {
 
 // ---------- 홈: 이번 주 · 오늘 지출 · 감지 알림 · 오늘의 하루 · 동선 · 사진 ----------
 export function HomePage({
+  day,
   state,
   openSearch,
   openProfile,
-  openDay,
+  selectDay,
   openPayment,
   openAlbum,
   openMap,
@@ -263,13 +265,14 @@ export function HomePage({
   foundTransfer,
   openTransfer,
 }: {
+  day: YMD
   state: LedgerState
   openSearch: () => void
   openProfile: () => void
-  openDay: (day: YMD) => void
+  selectDay: (day: YMD) => void
   openPayment: (payment: Payment) => void
   openAlbum: () => void
-  openMap: () => void
+  openMap: (day: YMD) => void
   openPhoto: (photo: Photo) => void
   // 정산 알림(필요시): 처리할 정산이 있을 때만 값이 있다
   openSettlement: () => void
@@ -279,16 +282,17 @@ export function HomePage({
   openTransfer: () => void
 }) {
   const week = weekOf(TODAY)
-  const todayList = paymentsOn(TODAY)
-  const recent = todayList.length === 0 ? recentPayments(3) : []
-  const todayMine = todayList.reduce((sum, payment) => sum + shareOf(payment, state), 0)
-  const todayPhotos = photosOn(TODAY, state).filter(
+  const selectedList = paymentsOn(day)
+  const isToday = sameDay(day, TODAY)
+  const recent = isToday && selectedList.length === 0 ? recentPayments(3) : []
+  const selectedMine = selectedList.reduce((sum, payment) => sum + shareOf(payment, state), 0)
+  const selectedPhotos = photosOn(day, state).filter(
     (photo) => !state.photoUnlinked.includes(photo.id),
   )
-  const stops = routeStops(todayList, state)
-  const story = dayStory(todayList, todayPhotos.length, state)
+  const stops = routeStops(day, selectedList, state)
+  const story = dayStory(day, selectedList, selectedPhotos.length, state)
   const linkedPayment = (photo: Photo) =>
-    todayList.find((payment) => photosFor(payment, state).some((item) => item.id === photo.id))
+    selectedList.find((payment) => photosFor(payment, state).some((item) => item.id === photo.id))
   // 감지된 것만 알림으로 띄운다: 송금 맥락, 그룹 결제 (복원 결과는 알림 없이 캘린더 카드에서 확인)
   const notices: Notice[] = [
     ...(foundTransfer
@@ -332,23 +336,23 @@ export function HomePage({
           <div>
             <h2>이번 주</h2>
             <em>
-              {label(TODAY)} {weekday(TODAY)}요일
+              {label(day)} {weekday(day)}요일
             </em>
           </div>
         </div>
         <div className="main-card hm-week">
-          {week.map((day) => {
-            const future = keyOf(day) > keyOf(TODAY)
-            const total = future ? 0 : dayMine(day, state)
+          {week.map((weekDay) => {
+            const future = keyOf(weekDay) > keyOf(TODAY)
+            const total = future ? 0 : dayMine(weekDay, state)
             return (
               <Action
-                className={cx("hm-day", sameDay(day, TODAY) && "today")}
-                key={keyOf(day)}
-                label={`${label(day)} 열기`}
-                onClick={() => openDay(day)}
+                className={cx("hm-day", sameDay(weekDay, day) && "today")}
+                key={keyOf(weekDay)}
+                label={`${label(weekDay)} 열기`}
+                onClick={() => selectDay(weekDay)}
               >
-                <span>{weekNames[new Date(day.y, day.m - 1, day.d).getDay()]}</span>
-                <strong>{day.d}</strong>
+                <span>{weekNames[new Date(weekDay.y, weekDay.m - 1, weekDay.d).getDay()]}</span>
+                <strong>{weekDay.d}</strong>
                 <small>{total > 0 ? man(total) : "-"}</small>
               </Action>
             )
@@ -358,17 +362,17 @@ export function HomePage({
         <section className="main-card hm-today">
           <div className="hm-today-top">
             <div>
-              <span>오늘 지출</span>
+              <span>{isToday ? "오늘 지출" : `${label(day)} 지출`}</span>
               <strong>
-                {todayList.length > 0
-                  ? `오늘 ${todayList.length}건 · ${won(todayMine)}`
-                  : "오늘 결제 기록 없음"}
+                {selectedList.length > 0
+                  ? `${isToday ? "오늘 " : ""}${selectedList.length}건 · ${won(selectedMine)}`
+                  : `${isToday ? "오늘 " : ""}결제 기록 없음`}
               </strong>
             </div>
             <span className="hm-badge">정산 대기 {pendingSettlement?.count ?? 0}건</span>
           </div>
           <div className="hm-today-list">
-            {todayList.map((payment) => (
+            {selectedList.map((payment) => (
               <TodayRow key={payment.id} open={openPayment} payment={payment} state={state} />
             ))}
             {recent.length > 0 && <p className="hm-recent">최근 결제</p>}
@@ -384,7 +388,7 @@ export function HomePage({
 
         <section className="main-card hm-story">
           <div className="hm-story-head">
-            <strong>오늘 내 하루</strong>
+            <strong>{isToday ? "오늘 내 하루" : `${label(day)}의 하루`}</strong>
             <span className="hm-linky">
               <Sparkles size={14} strokeWidth={1.6} /> Linky
             </span>
@@ -393,29 +397,29 @@ export function HomePage({
         </section>
 
         <div className="hm-title-row">
-          <h2>오늘의 동선</h2>
-          <Action className="home-more" onClick={openMap}>
+          <h2>{isToday ? "오늘의 동선" : `${label(day)}의 동선`}</h2>
+          <Action className="home-more" onClick={() => openMap(day)}>
             지도로 보기
           </Action>
         </div>
         {stops.length === 0 ? (
           <p className="hm-empty">기록 없음</p>
         ) : (
-          <RouteMap onOpen={openMap} stops={stops} />
+          <RouteMap day={day} onOpen={() => openMap(day)} stops={stops} />
         )}
         <p className="home-sub">결제 당시 내 위치</p>
 
         <div className="hm-title-row">
-          <h2>오늘의 사진</h2>
+          <h2>{isToday ? "오늘의 사진" : `${label(day)}의 사진`}</h2>
           <Action className="home-more" onClick={openAlbum}>
             앨범 보기
           </Action>
         </div>
-        {todayPhotos.length === 0 ? (
+        {selectedPhotos.length === 0 ? (
           <p className="hm-empty">기록 없음</p>
         ) : (
           <div className="hm-photos">
-            {todayPhotos.map((photo, index) => {
+            {selectedPhotos.map((photo, index) => {
               const paid = linkedPayment(photo)
               return (
                 <Action
