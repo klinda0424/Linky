@@ -94,7 +94,7 @@ export function ReportTab({
   const topDay = weekly.daily.reduce((best, day) => (day.value > best.value ? day : best), weekly.daily[0])
   return (
     <>
-      <div className="main-simple-header">
+      <div className="main-simple-header rp-head">
         <p>리포트</p>
         {/* 정산 내역은 상단 프로필 아이콘 옆 "정산함" 버튼으로 연다 */}
         <Action className="report-settle-btn" onClick={openSettlement}>
@@ -102,139 +102,141 @@ export function ReportTab({
         </Action>
       </div>
       <div className="report-scroll">
-        <section className="main-card report-preview">
-          <div className="block-heading">
-            <strong>다음 주 예고</strong>
-            <span>{preview ? `${label(preview.from)}부터` : ""}</span>
-          </div>
-          {preview ? (
-            <>
-              <p className="rpt-head">
-                다음 주 일정이 <b>{preview.events.length}건</b> 있어요.
-              </p>
-              <Facts
-                lines={preview.events.flatMap((event) => [
-                  `${label(event.date)} ${event.start} · ${event.title}`,
-                  event.repeatedFact,
-                ])}
-              />
-            </>
-          ) : (
-            <p className="report-line">기록 없음</p>
-          )}
-        </section>
+        {/* 홈과 같은 축척(0.82배)으로 글자 위계를 맞춘다 */}
+        <div className="report-zoom">
+          <section className="main-card report-preview">
+            <div className="block-heading">
+              <strong>다음 주 예고</strong>
+              <span>{preview ? `${label(preview.from)}부터` : ""}</span>
+            </div>
+            {preview ? (
+              <>
+                <p className="rpt-head">
+                  다음 주 일정이 <b>{preview.events.length}건</b> 있어요.
+                </p>
+                <Facts
+                  lines={preview.events.flatMap((event) => [
+                    `${label(event.date)} ${event.start} · ${event.title}`,
+                    event.repeatedFact,
+                  ])}
+                />
+              </>
+            ) : (
+              <p className="report-line">기록 없음</p>
+            )}
+          </section>
 
-        <section className="main-card">
-          <div className="block-heading">
-            <strong className="rpt-hl">주간 리포트</strong>
-            <span>
-              {label(weekly.from)} ~ {label(weekly.to)}
-            </span>
-          </div>
-          {weekly.count === 0 ? (
-            <p className="report-line">기록 없음</p>
-          ) : (
-            <>
-              <p className="rpt-head">
-                이번 주에 <b>{won(weekly.total)}</b>을 썼어요.
-              </p>
-              <Columns
-                items={weekly.daily.map((day) => ({
-                  label: day.weekday,
-                  value: day.value,
-                  today: day.today,
-                }))}
-              />
-              <Facts
-                lines={[
-                  `${weekly.paidDays}일 동안 ${weekly.count}건 결제했어요`,
-                  topDay.value > 0
-                    ? `${topDay.weekday}요일에 ${man(topDay.value)}원으로 가장 많이 썼어요`
-                    : undefined,
-                  weekly.categories.length > 0
-                    ? `${weekly.categories
-                        .slice(0, 2)
-                        .map(([name, amount]) => `${name} ${man(amount)}원`)
-                        .join(", ")} 순으로 많았어요`
-                    : undefined,
-                  weekly.places[0]
-                    ? `${weekly.places[0][0]}에서 ${man(weekly.places[0][1])}원을 썼어요`
-                    : undefined,
-                ]}
-              />
-            </>
-          )}
-        </section>
+          <section className="main-card">
+            <div className="block-heading">
+              <strong className="rpt-hl">주간 리포트</strong>
+              <span>
+                {label(weekly.from)} ~ {label(weekly.to)}
+              </span>
+            </div>
+            {weekly.count === 0 ? (
+              <p className="report-line">기록 없음</p>
+            ) : (
+              <>
+                <p className="rpt-head">
+                  이번 주에 <b>{won(weekly.total)}</b>을 썼어요.
+                </p>
+                <Columns
+                  items={weekly.daily.map((day) => ({
+                    label: day.weekday,
+                    value: day.value,
+                    today: day.today,
+                  }))}
+                />
+                <Facts
+                  lines={[
+                    `${weekly.paidDays}일 동안 ${weekly.count}건 결제했어요`,
+                    topDay.value > 0
+                      ? `${topDay.weekday}요일에 ${man(topDay.value)}원으로 가장 많이 썼어요`
+                      : undefined,
+                    weekly.categories.length > 0
+                      ? `${weekly.categories
+                          .slice(0, 2)
+                          .map(([name, amount]) => `${name} ${man(amount)}원`)
+                          .join(", ")} 순으로 많았어요`
+                      : undefined,
+                    weekly.places[0]
+                      ? `${weekly.places[0][0]}에서 ${man(weekly.places[0][1])}원을 썼어요`
+                      : undefined,
+                  ]}
+                />
+              </>
+            )}
+          </section>
 
-        <section className="main-card">
-          <div className="block-heading">
-            <strong className="rpt-hl">내 지출 패턴</strong>
-            <span>{pattern ? `${pattern.month}월` : ""}</span>
-          </div>
-          {pattern ? (
-            <>
-              <p className="rpt-head">
-                주말에 지출의 <b>{pattern.weekendPercent}%</b>를 썼어요.
-              </p>
-              <SplitBar
-                parts={[
-                  { label: "주말", value: pattern.weekend, text: `${pattern.weekendPercent}%` },
-                  {
-                    label: "평일",
-                    value: pattern.total - pattern.weekend,
-                    text: `${100 - pattern.weekendPercent}%`,
-                  },
-                ]}
-              />
-              <Facts
-                lines={[
-                  `가장 많이 쓴 요일은 ${pattern.topWeekday}요일이에요`,
-                  `${pattern.place}에는 ${pattern.placeVisits}번 갔고, 갈 때마다 평균 ${won(pattern.placeAverage)}이에요`,
-                ]}
-              />
-            </>
-          ) : (
-            <p className="report-line">기록 없음</p>
-          )}
-        </section>
+          <section className="main-card">
+            <div className="block-heading">
+              <strong className="rpt-hl">내 지출 패턴</strong>
+              <span>{pattern ? `${pattern.month}월` : ""}</span>
+            </div>
+            {pattern ? (
+              <>
+                <p className="rpt-head">
+                  주말에 지출의 <b>{pattern.weekendPercent}%</b>를 썼어요.
+                </p>
+                <SplitBar
+                  parts={[
+                    { label: "주말", value: pattern.weekend, text: `${pattern.weekendPercent}%` },
+                    {
+                      label: "평일",
+                      value: pattern.total - pattern.weekend,
+                      text: `${100 - pattern.weekendPercent}%`,
+                    },
+                  ]}
+                />
+                <Facts
+                  lines={[
+                    `가장 많이 쓴 요일은 ${pattern.topWeekday}요일이에요`,
+                    `${pattern.place}에는 ${pattern.placeVisits}번 갔고, 갈 때마다 평균 ${won(pattern.placeAverage)}이에요`,
+                  ]}
+                />
+              </>
+            ) : (
+              <p className="report-line">기록 없음</p>
+            )}
+          </section>
 
-        <section className="main-card">
-          <div className="block-heading">
-            <strong className="rpt-hl">지난주와 달라진 점</strong>
-          </div>
-          {changed ? (
+          <section className="main-card">
+            <div className="block-heading">
+              <strong className="rpt-hl">지난주와 달라진 점</strong>
+            </div>
+            {changed ? (
+              <p className="rpt-head">
+                지난주보다 {changed.category} 지출이 <b>{won(changed.diff)}</b> 줄었어요.
+              </p>
+            ) : (
+              <p className="report-line">기록 없음</p>
+            )}
+          </section>
+
+          <section className="main-card">
+            <div className="block-heading">
+              <strong className="rpt-hl">월간 리포트</strong>
+              <span>{monthly.month}월</span>
+            </div>
             <p className="rpt-head">
-              지난주보다 {changed.category} 지출이 <b>{won(changed.diff)}</b> 줄었어요.
+              결제 총액 {won(monthly.total)} 중 내가 실제로 쓴 돈은 <b>{won(monthly.mine)}</b>이에요.
             </p>
-          ) : (
-            <p className="report-line">기록 없음</p>
-          )}
-        </section>
-
-        <section className="main-card">
-          <div className="block-heading">
-            <strong className="rpt-hl">월간 리포트</strong>
-            <span>{monthly.month}월</span>
-          </div>
-          <p className="rpt-head">
-            결제 총액 {won(monthly.total)} 중 내가 실제로 쓴 돈은 <b>{won(monthly.mine)}</b>이에요.
-          </p>
-          <Facts
-            lines={[
-              `결제 ${monthly.count}건 중 ${monthly.restoredCount}건을 내 기록으로 채웠어요`,
-              monthly.categories.length > 0
-                ? `${monthly.categories
-                    .slice(0, 2)
-                    .map(([name, percent]) => `${name} ${percent}%`)
-                    .join(", ")} 순으로 많았어요`
-                : undefined,
-              monthly.mineChange !== undefined
-                ? `전월보다 내 지출이 ${won(Math.abs(monthly.mineChange))} ${monthly.mineChange >= 0 ? "늘었어요" : "줄었어요"}`
-                : undefined,
-            ]}
-          />
-        </section>
-
+            <Facts
+              lines={[
+                `결제 ${monthly.count}건 중 ${monthly.restoredCount}건을 내 기록으로 채웠어요`,
+                monthly.categories.length > 0
+                  ? `${monthly.categories
+                      .slice(0, 2)
+                      .map(([name, percent]) => `${name} ${percent}%`)
+                      .join(", ")} 순으로 많았어요`
+                  : undefined,
+                monthly.mineChange !== undefined
+                  ? `전월보다 내 지출이 ${won(Math.abs(monthly.mineChange))} ${monthly.mineChange >= 0 ? "늘었어요" : "줄었어요"}`
+                  : undefined,
+              ]}
+            />
+          </section>
+        </div>
       </div>
     </>
   )
