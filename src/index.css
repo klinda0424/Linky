@@ -4999,10 +4999,10 @@ p {
 
 /* 이날의 내 기록: 라벨 + 기록 칩 + 동선 지도 링크 */
 .cal2-records {
-  margin: 14px 0 18px;
+  margin: 6px 0 18px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .cal2-records-label {
