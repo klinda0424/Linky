@@ -1,8 +1,9 @@
 import { useState } from "react"
-import { ImagePlus, Link2, MapPin, Plus } from "lucide-react"
-import { Action, cx } from "@/components/common"
+import { CalendarDays, ImageIcon, ImagePlus, MapPin, Plus } from "lucide-react"
+import { Action } from "@/components/common"
 import { MainHeader } from "@/components/layout"
 import {
+  categoryOf,
   eventsFor,
   evidenceOf,
   label,
@@ -24,7 +25,7 @@ const minutes = (time: string) => {
 }
 
 // ---------- 지출 내역 상세 (홈 오늘 지출에서 진입) ----------
-// 금액·복원 이름, 결제 장소, 연결된 기록, 맞아요/수정(하단 고정)
+// 요약 카드(캘린더 결제 카드 모양 + 맞아요/수정, 일시·분류·함께·근거) → 결제 장소 카드 → 근거 카드
 export function PaymentDetail({
   payment,
   state,
@@ -53,6 +54,11 @@ export function PaymentDetail({
   const evidence = evidenceOf(payment, state)
   const mine = shareOf(payment, state)
   const confirmed = Boolean(restored?.confirmed)
+  const category = categoryOf(payment, state)
+  // 그룹 결제: 인원과 내 몫 (분할을 확정하기 전에는 "정산하면 내 몫")
+  const people = payment.group?.length ?? 0
+  const splitDone = state.splitConfirmed.includes(payment.id)
+  const perPerson = people > 1 ? Math.round(payment.amount / people) : 0
   const originalName =
     payment.kind === "transfer" ? `${payment.counterparty} 송금` : payment.merchant
 
@@ -88,18 +94,62 @@ export function PaymentDetail({
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="지출 내역" />
-      <div className={cx("pd-scroll", Boolean(restored) && "has-bar")}>
-        <div className="pd-amount">
-          {restored && <s className="pd-origin-name">{originalName}</s>}
-          <div className="pd-amount-row">
-            <strong>{won(mine)}</strong>
-            <span>{restored ? restored.label : originalName}</span>
+      <div className="pd-scroll">
+        {/* 요약 카드: 캘린더 결제 카드와 같은 모양 (원래 이름 · 장소 이름 · 금액 + 맞아요/수정) */}
+        <section className="pd-hero">
+          <span className="pd-orig">
+            {restored ? originalName : `${payment.time} · ${originalName}`}
+            {people > 1 && !splitDone && <em className="pd-chip">정산 대기</em>}
+          </span>
+          <p className="pd-name">{restored ? restored.label : originalName}</p>
+          <div className="pd-price">
+            <strong className="pd-won">{won(mine)}</strong>
+            {restored && (
+              <div className="hm-spend-actions">
+                {!confirmed && (
+                  <Action className="pill primary" onClick={() => confirmRestore(payment.id)}>
+                    맞아요
+                  </Action>
+                )}
+                <Action className="pill" onClick={() => setEditing(!editing)}>
+                  수정
+                </Action>
+              </div>
+            )}
           </div>
-          <time>
-            {label(payment.date)}({weekday(payment.date)}) {payment.time}
-          </time>
-        </div>
+          <dl className="pd-facts">
+            <div>
+              <dt>일시</dt>
+              <dd>
+                {label(payment.date)} ({weekday(payment.date)}) {payment.time}
+              </dd>
+            </div>
+            <div>
+              <dt>분류</dt>
+              <dd>{category ?? (payment.kind === "transfer" ? "계좌 이체" : "기록 없음")}</dd>
+            </div>
+            {people > 1 && (
+              <div>
+                <dt>함께</dt>
+                <dd>
+                  {splitDone
+                    ? `${people}명 · 결제 ${won(payment.amount)} 중 내 몫`
+                    : `${people}명 · 정산하면 내 몫 ${won(perPerson)}`}
+                </dd>
+              </div>
+            )}
+            <div>
+              <dt>근거</dt>
+              <dd>
+                {evidence.length > 0
+                  ? `${evidence.length}개${confirmed ? " · 확인했어요" : ""}`
+                  : "기록 없음"}
+              </dd>
+            </div>
+          </dl>
+        </section>
 
+        {/* 결제 장소 */}
         <h2 className="pd-title">결제 장소</h2>
         {spot ? (
           <section className="pd-place">
@@ -110,7 +160,6 @@ export function PaymentDetail({
               <i />
             </div>
             <div className="pd-place-text">
-              <MapPin size={16} strokeWidth={1.8} />
               <strong>{spot}</strong>
               <small>결제 당시 내 위치</small>
             </div>
@@ -119,10 +168,9 @@ export function PaymentDetail({
           <p className="pd-empty">기록 없음</p>
         )}
 
+        {/* 이 결제의 근거: 사진 · 일정 · 위치 */}
         <div className="pd-title-row">
-          <h2 className="pd-title">
-            <Link2 size={16} strokeWidth={2} /> 링키
-          </h2>
+          <h2 className="pd-title">이 결제의 근거</h2>
           <Action className="pd-add" onClick={() => openRecord(payment.id)}>
             <ImagePlus size={14} strokeWidth={1.8} /> 앨범 <Plus size={13} strokeWidth={2} />
           </Action>
@@ -131,21 +179,24 @@ export function PaymentDetail({
           <div className="pd-records">
             {photo && (
               <div className="pd-record">
+                <ImageIcon size={16} strokeWidth={1.7} />
                 <small>사진</small>
+                <span>{photo.time} · {photo.title}</span>
                 <i className="photo-thumb t0" />
-                <span>{photo.time}</span>
               </div>
             )}
             {event && (
               <div className="pd-record">
+                <CalendarDays size={16} strokeWidth={1.7} />
                 <small>일정</small>
                 <span>
-                  {event.title} {event.start}
+                  {event.title} · {event.start}
                 </span>
               </div>
             )}
             {hasLocation && (
               <div className="pd-record">
+                <MapPin size={16} strokeWidth={1.7} />
                 <small>위치</small>
                 <span>
                   {lastStay
@@ -202,20 +253,6 @@ export function PaymentDetail({
           </div>
         )}
       </div>
-      {restored && (
-        <div className="pd-bar">
-          <div className={cx("pd-actions", confirmed && "single")}>
-            {!confirmed && (
-              <Action className="pd-confirm" onClick={() => confirmRestore(payment.id)}>
-                맞아요
-              </Action>
-            )}
-            <Action className="pd-edit" onClick={() => setEditing(!editing)}>
-              수정
-            </Action>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

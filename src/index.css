@@ -6862,3 +6862,182 @@ p {
   line-height: var(--lh-item-amount);
   font-weight: var(--fw-item-amount);
 }
+
+/* ======================================================================
+   지출 내역 상세: 요약 카드 → 결제 장소 카드 → 근거 카드 (간격 20·12·8)
+   ====================================================================== */
+.pd-scroll {
+  padding-top: 16px;
+}
+
+/* 요약 카드: 캘린더 결제 카드와 같은 흰 카드 */
+.pd-hero {
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--background);
+}
+
+.pd-orig {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-mute);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+}
+
+.pd-chip {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--pending-light);
+  color: var(--expense-high);
+  font-size: var(--fs-tag);
+  line-height: var(--lh-tag);
+  font-weight: var(--fw-tag);
+  font-style: normal;
+}
+
+.pd-name {
+  margin-top: 2px;
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+  font-weight: var(--fw-item-title);
+  word-break: keep-all;
+}
+
+.pd-price {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.main-scale .pd-won {
+  font-size: var(--fs-title);
+  line-height: var(--lh-title);
+  font-weight: var(--fw-title);
+  font-variant-numeric: tabular-nums;
+}
+
+.pd-price .pill {
+  font-weight: var(--fw-title);
+}
+
+/* 카드 아래쪽 정보 줄: 라벨(회색) · 값 */
+.pd-facts {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px dashed #d7d7db;
+}
+
+.pd-facts > div {
+  display: flex;
+  gap: 12px;
+}
+
+.pd-facts dt {
+  width: 28px;
+  flex: none;
+  color: var(--text-mute);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+}
+
+.pd-facts dd {
+  margin: 0;
+  color: var(--text-body);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+}
+
+/* 섹션 제목 줄 */
+.main-scale .pd-title {
+  margin: 24px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pd-title-row {
+  margin: 24px 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.main-scale .pd-title-row .pd-title {
+  margin: 0;
+}
+
+/* 결제 장소 카드 */
+.pd-place-text {
+  padding: 12px 16px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.pd-place-text small {
+  padding-left: 0;
+}
+
+/* 근거 카드: 아이콘 · 종류 · 내용 줄, 사이에 구분선 */
+.pd-records {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.pd-record {
+  min-height: 52px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pd-record:last-child {
+  border-bottom: 0;
+}
+
+.pd-record svg {
+  flex: none;
+  color: var(--text-mute);
+}
+
+.pd-record small {
+  width: 28px;
+  flex: none;
+  color: var(--text-mute);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+}
+
+.pd-record span {
+  min-width: 0;
+  flex: 1;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+}
+
+.pd-record .photo-thumb {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 8px;
+}
+
+.pd-empty {
+  padding: 16px;
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  color: var(--text-mute);
+  font-size: var(--fs-body);
+  text-align: center;
+}
