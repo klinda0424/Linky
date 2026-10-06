@@ -4595,12 +4595,12 @@ p {
 }
 
 .hm-spend-foot {
-  margin-top: 8px;
-  padding-top: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
   border-top: 1px dashed #d7d7db;
 }
 
@@ -4615,13 +4615,23 @@ p {
 .hm-spend-actions {
   flex: none;
   display: flex;
-  gap: 6px;
+  gap: 4px;
 }
 
 .hm-spend-actions .pill {
-  height: 28px;
-  padding: 0 12px;
-  font-size: 12px;
+  height: 24px;
+  padding: 0 10px;
+  font-size: 11px;
+}
+
+/* 지출 카드의 맞아요: 연한 라임 배경 */
+.hm-spend-actions .pill.primary {
+  background: #f4fbdd;
+}
+
+.hm-spend-actions .pill.primary.disabled {
+  background: #f4fbdd;
+  color: var(--sub);
 }
 
 /* 오늘의 하루 */
@@ -5056,11 +5066,12 @@ p {
 
 .pay-chip {
   margin-bottom: 8px;
-  padding: 5px 11px;
+  padding: 4px 10px;
   display: inline-block;
+  border: 1px solid var(--expense-high);
   border-radius: 14px;
-  background: var(--primary);
-  color: var(--on-primary);
+  background: #fff1f0;
+  color: var(--expense-high);
   font-size: 12px;
   font-weight: 700;
 }
@@ -5074,7 +5085,7 @@ p {
 }
 
 .pay-price-row {
-  margin-top: 2px;
+  margin-top: 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;

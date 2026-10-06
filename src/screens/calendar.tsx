@@ -353,7 +353,7 @@ function PayCard({
   const needsConfirm = pendingGroup || Boolean(restored)
   return (
     <div className={cx("hm-spend", "pay-card", focus && "focus")} data-pay={payment.id}>
-      {pendingGroup && <span className="pay-chip">그룹 지출 같아요 · 정산 대기</span>}
+      {pendingGroup && <span className="pay-chip">정산 대기</span>}
       <div className="hm-spend-main">
         <div>
           <span className="hm-spend-orig">

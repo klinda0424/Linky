@@ -4,8 +4,6 @@ import { HeaderActions } from "@/components/layout"
 import {
   TODAY,
   dayMine,
-  evidenceLine,
-  evidenceOf,
   keyOf,
   label,
   man,
@@ -13,6 +11,7 @@ import {
   payments,
   photosFor,
   photosOn,
+  receivableOf,
   type Photo,
   restoredOf,
   sameDay,
@@ -67,14 +66,20 @@ function SpendCard({
   confirmRestore: (paymentId: string) => void
 }) {
   const restored = restoredOf(payment, state)
-  const evidence = evidenceOf(payment, state)
   const mine = shareOf(payment, state)
+  const share = payment.group ? Math.round(payment.amount / payment.group.length) : payment.amount
   const thumb = restored ? photosFor(payment, state)[0] : undefined
+  // 그룹 결제를 아직 나누지도, 개인 지출로 두지도 않았으면 정산 대기
+  const pendingGroup =
+    Boolean(payment.group) &&
+    !state.splitConfirmed.includes(payment.id) &&
+    !(state.personal ?? []).includes(payment.id)
   const title = restored
     ? `${restored.label}${restored.spot ? ` · ${restored.spot}` : ""}`
     : payment.merchant
   return (
     <div className="hm-spend">
+      {pendingGroup && <span className="pay-chip">정산 대기</span>}
       <Action className="hm-spend-main" onClick={() => openPayment(payment)}>
         <div>
           <span className="hm-spend-orig">
@@ -82,15 +87,21 @@ function SpendCard({
             {restored ? restored.original : payment.time}
           </span>
           <strong>{title}</strong>
-          <b>
-            {mine !== payment.amount && <s>{won(payment.amount)}</s>}
-            {won(mine)}
-          </b>
         </div>
         {thumb && <i className="photo-thumb t0 hm-spend-thumb" />}
       </Action>
-      <div className="hm-spend-foot">
-        <p>{evidenceLine(evidence)}</p>
+      <div className="pay-price-row">
+        <b>
+          {pendingGroup ? (
+            `총 ${won(payment.amount)}`
+          ) : mine !== payment.amount ? (
+            <>
+              <s>{won(payment.amount)}</s>내 몫 {won(mine)}
+            </>
+          ) : (
+            won(payment.amount)
+          )}
+        </b>
         {restored && (
           <div className="hm-spend-actions">
             <Action
@@ -106,6 +117,14 @@ function SpendCard({
           </div>
         )}
       </div>
+      {pendingGroup && (
+        <div className="pay-info">
+          <p className="pay-split">
+            총 결제 {won(payment.amount)} → 내 몫 {won(share)} · 받을 돈 {won(receivableOf(payment))}
+          </p>
+          {payment.deposits && <p>입금 {payment.deposits.length}건이 들어왔어요</p>}
+        </div>
+      )}
     </div>
   )
 }
