@@ -52,9 +52,10 @@ export const scenarioStays: Stay[] = [
   { id: "stay-sc2", date: d(10, 31), zone: "압구정로데오", name: "압구정로데오", from: "09:30", to: "11:20" },
 ]
 
+// 체류 지점은 구역 이름이 지도에 이미 표시되므로 별도 라벨을 두지 않는다
 export const scenarioTrail: TrailPoint[] = [
-  { id: "t-sc1", date: d(10, 30), time: "19:12", name: "연남동 (체류 19:12~21:05)", zone: "연남동" },
-  { id: "t-sc2", date: d(10, 31), time: "09:30", name: "압구정로데오 (체류 09:30~11:20)", zone: "압구정로데오" },
+  { id: "t-sc1", date: d(10, 30), time: "19:12", name: "", zone: "연남동" },
+  { id: "t-sc2", date: d(10, 31), time: "09:30", name: "", zone: "압구정로데오" },
 ]
 
 const { taxi, photoism, meal, transfer } = SCENARIO

@@ -4308,3 +4308,26 @@ p {
   font-size: 13px;
   line-height: 1.5;
 }
+
+/* 홈 오늘의 사진: 사진과 이어진 결제 */
+.home-photo-links {
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+}
+
+.home-photo-links li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+}
+
+.home-photo-links em {
+  color: var(--primary-text);
+  font-size: 12px;
+  font-style: normal;
+}

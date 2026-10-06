@@ -8,11 +8,13 @@ import {
   narrativeLine,
   paymentsOn,
   payments,
+  photosFor,
   photosOn,
   type Photo,
   restoredOf,
   sameDay,
   shareOf,
+  stays,
   weekday,
   won,
   ymd,
@@ -105,6 +107,32 @@ export function HomePage({
   const todayPhotos = photosOn(TODAY, state).filter(
     (photo) => !state.photoUnlinked.includes(photo.id),
   )
+  // 오늘의 동선: 위치 체류 구간과 결제 시각을 시간순으로 잇는다. 체류 밖 결제는 이동 중으로 표시한다.
+  const routeSteps = state.sources.location
+    ? [
+        ...stays
+          .filter((stay) => sameDay(stay.date, TODAY))
+          .map((stay) => ({
+            key: stay.id,
+            time: stay.from,
+            text: `${stay.from}~${stay.to} ${stay.name} 체류`,
+          })),
+        ...todayList.map((payment) => ({
+          key: payment.id,
+          time: payment.time,
+          text: payment.transit
+            ? `${payment.time} 이동 중 · ${payment.transit.from} 탑승`
+            : `${payment.time} ${payment.place ?? "기록 없음"}`,
+        })),
+      ].sort((a, b) => a.time.localeCompare(b.time))
+    : todayList.map((payment) => ({
+        key: payment.id,
+        time: payment.time,
+        text: `${payment.time} 기록 없음`,
+      }))
+  // 사진이 어느 결제와 이어졌는지 (결제 ±30분 사진)
+  const linkedPayment = (photo: Photo) =>
+    todayList.find((payment) => photosFor(payment, state).some((item) => item.id === photo.id))
   return (
     <>
       <div className="cal-brandbar">
@@ -215,10 +243,8 @@ export function HomePage({
             <p className="report-line">기록 없음</p>
           ) : (
             <div className="route-chips">
-              {todayList.map((payment) => (
-                <span key={payment.id}>
-                  {payment.time} {state.sources.location && payment.place ? payment.place : "기록 없음"}
-                </span>
+              {routeSteps.map((step) => (
+                <span key={step.key}>{step.text}</span>
               ))}
             </div>
           )}
@@ -242,6 +268,25 @@ export function HomePage({
               ))}
               {todayPhotos.length > 4 && <em>+{todayPhotos.length - 4}</em>}
             </div>
+          )}
+          {todayPhotos.length > 0 && (
+            <ul className="home-photo-links">
+              {todayPhotos.slice(0, 4).map((photo) => {
+                const paid = linkedPayment(photo)
+                return (
+                  <li key={photo.id}>
+                    <span>
+                      {photo.time} {photo.content ?? photo.title}
+                    </span>
+                    <em>
+                      {paid
+                        ? `${restoredOf(paid, state)?.label ?? paid.merchant} 결제와 연결`
+                        : "연결된 결제 없음"}
+                    </em>
+                  </li>
+                )
+              })}
+            </ul>
           )}
         </div>
       </div>

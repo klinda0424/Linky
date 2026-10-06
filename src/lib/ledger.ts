@@ -74,7 +74,7 @@ export const PLACES: Record<string, Pt> = {
   광화문: { x: 34, y: 20 },
   합정: { x: 14, y: 36 },
   용산: { x: 40, y: 44 },
-  압구정로데오: { x: 62, y: 62 },
+  압구정로데오: { x: 78, y: 56 },
   연남동: { x: 22, y: 30 },
 }
 export const zoneNames = Object.keys(PLACES)
