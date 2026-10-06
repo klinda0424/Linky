@@ -126,7 +126,7 @@ export function SettlementInbox({
           sub={settlementPeriod}
           title={
             meeting
-              ? `${meeting.merchant}의 ${man(meeting.amount)}원 지출,\n그룹 지출 같아요`
+              ? `${meeting.merchant} ${man(meeting.amount)}\n그룹 지출 같아요`
               : `${settlementTitle}\n그룹 지출 같아요`
           }
         />

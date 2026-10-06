@@ -6150,9 +6150,9 @@ p {
   font-weight: var(--fw-item-title);
 }
 
-/* 그룹 결제 알림 제목: 한 줄에 다 들어가도록 글자만 조금 줄인다 (16 → 13.5) */
+/* 그룹 결제 알림 제목: 한 줄에 다 들어가도록 글자만 아주 조금 줄인다 (16 → 15.5) */
 .hm-notice.alert strong {
-  font-size: 13.5px;
+  font-size: 15.5px;
   white-space: nowrap;
 }
 
