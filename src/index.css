@@ -6398,3 +6398,48 @@ p {
   line-height: 28px;
 }
 
+
+/* ======================================================================
+   글자 위계 통일: 모든 하위 화면을 홈과 같은 단계로 맞춘다 (화면 크기 = 값 × 0.85)
+   - 화면·섹션 제목 = title(18 → 15.3)   - 핵심 금액 = 22px(→ 18.7, 홈 오늘 지출과 같게)
+   - 행 제목 = item-title(16 → 13.6)      - 행 금액 = item-amount(16/600 → 13.6)
+   ====================================================================== */
+
+/* 하위 화면 상단 제목, 섹션 제목 */
+.main-scale .main-subheader > p,
+.main-scale .section-title,
+.main-scale .sub-heading,
+.main-scale .album-head strong,
+.main-scale .pd-title {
+  font-size: var(--fs-title);
+  line-height: var(--lh-title);
+  font-weight: var(--fw-title);
+}
+
+/* 화면의 핵심 금액: 홈 "오늘 지출" 합계와 같은 크기 */
+.main-scale .settlement-summary strong,
+.main-scale .pd-amount-row > strong {
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: var(--fw-headline);
+}
+
+/* 목록 행 제목: 홈 결제 행과 같은 크기 */
+.main-scale .settlement-item strong,
+.main-scale .profile-row > strong,
+.main-scale .list-copy .label-row > strong,
+.main-scale .tf-summary > strong,
+.main-scale .pd-place-text > strong,
+.main-scale .people-settlement strong {
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+  font-weight: var(--fw-item-title);
+}
+
+/* 행 금액: 홈 결제 금액과 같은 크기·굵기 */
+.main-scale .report-pay > p,
+.main-scale .tf-summary > b {
+  font-size: var(--fs-item-amount);
+  line-height: var(--lh-item-amount);
+  font-weight: var(--fw-item-amount);
+}
