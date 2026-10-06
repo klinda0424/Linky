@@ -70,7 +70,7 @@ export function BottomTabs({
     <div className="bottom-tabs">
       {tabs.map(([key, label, icon]) => (
         <Action
-          className={cx("bottom-tab", active === key && "active")}
+          className={cx("bottom-tab", `tab-${key}`, active === key && "active")}
           key={key}
           onClick={() => change(key)}
         >
