@@ -133,9 +133,17 @@ export function nextWeekPreview(state: LedgerState) {
       ),
     )
     .filter((amount) => amount > 0)
+  const thisSunday = sundayOf(TODAY)
   return {
     from: nextSunday,
     eventCount,
+    // 이번 주 식비·카페 (내 기록끼리의 참고 값)
+    thisWeekFood: sum(
+      paymentsIn(thisSunday, addDays(thisSunday, 6)).filter(
+        (payment) => payment.category === "식비·카페",
+      ),
+      state,
+    ),
     foodAverage: similar.length
       ? Math.round(similar.reduce((a, b) => a + b, 0) / similar.length)
       : undefined,
