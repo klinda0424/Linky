@@ -4624,6 +4624,16 @@ p {
   font-size: 11px;
 }
 
+/* 지출 카드의 맞아요: 연한 라임 배경 */
+.hm-spend-actions .pill.primary {
+  background: #f4fbdd;
+}
+
+.hm-spend-actions .pill.primary.disabled {
+  background: #f4fbdd;
+  color: var(--sub);
+}
+
 /* 오늘의 하루 */
 .hm-day-report {
   margin-top: 14px;
@@ -5056,11 +5066,12 @@ p {
 
 .pay-chip {
   margin-bottom: 8px;
-  padding: 5px 11px;
+  padding: 4px 10px;
   display: inline-block;
+  border: 1px solid var(--expense-high);
   border-radius: 14px;
-  background: var(--primary);
-  color: var(--on-primary);
+  background: #fff1f0;
+  color: var(--expense-high);
   font-size: 12px;
   font-weight: 700;
 }
