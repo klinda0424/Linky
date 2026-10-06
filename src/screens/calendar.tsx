@@ -20,7 +20,6 @@ import {
   man,
   monthSummary,
   monthsAvailable,
-  narrativeLine,
   paymentsOn,
   photos,
   photosOn,
@@ -283,7 +282,6 @@ export function DayPanel({
         />
       ))}
       {list.length === 0 && <p className="hm-empty">결제 기록 없음</p>}
-      <DayReport day={day} state={state} />
     </section>
   )
 }
@@ -478,16 +476,6 @@ function PayCard({
           </div>
         </div>
       )}
-    </div>
-  )
-}
-
-// ---------- 하루 리포트 (사실만 나열) ----------
-function DayReport({ day, state }: { day: YMD; state: LedgerState }) {
-  return (
-    <div className="day-report">
-      <span>하루 리포트</span>
-      <p>{narrativeLine(day, state)}</p>
     </div>
   )
 }
