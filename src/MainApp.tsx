@@ -228,9 +228,6 @@ export function MainApp({
               ? { payment: foundTransfer, guess: foundGuess }
               : undefined
           }
-          confirmRestore={confirmRestore}
-          confirmTransfer={confirmTransfer}
-          declineTransfer={declineTransfer}
           openTransfer={() => {
             setTransferId(foundTransfer?.id)
             setView("transfer")
