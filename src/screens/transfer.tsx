@@ -1,4 +1,4 @@
-import { CalendarDays, ImageIcon, MapPin } from "lucide-react"
+import { CalendarDays, ImageIcon, Link2, MapPin } from "lucide-react"
 import { Action } from "@/components/common"
 import { MainHeader } from "@/components/layout"
 import {
@@ -92,7 +92,10 @@ export function TransferConfirm({
           {guess ? (
             <>
               <div className="tf-row">
-                <span className="tf-avatar">L</span>
+                {/* 링키 프로필: 홈 헤더와 같은 Linky 로고 */}
+                <span className="tf-avatar" aria-label="Linky">
+                  <Link2 size={18} strokeWidth={2.2} />
+                </span>
                 <div className="tf-bubble">
                   <p>
                     {name}님과 먹은 {subject ?? "식사"}값이 맞나요?
