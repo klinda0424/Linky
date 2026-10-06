@@ -139,54 +139,89 @@ function NoticeCard({ notice }: { notice: Notice }) {
   )
 }
 
-// ---------- 오늘 내 하루: 머문 곳·일정·이동을 시간순으로 이어 쓴 사실 서술 (금액은 쓰지 않는다) ----------
-const periodOf = (time: string) => {
-  const hour = Number(time.split(":")[0])
-  return hour < 12 ? "오전" : hour < 17 ? "낮" : hour < 21 ? "저녁" : "밤"
-}
+// ---------- 오늘 내 하루: 내 기록만으로 하루를 정리한 사실 서술 ----------
+// 이동 경로 → 가장 큰 지출(일정 맥락) → 지난주 같은 요일과 비교 → 이번 주 반복 장소 → 사진 순.
+// 의도·감정은 추측하지 않고, 비교는 내 기록끼리만 한다.
+const paymentName = (payment: Payment, state: LedgerState) =>
+  restoredOf(payment, state)?.label ??
+  (payment.kind === "transfer" ? `${payment.counterparty} 송금` : payment.merchant)
 
 function dayStory(day: YMD, list: Payment[], photoCount: number, state: LedgerState) {
+  const dayWord = sameDay(day, TODAY) ? "오늘" : "이날"
   const dayEvents = eventsOn(day, state)
-  const items = [
+  const sentences: string[] = []
+
+  // 1. 이동: 체류 구간과 결제 지역을 시간순으로 이어 지역이 바뀐 순서만 남긴다
+  const zones = [
     ...(state.sources.location
-      ? stays
-          .filter((stay) => sameDay(stay.date, day))
-          .map((stay) => ({ time: stay.from, text: `${stay.name}에`, verb: "머물렀" }))
+      ? stays.filter((stay) => sameDay(stay.date, day)).map((stay) => ({ time: stay.from, zone: stay.zone }))
       : []),
-    ...dayEvents.map((event) => ({
-      time: event.start,
-      text: `'${event.title}' 일정이`,
-      verb: "있었",
-    })),
-    // 일정 시간대에 한 결제는 일정이 이미 설명하므로 따로 적지 않는다
-    ...list
-      .filter((payment) => eventsFor(payment, state).length === 0)
-      .map((payment) => {
-        const restored = restoredOf(payment, state)
-        return payment.transit
-          ? { time: payment.time, text: `${payment.transit.from} 인근에서 택시를`, verb: "탔" }
-          : restored
-            ? { time: payment.time, text: `${restored.label}에`, verb: "다녀왔" }
-            : {
-                time: payment.time,
-                text: `${payment.place ?? payment.merchant}에서 결제를`,
-                verb: "했",
-              }
-      }),
+    ...list.map((payment) => ({ time: payment.time, zone: payment.zone })),
   ]
     .sort((a, b) => a.time.localeCompare(b.time))
-    .slice(0, 4)
-  let previous = ""
-  const parts = items.map((item, index) => {
-    const period = periodOf(item.time)
-    const prefix = period !== previous ? `${period}에는 ` : ""
-    previous = period
-    return `${prefix}${item.text} ${item.verb}${index < items.length - 1 ? "고" : "어요"}`
-  })
-  if (parts.length === 0) return ""
-  const photoSubject = sameDay(day, TODAY) ? "오늘" : "이날"
-  const photos = photoCount > 0 ? ` ${photoSubject} 남긴 사진은 ${photoCount}장이에요.` : ""
-  return `${parts.join(", ")}.${photos}`
+    .map((item) => item.zone)
+    .filter((zone, index, all) => index === 0 || zone !== all[index - 1])
+  if (zones.length > 1) {
+    sentences.push(`${zones.join(" → ")} 순으로 움직였어요.`)
+  } else if (zones.length === 1 && list.length > 1) {
+    sentences.push(`결제 ${list.length}건 모두 ${zones[0]}에서 했어요.`)
+  } else if (zones.length === 1) {
+    sentences.push(`${zones[0]}에 있었어요.`)
+  }
+
+  // 2. 가장 큰 지출과 그 시간대의 일정
+  if (list.length > 0) {
+    const top = list.reduce((best, payment) =>
+      shareOf(payment, state) > shareOf(best, state) ? payment : best,
+    )
+    const event = eventsFor(top, state)[0]
+    const context = event ? `'${event.title}' 때 ` : ""
+    const what = `${top.time} ${context}${paymentName(top, state)} ${won(shareOf(top, state))}`
+    sentences.push(list.length > 1 ? `가장 큰 지출은 ${what}이에요.` : `결제는 ${what} 한 건이에요.`)
+  }
+
+  // 결제와 겹치지 않은 일정
+  const otherEvents = dayEvents.filter(
+    (event) => !list.some((payment) => eventsFor(payment, state).some((item) => item.id === event.id)),
+  )
+  if (otherEvents.length > 0) {
+    sentences.push(`${otherEvents[0].start} '${otherEvents[0].title}' 일정이 있었어요.`)
+  }
+
+  // 3. 지난주 같은 요일과 비교 (내 기록끼리)
+  if (list.length > 0) {
+    const lastWeek = new Date(day.y, day.m - 1, day.d - 7)
+    const lastDay = ymd(lastWeek.getFullYear(), lastWeek.getMonth() + 1, lastWeek.getDate())
+    const lastList = paymentsOn(lastDay)
+    const diff = dayMine(day, state) - dayMine(lastDay, state)
+    const lastName = `지난주 ${weekday(day)}요일`
+    if (lastList.length === 0) {
+      sentences.push(`${lastName}에는 결제 기록이 없어요.`)
+    } else if (diff === 0) {
+      sentences.push(`${lastName}과 같은 금액을 썼어요.`)
+    } else {
+      sentences.push(`${lastName}보다 ${won(Math.abs(diff))} ${diff > 0 ? "더" : "적게"} 썼어요.`)
+    }
+  }
+
+  // 4. 이번 주 반복 장소: 이날 결제가 가장 많은 지역에서 이번 주에 결제한 날 수
+  if (list.length > 0) {
+    const counts = new Map<string, number>()
+    list.forEach((payment) => counts.set(payment.zone, (counts.get(payment.zone) ?? 0) + 1))
+    const mainZone = [...counts].sort((a, b) => b[1] - a[1])[0][0]
+    const visitedDays = weekOf(day).filter(
+      (weekDay) =>
+        keyOf(weekDay) <= keyOf(day) && paymentsOn(weekDay).some((payment) => payment.zone === mainZone),
+    ).length
+    if (visitedDays > 1) {
+      sentences.push(`이번 주 ${mainZone}에서 결제한 날은 ${dayWord}까지 ${visitedDays}일이에요.`)
+    }
+  }
+
+  // 5. 사진
+  if (photoCount > 0) sentences.push(`${dayWord} 남긴 사진은 ${photoCount}장이에요.`)
+
+  return sentences.join(" ")
 }
 
 // ---------- 오늘의 동선: 체류 구간과 결제 위치를 시간순으로 잇는 미니 지도 ----------
