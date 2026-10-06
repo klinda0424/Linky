@@ -5073,9 +5073,42 @@ p {
   font-weight: 600;
 }
 
-.pay-split {
-  margin-top: 8px;
+.pay-price-row {
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pay-price-row b {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.pay-price-row b s {
+  margin-right: 6px;
+  color: var(--disabled);
   font-size: 12px;
+}
+
+.pay-info {
+  margin-top: 8px;
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-top: 1px dashed #d7d7db;
+}
+
+.pay-info p {
+  color: var(--sub);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.pay-info .pay-split {
+  color: var(--text);
   font-weight: 700;
   letter-spacing: -0.02em;
 }

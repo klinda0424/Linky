@@ -13,7 +13,6 @@ import {
   dayMine,
   dayTotal,
   eventsOn,
-  evidenceLine,
   evidenceOf,
   groupBasis,
   isRestored,
@@ -91,7 +90,6 @@ export function CalendarHome({
     openDay(paid[paid.length - 1] ?? ymd(target.y, target.m, 1))
   }
   const summary = monthSummary(y, m, state)
-  const length = new Date(y, m, 0).getDate()
   const bigDays = bigSpendDays(y, m, state)
   const reviewDays = splitReviewDays(y, m, state)
   const isThisMonth = y === TODAY.y && m === TODAY.m
@@ -123,9 +121,6 @@ export function CalendarHome({
         <section className="cal2-summary">
           <span>{isThisMonth ? "이번 달 지출" : `${m}월 지출`}</span>
           <strong>{won(summary.mine)}</strong>
-          <small>
-            {length}일 중 {summary.paidDays}일 지출 · 복원 {summary.restoredDays}일
-          </small>
         </section>
         <div className="cal2-weekdays">
           {weekdays.map((day) => (
@@ -148,7 +143,7 @@ export function CalendarHome({
                   sameDay(date, TODAY) && "today",
                 )}
                 key={day}
-                label={`${m}월 ${day}일${mine > 0 ? ` 내 지출 ${won(mine)}` : ""}${bigDays.has(day) ? ", 지출이 큰 날" : ""}${reviewDays.has(day) ? ", 나눔 검토 필요" : ""}`}
+                label={`${m}월 ${day}일${mine > 0 ? ` 내 지출 ${won(mine)}` : ""}${bigDays.has(day) ? ", 평소보다 지출 많은 날" : ""}${reviewDays.has(day) ? ", 정산 확인 필요" : ""}`}
                 onClick={() => openDay(date)}
               >
                 <b>{day}</b>
@@ -163,13 +158,13 @@ export function CalendarHome({
         </div>
         <div className="cal2-legend">
           <span>
-            <i className="cal2-swatch" /> 지출 상위 3일
+            <i className="cal2-swatch" /> 평소보다 지출 많은 날
           </span>
           <span>
             <i className="cal2-dot" /> 일정
           </span>
           <span>
-            <i className="cal2-dot review" /> 나눔 검토
+            <i className="cal2-dot review" /> 정산 확인
           </span>
         </div>
         {detail}
@@ -344,6 +339,8 @@ function PayCard({
     : transfer
       ? `${payment.counterparty} 송금`
       : payment.merchant
+  // 내 위치·일정·사진 근거 줄은 카드에 두지 않는다(수정을 누르면 근거 목록이 열린다).
+  // 정산·이체처럼 상태를 알려야 하는 안내만 남긴다.
   const footText = pendingGroup
     ? payment.deposits
       ? `입금 ${payment.deposits.length}건이 들어왔어요`
@@ -351,8 +348,8 @@ function PayCard({
     : asTransfer
       ? "이체 · 가맹점 없음"
       : transfer && category
-        ? `${category.split("·")[0]}로 재분류 · ${evidenceLine(evidence)}`
-        : evidenceLine(evidence)
+        ? `${category.split("·")[0]}로 재분류`
+        : undefined
   const needsConfirm = pendingGroup || Boolean(restored)
   return (
     <div className={cx("hm-spend", "pay-card", focus && "focus")} data-pay={payment.id}>
@@ -364,27 +361,21 @@ function PayCard({
             {personal && <em className="pay-tag">개인 지출</em>}
           </span>
           <strong>{title}</strong>
-          <b>
-            {pendingGroup ? (
-              `총 ${won(payment.amount)}`
-            ) : people && confirmed ? (
-              <>
-                <s>{won(payment.amount)}</s>내 몫 {won(share)}
-              </>
-            ) : (
-              won(payment.amount)
-            )}
-          </b>
         </div>
         {photoIds.length > 0 && <i className="photo-thumb t0 hm-spend-thumb" />}
       </div>
-      {pendingGroup && (
-        <p className="pay-split">
-          총 결제 {won(payment.amount)} → 내 몫 {won(share)} · 받을 돈 {won(receivableOf(payment))}
-        </p>
-      )}
-      <div className="hm-spend-foot">
-        <p>{footText}</p>
+      <div className="pay-price-row">
+        <b>
+          {pendingGroup ? (
+            `총 ${won(payment.amount)}`
+          ) : people && confirmed ? (
+            <>
+              <s>{won(payment.amount)}</s>내 몫 {won(share)}
+            </>
+          ) : (
+            won(payment.amount)
+          )}
+        </b>
         <div className="hm-spend-actions">
           {needsConfirm && (
             <Action
@@ -407,6 +398,17 @@ function PayCard({
           )}
         </div>
       </div>
+      {(pendingGroup || footText) && (
+        <div className="pay-info">
+          {pendingGroup && (
+            <p className="pay-split">
+              총 결제 {won(payment.amount)} → 내 몫 {won(share)} · 받을 돈{" "}
+              {won(receivableOf(payment))}
+            </p>
+          )}
+          {footText && <p>{footText}</p>}
+        </div>
+      )}
       {editing && (
         <div className="pay-detail">
           {evidence.length === 0 && <p className="detail-note">연결된 근거가 없어요</p>}
