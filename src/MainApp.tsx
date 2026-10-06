@@ -178,6 +178,13 @@ export function MainApp({
       ...value,
       personal: [...(value.personal ?? []), paymentId],
     }))
+  // 인원 분할 확정: 캘린더·리포트의 내 몫 집계는 이 상태를 기준으로 계산한다
+  const confirmSplit = (paymentId: string) =>
+    setLedger((value) =>
+      value.splitConfirmed.includes(paymentId)
+        ? value
+        : { ...value, splitConfirmed: [...value.splitConfirmed, paymentId] },
+    )
   const attach = (paymentId: string, text?: string) => {
     setLedger((value) => {
       const current = value.added[paymentId] ?? []
@@ -515,7 +522,11 @@ export function MainApp({
             excluded={excluded}
             matched={matched}
             notify={() => setMatched(true)}
-            result={() => setView("settlementResult")}
+            result={() => {
+              // 정산 결과는 "내 몫만 가계에 반영"이므로 이 시점에 분할을 확정해 캘린더·리포트 집계에 반영한다
+              if (meetingId) confirmSplit(meetingId)
+              setView("settlementResult")
+            }}
           />
         )
       case "settlementResult":
@@ -577,12 +588,7 @@ export function MainApp({
           close={() => setSplitting(undefined)}
           // 확인하면 원장만 갱신하고, 시트는 반영 결과(S4-3)를 보여 준 뒤 사용자가 닫는다
           confirm={() => {
-            const id = splitting.id
-            setLedger((value) =>
-              value.splitConfirmed.includes(id)
-                ? value
-                : { ...value, splitConfirmed: [...value.splitConfirmed, id] },
-            )
+            confirmSplit(splitting.id)
           }}
           openHistory={() => {
             setSplitting(undefined)
