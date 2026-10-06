@@ -5133,7 +5133,9 @@ p {
 .hm-today {
   margin-top: 14px;
   padding: 18px 18px 6px;
+  border: 0;
   border-radius: 20px;
+  background: var(--surface);
 }
 
 .hm-today-top {
@@ -5164,7 +5166,7 @@ p {
   padding: 6px 10px;
   flex: none;
   border-radius: 10px;
-  background: var(--surface);
+  background: var(--background);
   color: var(--sub);
   font-size: 12px;
   font-weight: 600;
@@ -5172,7 +5174,7 @@ p {
 
 .hm-today-list {
   margin-top: 14px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid #e4e4e8;
 }
 
 .hm-today-row {
@@ -5181,7 +5183,7 @@ p {
   display: flex;
   align-items: center;
   gap: 12px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid #e4e4e8;
   text-align: left;
 }
 
@@ -5197,7 +5199,7 @@ p {
   align-items: center;
   justify-content: center;
   border-radius: 14px;
-  background: var(--surface);
+  background: var(--background);
   color: #6b6b72;
 }
 
@@ -5302,4 +5304,18 @@ p {
   font-size: 15px;
   line-height: 1.6;
   word-break: keep-all;
+}
+
+/* 그룹 결제 알림: 붉은 계열 */
+.hm-notice.alert {
+  border-color: var(--expense-high);
+  background: #fff1f0;
+}
+
+.hm-notice.alert .hm-notice-icon {
+  color: var(--expense-high);
+}
+
+.hm-notice.alert strong {
+  color: var(--expense-high);
 }

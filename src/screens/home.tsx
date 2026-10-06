@@ -22,6 +22,8 @@ import {
   photosFor,
   photosOn,
   categoryOf,
+  eventsFor,
+  eventsOn,
   type Photo,
   restoredOf,
   sameDay,
@@ -116,13 +118,15 @@ type Notice = {
   icon: typeof Sparkles
   title: string
   sub: string
+  // 주의가 필요한 알림(그룹 결제)은 붉은 계열로 보인다
+  alert?: boolean
   onClick: () => void
 }
 
 function NoticeCard({ notice }: { notice: Notice }) {
   const Icon = notice.icon
   return (
-    <Action className="main-card hm-notice" onClick={notice.onClick}>
+    <Action className={cx("main-card", "hm-notice", notice.alert && "alert")} onClick={notice.onClick}>
       <span className="hm-notice-icon">
         <Icon size={22} strokeWidth={1.5} />
       </span>
@@ -135,24 +139,40 @@ function NoticeCard({ notice }: { notice: Notice }) {
   )
 }
 
-// ---------- 오늘의 하루: 체류와 결제를 시간순으로 이어 쓴 사실 서술 ----------
+// ---------- 오늘 내 하루: 머문 곳·일정·이동을 시간순으로 이어 쓴 사실 서술 (금액은 쓰지 않는다) ----------
 const periodOf = (time: string) => {
   const hour = Number(time.split(":")[0])
   return hour < 12 ? "오전" : hour < 17 ? "낮" : hour < 21 ? "저녁" : "밤"
 }
 
-function dayStory(list: Payment[], state: LedgerState) {
+function dayStory(list: Payment[], photoCount: number, state: LedgerState) {
+  const dayEvents = eventsOn(TODAY, state)
   const items = [
     ...(state.sources.location
       ? stays
           .filter((stay) => sameDay(stay.date, TODAY))
           .map((stay) => ({ time: stay.from, text: `${stay.name}에`, verb: "머물렀" }))
       : []),
-    ...list.map((payment) => ({
-      time: payment.time,
-      text: `${restoredOf(payment, state)?.label ?? payment.merchant} 결제 ${won(payment.amount)}이`,
+    ...dayEvents.map((event) => ({
+      time: event.start,
+      text: `'${event.title}' 일정이`,
       verb: "있었",
     })),
+    // 일정 시간대에 한 결제는 일정이 이미 설명하므로 따로 적지 않는다
+    ...list
+      .filter((payment) => eventsFor(payment, state).length === 0)
+      .map((payment) => {
+        const restored = restoredOf(payment, state)
+        return payment.transit
+          ? { time: payment.time, text: `${payment.transit.from} 인근에서 택시를`, verb: "탔" }
+          : restored
+            ? { time: payment.time, text: `${restored.label}에`, verb: "다녀왔" }
+            : {
+                time: payment.time,
+                text: `${payment.place ?? payment.merchant}에서 결제를`,
+                verb: "했",
+              }
+      }),
   ]
     .sort((a, b) => a.time.localeCompare(b.time))
     .slice(0, 4)
@@ -163,11 +183,13 @@ function dayStory(list: Payment[], state: LedgerState) {
     previous = period
     return `${prefix}${item.text} ${item.verb}${index < items.length - 1 ? "고" : "어요"}`
   })
-  return parts.length > 0 ? `${parts.join(", ")}.` : ""
+  if (parts.length === 0) return ""
+  const photos = photoCount > 0 ? ` 오늘 남긴 사진은 ${photoCount}장이에요.` : ""
+  return `${parts.join(", ")}.${photos}`
 }
 
 // ---------- 오늘의 동선: 체류 구간과 결제 위치를 시간순으로 잇는 미니 지도 ----------
-type Stop = { key: string; zone: string; text: string[]; seed: string }
+type Stop = { key: string; zone: string; seed: string }
 
 function routeStops(list: Payment[], state: LedgerState): Stop[] {
   if (!state.sources.location) return []
@@ -178,7 +200,6 @@ function routeStops(list: Payment[], state: LedgerState): Stop[] {
         id: stay.id,
         time: stay.from,
         zone: stay.zone,
-        text: `${stay.from}~${stay.to} 체류`,
       })),
     ...list.flatMap((payment) =>
       payment.place || payment.transit
@@ -187,18 +208,16 @@ function routeStops(list: Payment[], state: LedgerState): Stop[] {
               id: payment.id,
               time: payment.time,
               zone: payment.zone,
-              text: payment.transit ? `${payment.time} 이동 중` : payment.time,
             },
           ]
         : [],
     ),
   ].sort((a, b) => a.time.localeCompare(b.time))
-  // 같은 구역이 이어지면 한 지점으로 묶고 시각을 모은다
+  // 같은 구역이 이어지면 한 지점으로 묶는다
   const stops: Stop[] = []
   for (const step of steps) {
     const last = stops[stops.length - 1]
-    if (last && last.zone === step.zone) last.text.push(step.text)
-    else stops.push({ key: step.id, zone: step.zone, text: [step.text], seed: step.id })
+    if (!last || last.zone !== step.zone) stops.push({ key: step.id, zone: step.zone, seed: step.id })
   }
   return stops
 }
@@ -222,12 +241,7 @@ function RouteMap({ stops, onOpen }: { stops: Stop[]; onOpen: () => void }) {
       {points.map((p) => (
         <span className="hm-stop" key={p.key} style={{ left: `${p.x}%`, top: `${p.y}%` }}>
           <i />
-          <em>
-            {p.zone}
-            {p.text.map((line) => (
-              <small key={line}>{line}</small>
-            ))}
-          </em>
+          <em>{p.zone}</em>
         </span>
       ))}
     </Action>
@@ -272,7 +286,7 @@ export function HomePage({
     (photo) => !state.photoUnlinked.includes(photo.id),
   )
   const stops = routeStops(todayList, state)
-  const story = dayStory(todayList, state)
+  const story = dayStory(todayList, todayPhotos.length, state)
   const linkedPayment = (photo: Photo) =>
     todayList.find((payment) => photosFor(payment, state).some((item) => item.id === photo.id))
   // 감지된 것만 알림으로 띄운다: 송금 맥락, 그룹 결제 (복원 결과는 알림 없이 캘린더 카드에서 확인)
@@ -295,6 +309,7 @@ export function HomePage({
             icon: Users,
             title: "그룹 결제가 감지됐어요",
             sub: `정산할지 확인해주세요 · 정산 대기 ${pendingSettlement.count}건`,
+            alert: true,
             onClick: openSettlement,
           },
         ]
@@ -369,7 +384,7 @@ export function HomePage({
 
         <section className="main-card hm-story">
           <div className="hm-story-head">
-            <strong>오늘의 하루</strong>
+            <strong>오늘 내 하루</strong>
             <span className="hm-linky">
               <Sparkles size={14} strokeWidth={1.6} /> Linky
             </span>
