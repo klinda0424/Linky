@@ -5508,6 +5508,6 @@ p {
   padding: 0 3px;
   background: linear-gradient(
     transparent 55%,
-    color-mix(in srgb, var(--primary) 70%, transparent) 55%
+    color-mix(in srgb, var(--primary) 40%, transparent) 55%
   );
 }
