@@ -448,15 +448,15 @@ export function HomePage({
 
         <section className="main-card hm-today">
           <div className="hm-today-top">
-            <div>
+            <div className="hm-today-label">
               <span>{isToday ? "오늘 지출" : `${label(day)} 지출`}</span>
-              <strong>
-                {selectedList.length > 0 ? won(selectedMine) : "결제 기록 없음"}
-              </strong>
+              {isToday && pendingSettlement && (
+                <span className="hm-badge">정산 대기 {pendingSettlement.count}건</span>
+              )}
             </div>
-            {isToday && pendingSettlement && (
-              <span className="hm-badge">정산 대기 {pendingSettlement.count}건</span>
-            )}
+            <strong>
+              {selectedList.length > 0 ? won(selectedMine) : "결제 기록 없음"}
+            </strong>
           </div>
           <div className="hm-today-list">
             {selectedList.map((payment) => (

@@ -6254,3 +6254,68 @@ p {
   line-height: 28px;
 }
 
+
+/* 홈 지출 내역 위계: 합계(20/700) > 행 제목·금액(15) > 부가 정보·라벨(12).
+   합계는 행 금액과 같은 오른쪽 끝선에 맞춰 숫자가 한 줄로 읽히게 한다. */
+.hm-today-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hm-today-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.hm-today-label > span:first-child {
+  color: var(--text-mute);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+}
+
+.hm-today-top .hm-badge {
+  position: static;
+}
+
+.hm-today-top > strong {
+  font-size: 20px;
+  line-height: 26px;
+  text-align: right;
+}
+
+.hm-today-row strong {
+  font-size: 15px;
+  line-height: 20px;
+}
+
+.hm-today-row b {
+  font-size: 15px;
+  line-height: 20px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.hm-today-row small,
+.hm-recent {
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+}
+
+/* 라벨 묶음은 가로 배치. 기존 세로 배치·span 공통 규칙이 배지까지 덮지 않게 되돌린다 */
+.hm-today-top > .hm-today-label {
+  flex-direction: row;
+  gap: 8px;
+}
+
+.hm-today-top > .hm-today-label > .hm-badge {
+  padding: 3px 8px;
+  background: var(--lime-card);
+  color: #1a1a1a;
+  font-size: var(--fs-tag);
+  line-height: var(--lh-tag);
+  font-weight: var(--fw-tag);
+}
