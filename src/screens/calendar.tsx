@@ -227,35 +227,10 @@ export function DayPanel({
   }, [day, focusPayment])
   return (
     <section className="cal2-day">
-      <h2>
-        {label(day)} ({weekday(day)})
-      </h2>
-      <div className="cal2-day-sub">
-        <div className="cal2-chips">
-          {dayEvents.map((event) => (
-            <span className="cal2-chip" key={event.id}>
-              <CalendarDays size={14} strokeWidth={1.7} /> {event.title} {event.start}
-            </span>
-          ))}
-          {dayPhotos.length > 0 && (
-            <span className="cal2-chip">
-              <Camera size={14} strokeWidth={1.7} /> 사진 {dayPhotos.length}장
-            </span>
-          )}
-          {list.length > 0 && (
-            <Action className="cal2-chip action" onClick={() => showMap(day)}>
-              <Route size={14} strokeWidth={1.7} /> 동선 보기
-            </Action>
-          )}
-          {canReturn && (
-            <Action className="cal2-chip action" onClick={back}>
-              <ChevronLeft size={14} strokeWidth={1.7} /> 지도로 돌아가기
-            </Action>
-          )}
-          {dayEvents.length + dayPhotos.length === 0 && (
-            <span className="cal2-chip muted">이날 일정·사진 기록 없음</span>
-          )}
-        </div>
+      <div className="cal2-day-head">
+        <h2>
+          {label(day)} ({weekday(day)})
+        </h2>
         <div className="cal2-day-total">
           <b>{won(dayMine(day, state))}</b>
           <small>
@@ -263,6 +238,44 @@ export function DayPanel({
             {list.length}건 · 복원 {restored}건
           </small>
         </div>
+      </div>
+      {/* 이날의 내 기록: 결제의 근거가 되는 내 일정·사진. 아래 링크로 이날 동선 지도를 연다 */}
+      <div className="cal2-records">
+        <span className="cal2-records-label">이날의 내 기록</span>
+        <div className="cal2-chips">
+          {dayEvents.map((event) => (
+            <span className="cal2-chip" key={event.id}>
+              <CalendarDays size={14} strokeWidth={1.7} />
+              <em>일정</em>
+              {event.title} · {event.start}
+            </span>
+          ))}
+          {dayPhotos.length > 0 && (
+            <span className="cal2-chip">
+              <Camera size={14} strokeWidth={1.7} />
+              <em>사진</em>
+              {dayPhotos.length}장
+            </span>
+          )}
+          {dayEvents.length + dayPhotos.length === 0 && (
+            <span className="cal2-chip muted">일정·사진 기록 없음</span>
+          )}
+        </div>
+        {(list.length > 0 || canReturn) && (
+          <div className="cal2-links">
+            {list.length > 0 && (
+              <Action className="cal2-link" onClick={() => showMap(day)}>
+                <Route size={15} strokeWidth={1.7} /> 이날 동선 지도로 보기
+                <ChevronRight size={15} strokeWidth={1.7} />
+              </Action>
+            )}
+            {canReturn && (
+              <Action className="cal2-link" onClick={back}>
+                <ChevronLeft size={15} strokeWidth={1.7} /> 지도로 돌아가기
+              </Action>
+            )}
+          </div>
+        )}
       </div>
       {/* 시간순 타임라인: 왼쪽 점·시각·세로선(근거가 있으면 라임 점, 없으면 빈 점), 오른쪽 결제 카드 */}
       {list.length > 0 && (
