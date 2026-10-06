@@ -198,14 +198,12 @@ export function PaymentDetail({
         )}
 
         {restored && (
-          <div className="pd-actions">
-            <Action
-              className="pd-confirm"
-              disabled={confirmed}
-              onClick={() => confirmRestore(payment.id)}
-            >
-              {confirmed ? "확인했어요" : "맞아요"}
-            </Action>
+          <div className={cx("pd-actions", confirmed && "single")}>
+            {!confirmed && (
+              <Action className="pd-confirm" onClick={() => confirmRestore(payment.id)}>
+                맞아요
+              </Action>
+            )}
             <Action className="pd-edit" onClick={() => setEditing(!editing)}>
               수정
             </Action>

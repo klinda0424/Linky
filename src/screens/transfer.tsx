@@ -1,13 +1,13 @@
-import { CalendarDays, Camera, MapPin } from "lucide-react"
+import { CalendarDays, ImageIcon, Lock, MapPin } from "lucide-react"
 import { Action } from "@/components/common"
 import { MainHeader } from "@/components/layout"
 import {
+  events,
   label,
+  photos,
   transferGuess,
   type TransferGuess,
-  weekday,
   won,
-  type Evidence,
   type LedgerState,
   type Payment,
 } from "@/lib/ledger"
@@ -17,6 +17,14 @@ const givenName = (name: string) => (name.length === 3 ? name.slice(1) : name)
 
 // 사진 내용 인식 문구("파스타 · 2인 세팅")에서 첫 단어만 쓴다
 const subjectOf = (contents: string[]) => contents[0]?.split("·")[0]?.trim()
+
+// 받침 유무로 조사를 고른다
+const hasBatchim = (text: string) => {
+  const code = text.charCodeAt(text.length - 1)
+  return code >= 0xac00 && code <= 0xd7a3 && (code - 0xac00) % 28 !== 0
+}
+const withWa = (text: string) => `${text}${hasBatchim(text) ? "과" : "와"}`
+const withI = (text: string) => `${text}${hasBatchim(text) ? "이" : "가"}`
 
 // 홈 알림·확인 화면이 같은 질문 문구를 쓴다
 export function transferQuestion(payment: Payment, guess: TransferGuess) {
@@ -37,10 +45,7 @@ export function transferEvidenceLine(guess: TransferGuess) {
     .join(" · ")
 }
 
-const evidenceIcon = (kind: Evidence["kind"]) =>
-  kind === "location" ? MapPin : kind === "calendar" ? CalendarDays : Camera
-
-// ---------- 링키가 찾았어요 · 송금 맥락 확인 (F2-6) ----------
+// ---------- 링키가 찾았어요 · 송금 맥락 제안 (F2-6) ----------
 export function TransferConfirm({
   payment,
   state,
@@ -55,66 +60,111 @@ export function TransferConfirm({
   decline: () => void
 }) {
   const guess = transferGuess(payment, state)
+  // 근거 카드: 사진 · 일정 · 위치
+  const photoItem = guess?.evidence.find((item) => item.kind === "photo")
+  const photo = photos.find((item) => item.id === photoItem?.photoIds?.[0])
+  const calendarItem = guess?.evidence.find((item) => item.kind === "calendar")
+  const event = events.find((item) => `cal:${item.id}` === calendarItem?.key)
+  const locationItem = guess?.evidence.find((item) => item.kind === "location")
+  const parts = photo?.content?.split("·").map((part) => part.trim()) ?? []
+  const photoText = photo
+    ? parts.length >= 2
+      ? `그날 ${photo.time} 사진에 ${withWa(parts[0])} ${withI(parts[1])} 있었어요`
+      : `그날 ${photo.time} 사진에 ${withI(photo.content ?? photo.title)} 있었어요`
+    : undefined
+  const linked = [photo ? "사진" : undefined, event ? "일정" : undefined].filter(Boolean)
+  const category = guess?.category.split("·")[0]
+
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="링키가 찾았어요" />
-      <div className="transfer-scroll">
-        <div className="transfer-origin">
-          <span>
-            {label(payment.date)} {weekday(payment.date)}요일 {payment.time}
-          </span>
-          <strong>
-            {payment.counterparty} {won(payment.amount)}
-          </strong>
-          <small>가맹점 없는 이체</small>
-        </div>
+      <div className="tf-scroll">
+        <section className="tf-origin">
+          <div className="tf-origin-top">
+            <strong>{payment.counterparty}</strong>
+            <b>{won(payment.amount)}</b>
+          </div>
+          <div className="tf-origin-foot">
+            <span className="tf-chip">가맹점 정보 없음 · 이체</span>
+            <time>
+              {label(payment.date)} {payment.time}
+            </time>
+          </div>
+        </section>
+
         {guess ? (
           <>
-            <h2 className="transfer-question">
-              {transferQuestion(payment, guess)}
-            </h2>
-            <p className="transfer-lead">내 기록에서 이런 근거를 찾았어요.</p>
-            <ul className="transfer-basis">
-              {guess.evidence.map((item) => {
-                const Icon = evidenceIcon(item.kind)
-                return (
-                  <li key={item.key}>
-                    <span className="basis-icon">
-                      <Icon size={15} strokeWidth={1.7} />
-                    </span>
-                    <div>
-                      <p>{item.text}</p>
-                      {item.photoIds && (
-                        <div className="thumbs">
-                          {item.photoIds.slice(0, 4).map((id, index) => (
-                            <i className={`photo-thumb t${index % 5}`} key={id} />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </li>
-                )
-              })}
-            </ul>
-            <p className="transfer-result">
-              맞아요를 누르면 이체가 <b>식비 {won(payment.amount)}</b>으로 바뀌고, 사진·일정이
-              연결돼요. 원본 금액은 그대로예요.
-            </p>
+            <div className="tf-dotline" aria-hidden="true">
+              <i />
+            </div>
+            <h2 className="tf-question">{transferQuestion(payment, guess)}</h2>
+
+            <h3 className="tf-title">링키가 확인한 기록</h3>
+            <div className="tf-records">
+              {photo && (
+                <div className="tf-record">
+                  <span className="tf-thumb">
+                    <ImageIcon size={26} strokeWidth={1.4} />
+                  </span>
+                  <div>
+                    <small>사진</small>
+                    <p>{photoText}</p>
+                  </div>
+                </div>
+              )}
+              {event && (
+                <div className="tf-record">
+                  <span className="tf-icon">
+                    <CalendarDays size={20} strokeWidth={1.6} />
+                  </span>
+                  <div>
+                    <small>일정</small>
+                    <p>
+                      '{event.title}' {event.start}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {locationItem && (
+                <div className="tf-record">
+                  <span className="tf-icon">
+                    <MapPin size={20} strokeWidth={1.6} />
+                  </span>
+                  <div>
+                    <small>위치</small>
+                    <p>{locationItem.text.replace("내 위치 · ", "")}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <Action className="tf-yes" onClick={confirm}>
+              맞아요, {category}로 분류
+            </Action>
+            <Action className="tf-no" onClick={decline}>
+              아니에요, 이체로 둘게요
+            </Action>
+
+            <section className="tf-after">
+              <small>확인하면 이렇게 기록돼요</small>
+              <p>
+                이체 <span aria-hidden="true">→</span> <b>{category} {won(payment.amount)}</b>
+              </p>
+              {linked.length > 0 && (
+                <em>
+                  {linked.length === 2 ? "사진과 일정이" : `${linked[0]}이`} 연결돼요
+                </em>
+              )}
+            </section>
           </>
         ) : (
-          <p className="transfer-lead">기록 없음</p>
+          <p className="tf-empty">기록 없음</p>
         )}
+
+        <p className="tf-privacy">
+          <Lock size={15} strokeWidth={1.6} /> 사진 원본은 서버로 올라가지 않아요
+        </p>
       </div>
-      {guess && (
-        <div className="main-footer split-footer">
-          <Action className="secondary-button" onClick={decline}>
-            아니에요
-          </Action>
-          <Action className="primary-button" onClick={confirm}>
-            맞아요
-          </Action>
-        </div>
-      )}
     </div>
   )
 }
