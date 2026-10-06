@@ -5331,3 +5331,198 @@ p {
 .hm-notice.alert strong {
   color: var(--expense-high);
 }
+
+/* ---------- 리포트 탭 차트 (한 가지 색: 라임, 가장 큰 값만 진하게) ---------- */
+.rpt-sub {
+  margin-top: 4px;
+  color: var(--sub);
+  font-size: 12px;
+}
+
+.rpt-label {
+  margin: 18px 0 8px;
+  color: var(--sub);
+  font-size: 12px;
+}
+
+.rpt-columns {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.rpt-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.rpt-col em {
+  height: 14px;
+  color: var(--text);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.rpt-col-track {
+  width: 100%;
+  height: 84px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.rpt-col-track i {
+  width: 70%;
+  max-width: 28px;
+  border-radius: 4px 4px 0 0;
+  background: var(--primary-border);
+}
+
+.rpt-col-track i.top {
+  background: var(--primary);
+}
+
+.rpt-col-track i.zero {
+  border-radius: 1px;
+  background: var(--border);
+}
+
+.rpt-col b {
+  color: var(--sub);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.rpt-col.today b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.rpt-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rpt-rows > div {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.rpt-rows > div > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rpt-row-track {
+  height: 10px;
+  display: flex;
+  border-radius: 5px;
+  background: var(--surface);
+}
+
+.rpt-row-track i {
+  border-radius: 5px;
+  background: var(--primary-border);
+}
+
+.rpt-row-track i.top {
+  background: var(--primary);
+}
+
+.rpt-rows b {
+  min-width: 56px;
+  font-weight: 500;
+  text-align: right;
+}
+
+.rpt-split-bar {
+  height: 14px;
+  display: flex;
+  gap: 2px;
+}
+
+.rpt-split-bar i {
+  border-radius: 7px;
+  background: var(--primary-border);
+}
+
+.rpt-split-bar i.first {
+  background: var(--primary);
+}
+
+.rpt-split-legend {
+  margin-top: 8px;
+  display: flex;
+  gap: 16px;
+  color: var(--sub);
+  font-size: 12px;
+}
+
+.rpt-split-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.rpt-split-legend u {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary-border);
+}
+
+.rpt-split-legend u.first {
+  background: var(--primary);
+}
+
+.rpt-split-legend b {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.rpt-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.rpt-progress > span {
+  height: 10px;
+  flex: 1;
+  display: flex;
+  border-radius: 5px;
+  background: var(--surface);
+}
+
+.rpt-progress > span i {
+  border-radius: 5px;
+  background: var(--primary);
+}
+
+.rpt-progress b {
+  font-weight: 500;
+}
+
+.rpt-change {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  color: var(--sub);
+  font-size: 13px;
+}
+
+.rpt-change b {
+  color: var(--text);
+  font-weight: 500;
+}
