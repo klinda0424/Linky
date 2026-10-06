@@ -26,6 +26,7 @@ import {
   PrivacySettings,
   ProfileInfoSettings,
 } from "@/screens/profile"
+import { PaymentDetail } from "@/screens/payment"
 import { AlbumPicker, addedPhotoText } from "@/screens/record"
 import { SearchScreen } from "@/screens/search"
 import { TransferConfirm } from "@/screens/transfer"
@@ -75,6 +76,8 @@ export function MainApp({
   const [splitting, setSplitting] = useState<Payment>()
   // 링키가 찾았어요: 확인 중인 송금
   const [transferId, setTransferId] = useState<string>()
+  // 지출 내역 상세: 홈 오늘 지출에서 연 결제
+  const [detailId, setDetailId] = useState<string>()
   const [photo, setPhoto] = useState<Photo>()
   const [event, setEvent] = useState<CalEvent>()
   const [excluded, setExcluded] = useState<string[]>([])
@@ -111,6 +114,7 @@ export function MainApp({
   )
   const foundGuess = foundTransfer ? transferGuess(foundTransfer, state) : null
   const transferPayment = payments.find((item) => item.id === transferId)
+  const detailPayment = payments.find((item) => item.id === detailId)
   const confirmTransfer = (payment: Payment) => {
     setLedger((value) => ({
       ...value,
@@ -200,7 +204,7 @@ export function MainApp({
         },
       }
     })
-    setView("tabs")
+    if (view !== "paymentDetail") setView("tabs")
     setRecordTarget(undefined)
   }
   const openRecord = (paymentId?: string) => {
@@ -245,7 +249,10 @@ export function MainApp({
                     : undefined
                 })()
           }
-          openPayment={(payment) => openPayment(payment)}
+          openPayment={(payment) => {
+            setDetailId(payment.id)
+            setView("paymentDetail")
+          }}
           openProfile={() => setView("profile")}
           openSearch={() => setView("search")}
           selectDay={setHomeDay}
@@ -456,6 +463,20 @@ export function MainApp({
             values={notifications}
           />
         )
+      case "paymentDetail":
+        return detailPayment ? (
+          <PaymentDetail
+            back={toTabs}
+            confirmRestore={confirmRestore}
+            openRecord={openRecord}
+            payment={detailPayment}
+            relink={relink}
+            relinkPhoto={relinkPhoto}
+            state={state}
+            unlink={unlink}
+            unlinkPhoto={unlinkPhoto}
+          />
+        ) : null
       case "transfer":
         return transferPayment ? (
           <TransferConfirm
