@@ -277,9 +277,14 @@ export function MainApp({
               focusPayment={focusPayment}
               markPersonal={markPersonal}
               openRecord={openRecord}
+              openSettlement={() => {
+                setInboxFromHome(true)
+                setView("settlement")
+              }}
               openSplit={setSplitting}
               relink={relink}
               relinkPhoto={relinkPhoto}
+              settlementPaymentId={meetingId}
               showMap={(day) => {
                 setSheetDay(undefined)
                 setMapDay(day)

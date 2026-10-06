@@ -189,6 +189,8 @@ export function DayPanel({
   unlinkPhoto,
   verify,
   confirmRestore,
+  settlementPaymentId,
+  openSettlement,
 }: {
   day: YMD
   state: LedgerState
@@ -207,6 +209,9 @@ export function DayPanel({
   unlinkPhoto: (photoId: string) => void
   verify: (paymentId: string) => void
   confirmRestore: (paymentId: string) => void
+  // 정산 흐름(그룹 결제 확인~정산표)이 걸린 결제와 그 화면을 여는 함수
+  settlementPaymentId?: string
+  openSettlement?: () => void
 }) {
   const list = paymentsOn(day)
   const restored = list.filter((payment) => isRestored(payment, state)).length
@@ -301,6 +306,9 @@ export function DayPanel({
                   unlinkPhoto={unlinkPhoto}
                   verify={verify}
                   confirmRestore={confirmRestore}
+                  openSettlement={
+                    payment.id === settlementPaymentId ? openSettlement : undefined
+                  }
                 />
               </li>
             )
@@ -327,6 +335,7 @@ function PayCard({
   unlinkPhoto,
   verify,
   confirmRestore,
+  openSettlement,
 }: {
   payment: Payment
   state: LedgerState
@@ -340,6 +349,7 @@ function PayCard({
   unlinkPhoto: (photoId: string) => void
   verify: (paymentId: string) => void
   confirmRestore: (paymentId: string) => void
+  openSettlement?: () => void
 }) {
   // "수정"을 눌러야 근거 편집이 열린다
   const [editing, setEditing] = useState(false)
@@ -440,6 +450,11 @@ function PayCard({
             </dl>
           )}
           {footText && <p>{footText}</p>}
+          {pendingGroup && openSettlement && (
+            <Action className="pay-settle-link" onClick={openSettlement}>
+              정산하러 가기 <ChevronRight size={14} strokeWidth={1.8} />
+            </Action>
+          )}
         </div>
       )}
       {editing && (
