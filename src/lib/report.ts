@@ -47,8 +47,8 @@ const groupSum = (list: Payment[], state: LedgerState, keyFn: (p: Payment) => st
 const weekdayNames = ["일", "월", "화", "수", "목", "금", "토"]
 
 // 주간 리포트: 이번 주 총액·지출일수·카테고리·어디서 썼는지
-export function weeklyReport(state: LedgerState) {
-  const from = sundayOf(TODAY)
+export function weeklyReport(state: LedgerState, anchor: YMD = TODAY) {
+  const from = sundayOf(anchor)
   const to = addDays(from, 6)
   const list = paymentsIn(from, to)
   return {
@@ -76,8 +76,11 @@ export function weeklyReport(state: LedgerState) {
 }
 
 // 내 지출 패턴: 이번 달 주말 비중, 가장 많이 쓴 요일, 가장 자주 간 장소의 한 번 평균
-export function patternReport(state: LedgerState) {
-  const list = paymentsIn(ymd(TODAY.y, TODAY.m, 1), TODAY)
+export function patternReport(state: LedgerState, anchor: YMD = TODAY) {
+  const isCurrentMonth = anchor.y === TODAY.y && anchor.m === TODAY.m
+  const to = isCurrentMonth ? TODAY : ymd(anchor.y, anchor.m, new Date(anchor.y, anchor.m, 0).getDate())
+  const from = ymd(anchor.y, anchor.m, 1)
+  const list = paymentsIn(from, to)
   const total = sum(list, state)
   if (list.length === 0 || total === 0) return undefined
   const dayOf = (payment: Payment) =>
@@ -94,7 +97,7 @@ export function patternReport(state: LedgerState) {
   const [place, placeList] =
     [...placeCounts.entries()].sort((a, b) => b[1].length - a[1].length)[0] ?? []
   return {
-    month: TODAY.m,
+    month: anchor.m,
     weekendPercent: Math.round((weekend / total) * 100),
     topWeekday: byDay[0]?.[0],
     // 월~일 순서의 요일별 내 지출 (막대 그래프용)
@@ -104,6 +107,27 @@ export function patternReport(state: LedgerState) {
     })),
     weekend,
     total,
+    weekdayAverage: Math.round(
+      sum(
+        list.filter((payment) => ![0, 6].includes(dayOf(payment))),
+        state,
+      ) /
+        Math.max(
+          1,
+          Array.from({ length: to.d }, (_, index) =>
+            new Date(anchor.y, anchor.m - 1, index + 1).getDay(),
+          ).filter((day) => ![0, 6].includes(day)).length,
+        ),
+    ),
+    weekendAverage: Math.round(
+      weekend /
+        Math.max(
+          1,
+          Array.from({ length: to.d }, (_, index) =>
+            new Date(anchor.y, anchor.m - 1, index + 1).getDay(),
+          ).filter((day) => [0, 6].includes(day)).length,
+        ),
+    ),
     place,
     placeVisits: placeList?.length ?? 0,
     placeAverage: placeList ? Math.round(sum(placeList, state) / placeList.length) : 0,
@@ -170,8 +194,8 @@ export function nextWeekPreview(state: LedgerState) {
 }
 
 // 지난주와 달라진 점: 가장 많이 줄어든 카테고리 (내 기록끼리의 사실 비교만)
-export function weeklyChange(state: LedgerState) {
-  const thisSunday = sundayOf(TODAY)
+export function weeklyChange(state: LedgerState, anchor: YMD = TODAY) {
+  const thisSunday = sundayOf(anchor)
   const lastSunday = addDays(thisSunday, -7)
   const now = new Map(groupSum(paymentsIn(thisSunday, addDays(thisSunday, 6)), state, categoryOf))
   const before = groupSum(paymentsIn(lastSunday, addDays(lastSunday, 6)), state, categoryOf)
@@ -183,11 +207,12 @@ export function weeklyChange(state: LedgerState) {
 }
 
 // 월간 리포트: 결제 총액 vs 내가 실제로 쓴 돈, 맥락 복원율, 카테고리 비중, 전월 변화
-export function monthlyReport(state: LedgerState) {
-  const { y, m } = TODAY
+export function monthlyReport(state: LedgerState, anchor: YMD = TODAY) {
+  const { y, m } = anchor
   const list = paymentsIn(ymd(y, m, 1), ymd(y, m, 31))
   const summary = monthSummary(y, m, state)
-  const previous = m > 1 ? monthSummary(y, m - 1, state) : undefined
+  const previousDate = new Date(y, m - 2, 1)
+  const previous = monthSummary(previousDate.getFullYear(), previousDate.getMonth() + 1, state)
   const mineTotal = sum(list, state)
   return {
     month: m,
