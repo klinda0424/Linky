@@ -6264,11 +6264,30 @@ p {
 }
 
 /* 오늘의 사진: 위 이미지 + 아래 라벨 띠 */
+/* 오늘의 사진: 좌우 스크롤, 사진 한 장씩 왼쪽에 딱 맞게 멈춘다 */
+.hm-photos {
+  margin: 0 -21px;
+  padding: 0 21px 8px;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 0 21px;
+  cursor: grab;
+  user-select: none;
+}
+
+.hm-photos:active {
+  cursor: grabbing;
+}
+
+.hm-photos.dragging {
+  scroll-snap-type: none;
+}
+
 .hm-photo {
   width: 220px;
   height: auto;
   display: flex;
   flex: none;
+  scroll-snap-align: start;
   flex-direction: column;
   overflow: hidden;
   border-radius: 20px;
