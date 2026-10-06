@@ -340,20 +340,17 @@ export function HomePage({
   const story = dayStory(day, selectedList, selectedPhotos.length, state)
   const linkedPayment = (photo: Photo) =>
     selectedList.find((payment) => photosFor(payment, state).some((item) => item.id === photo.id))
+  // 송금 맥락은 화면 위에 떠 있는 얇은 배너로, 그룹 결제는 카드로 띄운다
+  const foundBanner =
+    isToday && foundTransfer
+      ? {
+          line1: `${foundTransfer.payment.counterparty} ${won(foundTransfer.payment.amount)} 송금`,
+          line2: `어제 ${foundTransfer.guess.place ?? "내"} 기록과 이어져요`,
+        }
+      : undefined
   // 감지된 것만 알림으로 띄운다: 송금 맥락, 그룹 결제 (복원 결과는 알림 없이 캘린더 카드에서 확인)
   // 오늘 받은 알림이라 다른 날짜를 골랐을 때는 보이지 않는다
   const notices: Notice[] = [
-    ...(isToday && foundTransfer
-      ? [
-          {
-            key: "found",
-            icon: Sparkles,
-            title: "링키가 찾았어요",
-            sub: `${foundTransfer.payment.counterparty} ${won(foundTransfer.payment.amount)} 송금, ${foundTransfer.guess.place ?? "내"} 기록과 이어져요`,
-            onClick: openTransfer,
-          },
-        ]
-      : []),
     ...(isToday && pendingSettlement
       ? [
           {
@@ -382,6 +379,16 @@ export function HomePage({
         <HeaderActions openProfile={openProfile} openSearch={openSearch} />
       </div>
       <div className="main-scroll hm-scroll">
+        {foundBanner && (
+          <Action className="hm-found" onClick={openTransfer}>
+            <Sparkles size={16} strokeWidth={1.6} />
+            <span>
+              <b>{foundBanner.line1}</b>
+              <small>{foundBanner.line2}</small>
+            </span>
+            <ChevronRight size={16} strokeWidth={1.5} />
+          </Action>
+        )}
         <div className="hm-head">
           <span>
             {label(week[0])} — {label(week[6])}
