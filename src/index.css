@@ -4986,9 +4986,21 @@ p {
 
 .cal2-day-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
+}
+
+/* 이날 쓴 금액: 리포트 제목과 같은 연한 라임 형광펜 */
+.cal2-day-amount {
+  padding: 0 3px;
+  background: linear-gradient(
+    transparent 55%,
+    color-mix(in srgb, var(--primary) 40%, transparent) 55%
+  );
+  font-size: 20px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .cal2-day h2 {
@@ -4999,16 +5011,25 @@ p {
 
 /* 이날의 내 기록: 라벨 + 기록 칩 + 동선 지도 링크 */
 .cal2-records {
-  margin: 6px 0 18px;
+  margin: 10px 0 18px;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
 .cal2-records-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
   color: var(--sub);
   font-size: 12px;
   font-weight: 500;
+}
+
+.cal2-records-label small {
+  font-size: 11px;
+  font-weight: 400;
 }
 
 .cal2-chips {
@@ -5067,24 +5088,6 @@ p {
 
 .cal2-link:active {
   background: var(--surface);
-}
-
-.cal2-day-total {
-  flex: none;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-}
-
-.cal2-day-total b {
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.cal2-day-total small {
-  color: var(--sub);
-  font-size: 11px;
 }
 
 /* 지출 카드 (캘린더) */

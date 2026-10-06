@@ -231,17 +231,17 @@ export function DayPanel({
         <h2>
           {label(day)} ({weekday(day)})
         </h2>
-        <div className="cal2-day-total">
-          <b>{won(dayMine(day, state))}</b>
+        <b className="cal2-day-amount">{won(dayMine(day, state))}</b>
+      </div>
+      {/* 이날의 내 기록: 결제의 근거가 되는 내 일정·사진. 아래 링크로 이날 동선 지도를 연다 */}
+      <div className="cal2-records">
+        <div className="cal2-records-label">
+          <span>이날의 내 기록</span>
           <small>
             {dayMine(day, state) !== dayTotal(day) && `결제 ${won(dayTotal(day))} · `}
             {list.length}건 · 복원 {restored}건
           </small>
         </div>
-      </div>
-      {/* 이날의 내 기록: 결제의 근거가 되는 내 일정·사진. 아래 링크로 이날 동선 지도를 연다 */}
-      <div className="cal2-records">
-        <span className="cal2-records-label">이날의 내 기록</span>
         <div className="cal2-chips">
           {dayEvents.map((event) => (
             <span className="cal2-chip" key={event.id}>
