@@ -172,8 +172,7 @@ const shortName = (payment: Payment, state: LedgerState) =>
 
 // 하루를 정보 나열이 아니라 "일정·장소와 결제의 관계"로 짧게 정리한다.
 // 감정·의도는 추측하지 않고, 내 일정·위치·결제 기록에서 확인된 사실의 관계만 쓴다.
-function dayStory(day: YMD, list: Payment[], photoCount: number, state: LedgerState) {
-  const dayWord = sameDay(day, TODAY) ? "오늘" : "이날"
+function dayStory(day: YMD, list: Payment[], state: LedgerState) {
   const normal = list.filter((payment) => !isDailyTransit(payment))
   type Clause = { time: string; rank: number; stem: string }
   const clauses: Clause[] = []
@@ -194,30 +193,30 @@ function dayStory(day: YMD, list: Payment[], photoCount: number, state: LedgerSt
       }`,
     })
   }
-  // 2) 일정과 상관없는 결제
-  for (const payment of normal) {
-    if (inEvent.has(payment.id)) continue
+  // 2) 일정과 상관없는 결제: 시간대별로 묶어 "일정이 없던 낮에는 …에 들렀어요"처럼 일정과 대비해 말한다
+  const rest = normal.filter((payment) => !inEvent.has(payment.id) && !payment.transit)
+  const byPeriod = new Map<string, Payment[]>()
+  for (const payment of rest) {
     const period = periodOf(payment.time)
-    if (payment.transit) {
-      clauses.push({ time: payment.time, rank: 2, stem: `${payment.transit.from} 인근에서 택시를 탔` })
-    } else if (payment.kind === "transfer") {
-      clauses.push({ time: payment.time, rank: 1, stem: `${period}에는 ${payment.counterparty}에게 송금했` })
-    } else {
-      const name = shortName(payment, state)
-      clauses.push({
-        time: payment.time,
-        rank: 1,
-        stem: restoredOf(payment, state)
-          ? `${period}에는 ${name}에 다녀왔`
-          : `${period}에는 ${name}에서 결제가 있었`,
-      })
-    }
+    byPeriod.set(period, [...(byPeriod.get(period) ?? []), payment])
   }
-  // 관계가 담긴 문장을 먼저 남기고, 세 개까지만 시간순으로 잇는다
+  for (const [period, items] of byPeriod) {
+    const names = items.slice(0, 2).map((payment) => shortName(payment, state)).join("·")
+    const allRestored = items.every((payment) => restoredOf(payment, state))
+    clauses.push({
+      time: items[0].time,
+      rank: 1,
+      stem: `일정이 없던 ${period}에는 ${names}${allRestored ? "에 들렀" : " 결제가 있었"}`,
+    })
+  }
+  // 이동만 있는 날은 이동을 적는다
+  const rides = normal.filter((payment) => payment.transit && !inEvent.has(payment.id))
+  if (clauses.length === 0 && rides.length > 0) {
+    clauses.push({ time: rides[0].time, rank: 2, stem: `${rides[0].transit?.from} 인근에서 택시를 탔` })
+  }
   const picked = clauses
-    .sort((a, b) => a.rank - b.rank || a.time.localeCompare(b.time))
-    .slice(0, 3)
     .sort((a, b) => a.time.localeCompare(b.time))
+    .slice(0, 3)
   const sentence = picked
     .map((clause, index) => `${clause.stem}${index === picked.length - 1 ? "어요." : "고,"}`)
     .join(" ")
@@ -228,19 +227,7 @@ function dayStory(day: YMD, list: Payment[], photoCount: number, state: LedgerSt
   const fare = transitFare > 0 ? ` 대중교통 요금은 하루 합쳐 ${won(transitFare)}이었어요.` : ""
   if (!sentence && !fare) return ""
 
-  // 머문 곳과 결제 지역이 모두 한 곳이면 그 지역을 먼저 말하고, 이번 주에 몇 번째인지 덧붙인다
-  const dayStays = state.sources.location ? stays.filter((stay) => sameDay(stay.date, day)) : []
-  const zones = new Set([...dayStays.map((stay) => stay.zone), ...list.map((payment) => payment.zone)])
-  let lead = ""
-  if (zones.size === 1 && dayStays.length + list.length > 1) {
-    const zone = [...zones][0]
-    const visitedDays = weekOf(day).filter(
-      (weekDay) => keyOf(weekDay) <= keyOf(day) && paymentsOn(weekDay).some((payment) => payment.zone === zone),
-    ).length
-    lead = `${dayWord}은 ${zone}에서 주로 시간을 보냈어요.${visitedDays > 1 ? ` 이번 주 ${zone}에 간 날은 ${visitedDays}일째예요.` : ""} `
-  }
-  const photos = photoCount > 0 ? ` ${dayWord} 남긴 사진은 ${photoCount}장이에요.` : ""
-  return `${lead}${sentence}${fare}${photos}`
+  return `${sentence}${fare}`
 }
 
 // ---------- 오늘의 동선: 체류 구간과 결제 위치를 시간순으로 잇는 미니 지도 ----------
@@ -355,7 +342,7 @@ export function HomePage({
     (photo) => !state.photoUnlinked.includes(photo.id),
   )
   const stops = routeStops(day, selectedList, state)
-  const story = dayStory(day, selectedList, selectedPhotos.length, state)
+  const story = dayStory(day, selectedList, state)
   const linkedPayment = (photo: Photo) =>
     selectedList.find((payment) => photosFor(payment, state).some((item) => item.id === photo.id))
   // 송금 맥락은 주간 캘린더 바로 아래 연라임 카드로, 그룹 결제는 아래 알림 카드로 띄운다
@@ -393,6 +380,17 @@ export function HomePage({
         <HeaderActions openProfile={openProfile} openSearch={openSearch} />
       </div>
       <div className="main-scroll hm-scroll">
+        {isToday && foundBody && (
+          <Action className="hm-link" onClick={openTransfer}>
+            <Sparkles size={20} strokeWidth={1.6} />
+            <span className="hm-link-text">
+              <strong>링키가 찾았어요</strong>
+              <small>{foundBody}</small>
+            </span>
+            <span className="hm-link-pill">확인</span>
+          </Action>
+        )}
+
         <section className="hm-weekcard">
           <div className="hm-head">
             <div className="hm-week-nav">
@@ -432,17 +430,6 @@ export function HomePage({
             })}
           </div>
         </section>
-
-        {isToday && foundBody && (
-          <Action className="hm-link" onClick={openTransfer}>
-            <Sparkles size={20} strokeWidth={1.6} />
-            <span className="hm-link-text">
-              <strong>링키가 찾았어요</strong>
-              <small>{foundBody}</small>
-            </span>
-            <span className="hm-link-pill">확인</span>
-          </Action>
-        )}
 
         <section className="main-card hm-today">
           <div className="hm-today-top">
