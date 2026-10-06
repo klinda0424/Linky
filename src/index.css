@@ -6524,82 +6524,89 @@ p {
   padding-top: 16px;
 }
 
-/* 요약 카드 */
+/* 요약 카드: 캘린더 결제 카드와 같은 흰 카드 */
 .pd-hero {
-  padding: 20px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--background);
+}
+
+.pd-orig {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  border-radius: 20px;
-  background: var(--surface);
-}
-
-.pd-meta {
+  align-items: center;
+  gap: 6px;
   color: var(--text-mute);
-  font-size: var(--fs-caption);
-  line-height: var(--lh-caption);
-}
-
-.pd-name {
-  margin-top: 4px;
-  font-size: var(--fs-item-title);
-  line-height: var(--lh-item-title);
-  font-weight: var(--fw-item-title);
-  word-break: keep-all;
-}
-
-.main-scale .pd-won {
-  font-size: 22px;
-  line-height: 28px;
-  font-weight: var(--fw-headline);
-  font-variant-numeric: tabular-nums;
-}
-
-.pd-split {
-  color: var(--text-body);
   font-size: var(--fs-label);
   line-height: var(--lh-label);
 }
 
-.pd-tags {
-  margin-top: 8px;
-  display: flex;
-  gap: 6px;
-}
-
-.pd-tag {
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: var(--primary-soft);
-  color: var(--primary-text);
+.pd-chip {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--pending-light);
+  color: var(--expense-high);
   font-size: var(--fs-tag);
   line-height: var(--lh-tag);
   font-weight: var(--fw-tag);
   font-style: normal;
 }
 
-.pd-tag.done {
-  background: var(--background);
+.pd-name {
+  margin-top: 2px;
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+  font-weight: var(--fw-item-title);
+  word-break: keep-all;
+}
+
+.pd-price {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.main-scale .pd-won {
+  font-size: var(--fs-title);
+  line-height: var(--lh-title);
+  font-weight: var(--fw-title);
+  font-variant-numeric: tabular-nums;
+}
+
+.pd-price .pill {
+  font-weight: var(--fw-title);
+}
+
+/* 카드 아래쪽 정보 줄: 라벨(회색) · 값 */
+.pd-facts {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px dashed #d7d7db;
+}
+
+.pd-facts > div {
+  display: flex;
+  gap: 12px;
+}
+
+.pd-facts dt {
+  width: 28px;
+  flex: none;
+  color: var(--text-mute);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+}
+
+.pd-facts dd {
+  margin: 0;
   color: var(--text-body);
-}
-
-.pd-tag.muted {
-  background: var(--background);
-  color: var(--text-mute);
-}
-
-.pd-tag.pending {
-  background: var(--pending-light);
-  color: var(--expense-high);
-}
-
-.pd-origin {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid var(--border);
-  color: var(--text-mute);
-  font-size: var(--fs-caption);
-  line-height: var(--lh-caption);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
 }
 
 /* 섹션 제목 줄 */
