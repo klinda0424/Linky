@@ -1,5 +1,6 @@
 import {
   Bus,
+  ChevronLeft,
   ChevronRight,
   Package,
   Receipt,
@@ -49,6 +50,20 @@ function weekOf(date: YMD): YMD[] {
     const day = new Date(start.getFullYear(), start.getMonth(), start.getDate() + index)
     return ymd(day.getFullYear(), day.getMonth() + 1, day.getDate())
   })
+}
+
+// 주 이동: 이번 주가 끝, 가장 오래된 결제가 있는 주가 처음
+const DAY_MS = 24 * 60 * 60 * 1000
+const toDate = (date: YMD) => new Date(date.y, date.m - 1, date.d)
+const firstPaymentDay = payments.reduce((first, payment) =>
+  keyOf(payment.date) < keyOf(first.date) ? payment : first,
+).date
+
+// 이번 주에서 몇 주 전인지 → "이번 주" · "지난주" · "N주 전"
+function weekName(weeksAgo: number) {
+  if (weeksAgo === 0) return "이번 주"
+  if (weeksAgo === 1) return "지난주"
+  return `${weeksAgo}주 전`
 }
 
 // 오늘 이전의 가장 최근 결제 몇 건 (오늘 기록이 없을 때 홈이 비어 보이지 않게 한다)
@@ -302,7 +317,18 @@ export function HomePage({
   foundTransfer?: { payment: Payment; guess: TransferGuess }
   openTransfer: () => void
 }) {
-  const week = weekOf(TODAY)
+  // 고른 날이 속한 주를 보여 준다. 화살표로 한 주씩 이동하고, 이번 주보다 뒤로는 가지 않는다
+  const week = weekOf(day)
+  const weeksAgo = Math.round(
+    (toDate(weekOf(TODAY)[0]).getTime() - toDate(week[0]).getTime()) / (7 * DAY_MS),
+  )
+  const hasPrevWeek = keyOf(week[0]) > keyOf(firstPaymentDay)
+  const moveWeek = (offset: number) => {
+    const moved = toDate(day)
+    moved.setDate(moved.getDate() + offset * 7)
+    const next = ymd(moved.getFullYear(), moved.getMonth() + 1, moved.getDate())
+    selectDay(keyOf(next) > keyOf(TODAY) ? TODAY : next)
+  }
   const selectedList = paymentsOn(day)
   const isToday = sameDay(day, TODAY)
   const recent = isToday && selectedList.length === 0 ? recentPayments(3) : []
@@ -361,7 +387,22 @@ export function HomePage({
             {label(week[0])} — {label(week[6])}
           </span>
           <div>
-            <h2>이번 주</h2>
+            <div className="hm-week-nav">
+              <Action
+                className="hm-week-arrow"
+                disabled={!hasPrevWeek}
+                label="이전 주"
+                onClick={() => moveWeek(-1)}
+              >
+                <ChevronLeft size={20} strokeWidth={1.8} />
+              </Action>
+              <h2>{weekName(weeksAgo)}</h2>
+              {weeksAgo > 0 && (
+                <Action className="hm-week-arrow" label="다음 주" onClick={() => moveWeek(1)}>
+                  <ChevronRight size={20} strokeWidth={1.8} />
+                </Action>
+              )}
+            </div>
             <em>
               {label(day)} {weekday(day)}요일
             </em>
