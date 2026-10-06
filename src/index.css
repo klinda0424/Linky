@@ -4908,7 +4908,8 @@ p {
 }
 
 .cal2-weekdays {
-  margin: 22px 0 4px;
+  margin: 22px 0 6px;
+  padding: 0 5px;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   text-align: center;
@@ -4918,9 +4919,12 @@ p {
 }
 
 .cal2-grid {
+  padding: 8px 4px;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   row-gap: 2px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
 }
 
 .cal2-cell {
@@ -5016,12 +5020,10 @@ p {
 }
 
 .cal2-legend {
-  margin: 12px 0 6px;
-  padding-top: 12px;
+  margin: 10px 0 6px;
   display: flex;
   justify-content: flex-end;
   gap: 14px;
-  border-top: 1px solid var(--border);
   color: var(--sub);
   font-size: 11.5px;
 }
