@@ -566,10 +566,10 @@ p {
 }
 
 .main-back {
-  width: 36px;
+  width: 40px;
   flex-grow: 0;
   flex-basis: auto;
-  height: 36px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -659,7 +659,7 @@ p {
 
 .main-subheader {
   display: grid;
-  grid-template-columns: 36px 1fr 36px;
+  grid-template-columns: 40px 1fr 40px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -1948,8 +1948,9 @@ p {
 
 .text-btn {
   flex: none;
-  min-height: 28px;
-  padding: 0 4px;
+  min-height: 36px;
+  margin: -4px -4px -4px 0;
+  padding: 0 8px;
   display: flex;
   align-items: center;
   color: var(--sub);
@@ -2565,6 +2566,19 @@ p {
   font-size: 13px;
 }
 
+/* 이벤트 리포트 링크: 글자만 있어 누르기 어려워 터치 영역과 강조색을 준다 */
+.album-head .edit-link {
+  min-height: 36px;
+  margin: -8px 0 -8px;
+  padding: 0 0 0 12px;
+  display: flex;
+  flex: none;
+  align-items: center;
+  color: var(--primary-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .album-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -2636,8 +2650,8 @@ p {
 }
 
 .photo-meta span {
-  color: var(--sub);
-  font-size: 13px;
+  color: #666670;
+  font-size: 14px;
 }
 
 .linked-pay {
