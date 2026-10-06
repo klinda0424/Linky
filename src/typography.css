@@ -1,4 +1,4 @@
-/* 타이포 토큰 (홈 화면 기준). 홈 이후 화면은 이 토큰으로 순차 교체한다.
+/* 타이포 토큰 (홈 화면 기준). 앱 전체 화면이 이 토큰만 쓴다.
    Pretendard, 자간 -0.02em, 숫자는 tabular-nums.
    규칙: 700은 합계·금액에만, 600은 제목류에만, 나머지는 400~500. */
 :root {
@@ -44,10 +44,15 @@
   --fw-tab-active: 600;
 }
 
-/* 홈 화면에만 먼저 적용한다 */
-.hm-scroll,
-.cal-brandbar,
-.bottom-tabs {
+/* 모든 화면에 적용 */
+body {
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
+}
+
+/* 문장 속 강조 숫자: 제목 굵기(600) */
+b,
+strong {
+  font-size: var(--fs-item-title);
+  font-weight: var(--fw-item-title);
 }
