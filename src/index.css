@@ -4089,7 +4089,7 @@ p {
 /* ---------- 리포트 탭 · 홈 카드 ---------- */
 .report-scroll {
   height: calc(100% - 56px);
-  padding: 4px var(--page-padding) 92px;
+  padding: 16px var(--page-padding) 92px;
   overflow-y: auto;
 }
 
