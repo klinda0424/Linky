@@ -5747,7 +5747,7 @@ p {
   overflow-y: auto;
 }
 
-/* 맥락 카드: 언제·누구에게·얼마 + 왜 묻는지 */
+/* 맥락 카드: 언제·누구에게·얼마 */
 .tf-context {
   margin: 20px var(--page-padding) 0;
   padding: 18px 20px;
@@ -5774,14 +5774,6 @@ p {
   font-size: var(--fs-title);
   line-height: var(--lh-title);
   font-weight: var(--fw-headline);
-}
-
-.tf-context small {
-  margin-top: 2px;
-  color: var(--text-body);
-  font-size: var(--fs-label);
-  line-height: var(--lh-label);
-  word-break: keep-all;
 }
 
 /* 하단 바 첫 줄: 누르면 어떻게 기록되는지 */

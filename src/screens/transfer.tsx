@@ -45,7 +45,7 @@ export function transferEvidenceLine(guess: TransferGuess) {
 }
 
 // ---------- 링키가 찾았어요 · 송금 맥락 제안 (F2-6) ----------
-// 대화형: 상단 맥락 카드(언제·누구에게·얼마, 왜 묻는지) → 링키의 질문 → 근거
+// 대화형: 상단 맥락 카드(언제·누구에게·얼마) → 링키의 질문 → 근거
 // → 하단 고정 [아니에요][맞아요]와 누르면 어떻게 기록되는지 한 줄
 export function TransferConfirm({
   payment,
@@ -87,7 +87,6 @@ export function TransferConfirm({
           <p>
             <strong>{payment.counterparty}</strong>님에게 보낸 <b>{won(payment.amount)}</b>
           </p>
-          <small>가게 이름이 없는 송금이라 어디에 쓴 돈인지 비어 있어요. 그날 내 기록을 찾아봤어요.</small>
         </section>
         <div className="tf-chat">
           {guess ? (
