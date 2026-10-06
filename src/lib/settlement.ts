@@ -12,7 +12,7 @@ export type SettlementItem = {
 
 export const MEMBERS: readonly Member[] = SCENARIO.meal.members
 
-// 정산 대상: 대표 결제 고깃집 (시나리오 원천은 mock/scenario.ts). 내가 먼저 내고 3명이 입금했다.
+// 정산 대상: 대표 결제 강남역 고깃집 (시나리오 원천은 mock/scenario.ts). 내가 먼저 내고 3명이 입금했다.
 export const meeting = scenarioPayments.find((payment) => payment.id === SCENARIO.meal.id)
 export const settlementTitle = meeting?.merchant ?? "그룹 결제"
 export const settlementPeriod = meeting
