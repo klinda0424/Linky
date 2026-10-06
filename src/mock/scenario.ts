@@ -22,7 +22,7 @@ export const SCENARIO = {
   meal: {
     id: "sc-gogi",
     time: "19:20",
-    merchant: "고깃집",
+    merchant: "(주)한돈명가 강남역점",
     amount: 120000,
     members: ["나", "지은", "민지", "수진"],
     deposits: [
@@ -43,7 +43,7 @@ export const scenarioEvents: CalEvent[] = [
 export const scenarioPhotos: Photo[] = [
   { id: "ph-sc1", date: d(10, 30), time: "19:40", zone: "연남동", title: "연남동 파스타", content: "파스타 · 2인 세팅" },
   { id: "ph-sc2", date: d(10, 31), time: "13:12", zone: "강남역", title: "포토이즘 강남역점", content: "포토부스 · 사진 4컷" },
-  { id: "ph-sc3", date: d(10, 31), time: "19:35", zone: "강남역", title: "고깃집", content: "고기 · 4인 세팅" },
+  { id: "ph-sc3", date: d(10, 31), time: "19:35", zone: "강남역", title: "한돈명가 강남역점", content: "고기 · 4인 세팅" },
 ]
 
 // 위치 체류 구간: 복원의 기준. 결제 시각이 구간 밖이면 이동 중으로 본다.

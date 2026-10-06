@@ -1,5 +1,5 @@
 // 정산 목업 데이터와 계산 로직. 정산 대기함·정산표·확정·결과가 같은 숫자를 쓰도록 한 곳에서 계산한다.
-import { octoberPayments } from "@/mock/october"
+import { SCENARIO, scenarioPayments } from "@/mock/scenario"
 
 export type Member = "나" | "지은" | "민지" | "수진"
 export type SettlementCategory = "식비" | "교통"
@@ -10,17 +10,21 @@ export type SettlementItem = {
   payer: Member
 }
 
-export const MEMBERS: readonly Member[] = ["나", "지은", "민지", "수진"]
+export const MEMBERS: readonly Member[] = SCENARIO.meal.members
 
-// 정산 대상 모임: 10월 4일 대학 동기 모임 (합정, 4명). 내가 낸 술자리는 캘린더의 같은 결제(mock/october.ts)다.
-export const meeting = octoberPayments.find(
-  (payment) => payment.date.d === 4 && payment.group?.length === MEMBERS.length,
-)
-export const settlementTitle = "대학 동기 모임"
-export const settlementPeriod = `10월 4일 · 합정 · ${MEMBERS.length}명`
+// 정산 대상: 대표 결제 강남역 고깃집 (시나리오 원천은 mock/scenario.ts). 내가 먼저 내고 3명이 입금했다.
+export const meeting = scenarioPayments.find((payment) => payment.id === SCENARIO.meal.id)
+export const settlementTitle = meeting?.merchant ?? "그룹 결제"
+export const settlementPeriod = meeting
+  ? `${meeting.date.m}월 ${meeting.date.d}일 · ${meeting.place ?? meeting.zone} · ${MEMBERS.length}명`
+  : `${MEMBERS.length}명`
 export const settlementItems: readonly SettlementItem[] = meeting
   ? [{ name: meeting.merchant, category: "식비", amount: meeting.amount, payer: "나" }]
   : []
+// 정산 근거: 결제 후 들어온 입금 (시각순)
+export const settlementDeposits = [...(meeting?.deposits ?? [])].sort((a, b) =>
+  a.time.localeCompare(b.time),
+)
 
 export const won = (value: number) => `${value.toLocaleString()}원`
 

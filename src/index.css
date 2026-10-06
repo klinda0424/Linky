@@ -1548,6 +1548,10 @@ p {
   gap: 8px;
 }
 
+.confirm-bottom.single {
+  grid-template-columns: 1fr;
+}
+
 .result-comparison {
   padding-top: 88px;
   display: flex;

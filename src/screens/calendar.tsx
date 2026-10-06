@@ -357,7 +357,7 @@ function PayCard({
       <div className="hm-spend-main">
         <div>
           <span className="hm-spend-orig">
-            {restored ? restored.original : payment.time}
+            {restored ? `${payment.time} · ${restored.original}` : payment.time}
             {personal && <em className="pay-tag">개인 지출</em>}
           </span>
           <strong>{title}</strong>
