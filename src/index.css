@@ -618,13 +618,25 @@ p {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  /* 비활성 탭도 읽히도록 대비를 높인다 (흰 배경 기준 5:1 이상) */
-  color: #666670;
-  font-size: 12px;
+  color: #8b8f97;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 14px;
+}
+
+.bottom-tab svg {
+  width: 24px;
+  height: 24px;
 }
 
 .bottom-tab.active {
   color: var(--text);
+  font-weight: 600;
+}
+
+/* 선택된 탭은 아이콘 선도 굵게 */
+.bottom-tab.active svg {
+  stroke-width: 2.2;
 }
 
 .main-overlay {
@@ -3494,36 +3506,39 @@ p {
   font-weight: 600;
 }
 
-/* 이번 주 */
+/* 이번 주: 흰 카드, 제목은 왼쪽·월은 오른쪽 */
+.hm-weekcard {
+  margin-bottom: 12px;
+  padding: 16px 12px 8px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--background);
+}
+
 .hm-head {
-  margin-bottom: 10px;
+  margin: 0 4px 8px;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.hm-head > span {
-  color: var(--sub);
-  font-size: 13px;
-}
-
-.hm-head > div {
-  display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
+}
+
+.hm-head em {
+  color: #666670;
+  font-size: 15px;
+  font-style: normal;
 }
 
 /* 주 이동: < 이번 주 / < 지난주 > */
 .hm-week-nav {
-  margin-left: -8px;
+  margin-left: -10px;
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 0;
 }
 
-/* 주 제목(이번 주 · 지난주 · N주 전): 리포트 제목과 같은 연한 라임 형광펜 */
 .hm-week-nav h2 {
-  padding: 0 3px;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .hm-week-arrow {
@@ -3545,51 +3560,42 @@ p {
   color: var(--disabled);
 }
 
-.hm-head em {
-  color: var(--sub);
-  font-size: 13px;
-  font-style: normal;
-}
-
 .hm-week {
-  padding: 4px 0 12px;
-  border: 0;
-  background: transparent;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
 }
 
 .hm-day {
-  min-height: 78px;
+  min-height: 92px;
   padding-top: 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  color: var(--sub);
-  font-size: 12px;
+  color: #666670;
+  font-size: 14px;
 }
 
 .hm-day strong {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   color: var(--text);
-  font-size: 14px;
+  font-size: 17px;
   font-weight: 500;
 }
 
 .hm-day.today strong {
   background: var(--primary);
   color: var(--on-primary);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .hm-day small {
-  color: var(--sub);
+  color: #666670;
   font-size: 12px;
 }
 
@@ -3680,10 +3686,18 @@ p {
 }
 
 .hm-spend-actions .pill {
-  height: 36px;
-  padding: 0 14px;
-  border-radius: 18px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 16px;
   font-size: 13px;
+  font-weight: 600;
+}
+
+/* 수정은 테두리 없는 회색 텍스트 버튼, 맞아요만 연한 라임 배경 */
+.hm-spend-actions .pill:not(.primary) {
+  background: transparent;
+  box-shadow: none;
+  color: #6b6f76;
 }
 
 /* 지출 카드의 맞아요: 연한 라임 배경 */
@@ -3854,7 +3868,8 @@ p {
 .cal2-month h1 {
   margin-right: 10px;
   font-size: 28px;
-  font-weight: 600;
+  line-height: 34px;
+  font-weight: 700;
   letter-spacing: -0.02em;
 }
 
@@ -4076,29 +4091,36 @@ p {
 .cal2-chips {
   min-width: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.cal2-chips::-webkit-scrollbar {
+  display: none;
 }
 
 .cal2-chip {
-  height: 30px;
-  padding: 0 11px;
+  height: 32px;
+  padding: 0 12px;
   display: inline-flex;
+  flex: none;
   align-items: center;
-  gap: 5px;
-  border-radius: 15px;
+  gap: 6px;
+  border-radius: 16px;
   background: var(--primary-soft);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
 }
 
 /* 칩 종류(일정·사진)를 앞에 작게 */
 .cal2-chip em {
   color: var(--primary-text);
-  font-size: 12px;
+  font-size: 13px;
   font-style: normal;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .cal2-chip.muted {
@@ -4115,20 +4137,14 @@ p {
 }
 
 .cal2-link {
-  height: 40px;
-  padding: 0 10px 0 12px;
+  height: 36px;
+  padding: 0;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--background);
-  font-size: 13px;
+  gap: 4px;
+  color: #6b6f76;
+  font-size: 14px;
   font-weight: 500;
-}
-
-.cal2-link:active {
-  background: var(--surface);
 }
 
 /* 지출 카드 (캘린더) */
@@ -4137,7 +4153,22 @@ p {
 }
 
 .pay-card {
+  padding: 16px;
   position: relative;
+}
+
+.pay-card .hm-spend-orig {
+  color: #8b8f97;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.pay-card .hm-spend-main strong {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  letter-spacing: -0.02em;
 }
 
 /* 날짜 상세 결제 타임라인: [점 / 시각 / 세로선] | 카드 */
@@ -4148,6 +4179,7 @@ p {
 }
 
 .pay-tl-item {
+  --dot-y: 28px;
   position: relative;
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr);
@@ -4166,12 +4198,17 @@ p {
 }
 
 .pay-tl-item:first-child::before {
-  top: 21px;
+  top: var(--dot-y);
 }
 
 .pay-tl-item:last-child::before {
   bottom: auto;
-  height: 21px;
+  height: var(--dot-y);
+}
+
+/* 원본 가맹점 캡션이 있으면 제목이 한 줄 아래에 있다 */
+.pay-tl-item:has(.hm-spend-orig) {
+  --dot-y: 48px;
 }
 
 .pay-tl-item:only-child::before {
@@ -4181,7 +4218,7 @@ p {
 .pay-tl-rail {
   position: relative;
   z-index: 1;
-  padding-top: 16px;
+  padding-top: calc(var(--dot-y) - 5px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -4191,8 +4228,10 @@ p {
 .pay-tl-rail time {
   padding: 2px 0;
   background: var(--background);
-  color: var(--sub);
-  font-size: 12px;
+  color: #8b8f97;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
 }
@@ -4217,6 +4256,7 @@ p {
 }
 
 .pay-tl-item .pay-card {
+  margin-bottom: 12px;
   margin-left: 4px;
 }
 
@@ -4229,7 +4269,7 @@ p {
   color: var(--expense-high);
   font-size: 12px;
   font-style: normal;
-  font-weight: 500;
+  font-weight: 600;
   vertical-align: 1px;
 }
 
@@ -4254,8 +4294,9 @@ p {
 }
 
 .pay-price-row b {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 700;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
@@ -4276,9 +4317,10 @@ p {
 }
 
 .pay-info p {
-  color: var(--sub);
+  color: #8b8f97;
   font-size: 13px;
-  line-height: 1.45;
+  font-weight: 400;
+  line-height: 18px;
 }
 
 /* 그룹 결제 카드에서 정산 흐름(그룹 결제 확인)으로 가는 링크 */
@@ -4289,15 +4331,9 @@ p {
   align-items: center;
   justify-content: center;
   gap: 2px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--background);
-  font-size: 13px;
+  color: var(--text);
+  font-size: 14px;
   font-weight: 500;
-}
-
-.pay-settle-link:active {
-  background: var(--surface);
 }
 
 /* 그룹 결제: 내 몫·받을 돈을 한 줄씩 (라벨 왼쪽, 금액 오른쪽) */
@@ -4311,23 +4347,30 @@ p {
 .pay-split > div {
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
+  font-size: 14px;
+  line-height: 20px;
 }
 
 .pay-split dt {
-  color: var(--sub);
+  color: #6b6f76;
+  font-weight: 400;
 }
 
 .pay-split dd {
   margin: 0;
-  font-weight: 500;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
+/* 받을 돈이 정산의 핵심 숫자 */
+.pay-split > div:nth-child(2) dd {
+  color: var(--primary-text);
+  font-weight: 700;
+}
+
 /* 캘린더 결제 카드 글자 굵기 (홈과 공유하는 hm-spend 규칙은 그대로 둔다) */
-.pay-card .hm-spend-main strong,
 .pay-card .pill {
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .pay-card .pay-detail {
@@ -4337,11 +4380,11 @@ p {
 
 /* ---------- 홈: 오늘 지출 내역 · 감지 알림 · 서사형 오늘의 하루 ---------- */
 .hm-today {
-  margin-top: 14px;
-  padding: 18px 18px 6px;
-  border: 0;
+  margin-top: 0;
+  padding: 18px 16px 2px;
+  border: 1px solid var(--border);
   border-radius: 20px;
-  background: var(--surface);
+  background: var(--background);
 }
 
 .hm-today-top {
@@ -4358,28 +4401,28 @@ p {
 }
 
 .hm-today-top > div > span {
-  color: var(--sub);
-  font-size: 13px;
+  color: #666670;
+  font-size: 14px;
 }
 
 .hm-today-top strong {
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 20px;
+  font-weight: 700;
   letter-spacing: -0.02em;
 }
 
 .hm-badge {
-  padding: 6px 10px;
+  padding: 6px 12px;
   flex: none;
   border-radius: 10px;
-  background: var(--background);
-  color: var(--sub);
+  background: var(--primary);
+  color: var(--on-primary);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .hm-today-list {
-  margin-top: 14px;
+  margin-top: 16px;
   border-top: 1px solid #e4e4e8;
 }
 
@@ -4405,7 +4448,7 @@ p {
   align-items: center;
   justify-content: center;
   border-radius: 14px;
-  background: var(--background);
+  background: var(--surface);
   color: #6b6b72;
 }
 
@@ -4418,21 +4461,21 @@ p {
 }
 
 .hm-today-row strong {
-  font-size: 14px;
-  font-weight: 400;
+  font-size: 16px;
+  font-weight: 500;
   line-height: 1.3;
   word-break: keep-all;
 }
 
 .hm-today-row small {
-  color: var(--sub);
+  color: #666670;
   font-size: 13px;
 }
 
 .hm-today-row b {
   flex: none;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .hm-notice {
@@ -4514,41 +4557,69 @@ p {
   word-break: keep-all;
 }
 
-/* 링키가 찾았어요: 스크롤해도 화면 위에 떠 있는 얇은 연두 배너 */
+/* 링키가 찾았어요: 스크롤해도 화면 위에 떠 있는 얇은 연한 연두 배너 */
 .hm-found {
-  width: 100%;
-  margin: 0 0 8px;
-  padding: 8px 12px;
+  margin: 0 0 12px;
+  padding: 8px 8px 8px 12px;
   position: sticky;
   top: 0;
   z-index: 4;
   display: flex;
   align-items: center;
-  gap: 10px;
-  border-radius: 12px;
+  gap: 4px;
+  border-radius: 16px;
   background: var(--primary-soft);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  color: var(--primary-text);
+}
+
+.hm-found-main {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   text-align: left;
 }
 
-.hm-found > span {
+.hm-found-avatar {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #d9f27a;
+  color: var(--on-primary);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.hm-found-text {
   min-width: 0;
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 1px;
 }
 
-.hm-found b {
-  color: var(--text);
-  font-size: 13px;
+.hm-found-text b {
+  font-size: 15px;
   font-weight: 500;
 }
 
-.hm-found small {
+.hm-found-text small {
   color: #4a4a52;
-  font-size: 12px;
+  font-size: 13px;
+}
+
+.hm-found-close {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  color: #666670;
 }
 
 /* 그룹 결제 알림: 붉은 계열 */

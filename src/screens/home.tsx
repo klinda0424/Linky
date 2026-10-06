@@ -1,3 +1,4 @@
+import { useState } from "react"
 import {
   Bus,
   ChevronLeft,
@@ -9,6 +10,7 @@ import {
   Ticket,
   Users,
   Utensils,
+  X,
 } from "lucide-react"
 import { Action, cx } from "@/components/common"
 import { HeaderActions } from "@/components/layout"
@@ -317,6 +319,8 @@ export function HomePage({
   foundTransfer?: { payment: Payment; guess: TransferGuess }
   openTransfer: () => void
 }) {
+  // 배너는 닫아도 홈을 다시 열면 다시 보인다 (정산 후보 자체는 그대로 남아 있다)
+  const [foundHidden, setFoundHidden] = useState(false)
   // 고른 날이 속한 주를 보여 준다. 화살표로 한 주씩 이동하고, 이번 주보다 뒤로는 가지 않는다
   const week = weekOf(day)
   const weeksAgo = Math.round(
@@ -379,21 +383,22 @@ export function HomePage({
         <HeaderActions openProfile={openProfile} openSearch={openSearch} />
       </div>
       <div className="main-scroll hm-scroll">
-        {foundBanner && (
-          <Action className="hm-found" onClick={openTransfer}>
-            <Sparkles size={16} strokeWidth={1.6} />
-            <span>
-              <b>{foundBanner.line1}</b>
-              <small>{foundBanner.line2}</small>
-            </span>
-            <ChevronRight size={16} strokeWidth={1.5} />
-          </Action>
+        {foundBanner && !foundHidden && (
+          <div className="hm-found">
+            <Action className="hm-found-main" onClick={openTransfer}>
+              <span className="hm-found-avatar">L</span>
+              <span className="hm-found-text">
+                <b>{foundBanner.line1}</b>
+                <small>{foundBanner.line2}</small>
+              </span>
+            </Action>
+            <Action className="hm-found-close" label="알림 닫기" onClick={() => setFoundHidden(true)}>
+              <X size={18} strokeWidth={1.6} />
+            </Action>
+          </div>
         )}
-        <div className="hm-head">
-          <span>
-            {label(week[0])} — {label(week[6])}
-          </span>
-          <div>
+        <section className="hm-weekcard">
+          <div className="hm-head">
             <div className="hm-week-nav">
               <Action
                 className="hm-week-arrow"
@@ -410,29 +415,27 @@ export function HomePage({
                 </Action>
               )}
             </div>
-            <em>
-              {label(day)} {weekday(day)}요일
-            </em>
+            <em>{week[6].m}월</em>
           </div>
-        </div>
-        <div className="main-card hm-week">
-          {week.map((weekDay) => {
-            const future = keyOf(weekDay) > keyOf(TODAY)
-            const total = future ? 0 : dayMine(weekDay, state)
-            return (
-              <Action
-                className={cx("hm-day", sameDay(weekDay, day) && "today")}
-                key={keyOf(weekDay)}
-                label={`${label(weekDay)} 열기`}
-                onClick={() => selectDay(weekDay)}
-              >
-                <span>{weekNames[new Date(weekDay.y, weekDay.m - 1, weekDay.d).getDay()]}</span>
-                <strong>{weekDay.d}</strong>
-                <small>{total > 0 ? man(total) : "-"}</small>
-              </Action>
-            )
-          })}
-        </div>
+          <div className="hm-week">
+            {week.map((weekDay) => {
+              const future = keyOf(weekDay) > keyOf(TODAY)
+              const total = future ? 0 : dayMine(weekDay, state)
+              return (
+                <Action
+                  className={cx("hm-day", sameDay(weekDay, day) && "today")}
+                  key={keyOf(weekDay)}
+                  label={`${label(weekDay)} 열기`}
+                  onClick={() => selectDay(weekDay)}
+                >
+                  <span>{weekNames[new Date(weekDay.y, weekDay.m - 1, weekDay.d).getDay()]}</span>
+                  <strong>{weekDay.d}</strong>
+                  <small>{total > 0 ? man(total) : "-"}</small>
+                </Action>
+              )
+            })}
+          </div>
+        </section>
 
         <section className="main-card hm-today">
           <div className="hm-today-top">
