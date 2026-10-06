@@ -38,14 +38,17 @@ const tabs: Array<[MainTab, string, ReactNode]> = [
 export function HeaderActions({
   openSearch,
   openProfile,
+  accent,
 }: {
   openSearch?: () => void
   openProfile: () => void
+  // 검색을 포인트 색 원형 버튼으로 보인다 (캘린더)
+  accent?: boolean
 }) {
   return (
     <div className="header-actions">
       {openSearch && (
-        <Action className="cal-icon" label="검색" onClick={openSearch}>
+        <Action className={cx("cal-icon", accent && "accent")} label="검색" onClick={openSearch}>
           <Search size={20} strokeWidth={1.6} />
         </Action>
       )}

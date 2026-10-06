@@ -4,6 +4,7 @@ import { HeaderActions } from "@/components/layout"
 import {
   TODAY,
   dayMine,
+  evidenceLine,
   evidenceOf,
   keyOf,
   label,
@@ -20,7 +21,6 @@ import {
   weekday,
   won,
   ymd,
-  type Evidence,
   type LedgerState,
   type Payment,
   type TransferGuess,
@@ -50,20 +50,6 @@ function recentPayments(limit: number): Payment[] {
 const minutes = (time: string) => {
   const [h, m] = time.split(":").map(Number)
   return h * 60 + m
-}
-
-// 근거 한 줄: 내 위치 · 일정 · 사진을 짧게 이어 쓴다 (사실만)
-function evidenceLine(list: Evidence[]) {
-  if (list.length === 0) return "기록 없음"
-  return list
-    .map((item) => {
-      if (item.kind === "location") return item.text.replace("결제 당시 내 위치 · ", "내 위치 ")
-      if (item.kind === "calendar")
-        return item.text.replace("내 일정 · ", "일정 ").replace(/ \(.*\)$/, "")
-      if (item.kind === "photo") return `사진 ${item.photoIds?.length ?? 0}장`
-      return item.text
-    })
-    .join(" · ")
 }
 
 // ---------- 오늘 지출 카드: 원본 → 복원 결과 → 근거 → 맞아요/수정 ----------

@@ -370,6 +370,20 @@ export function evidenceOf(payment: Payment, state: LedgerState): Evidence[] {
   return list.filter((item) => !cut.includes(item.key))
 }
 
+// 근거 한 줄: 내 위치 · 일정 · 사진을 짧게 이어 쓴다 (사실만, 없으면 "기록 없음")
+export function evidenceLine(list: Evidence[]) {
+  if (list.length === 0) return "기록 없음"
+  return list
+    .map((item) => {
+      if (item.kind === "location") return item.text.replace("결제 당시 내 위치 · ", "내 위치 ")
+      if (item.kind === "calendar")
+        return item.text.replace("내 일정 · ", "일정 ").replace(/ \(.*\)$/, "")
+      if (item.kind === "photo") return `사진 ${item.photoIds?.length ?? 0}장`
+      return item.text
+    })
+    .join(" · ")
+}
+
 export const isRestored = (payment: Payment, state: LedgerState) =>
   evidenceOf(payment, state).length > 0
 

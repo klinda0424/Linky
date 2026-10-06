@@ -4792,3 +4792,295 @@ p {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* ---------- 캘린더 개편 (시안 기준) ---------- */
+.cal2-head {
+  height: 64px;
+  padding: 0 var(--page-padding);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cal2-month {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cal2-month h1 {
+  margin-right: 10px;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.cal2-arrow {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+}
+
+.cal2-arrow[aria-disabled="true"],
+.cal2-arrow.disabled {
+  color: var(--disabled);
+}
+
+.header-actions .cal-icon.accent {
+  width: 40px;
+  height: 40px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.cal2-scroll {
+  height: calc(100% - 64px);
+  padding: 4px var(--page-padding) 92px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.cal2-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.cal2-summary {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+}
+
+.cal2-summary span {
+  color: var(--sub);
+  font-size: 13px;
+}
+
+.cal2-summary strong {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.cal2-summary small {
+  color: var(--sub);
+  font-size: 13px;
+}
+
+.cal2-weekdays {
+  margin: 20px 0 8px;
+  padding: 0 5px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  color: var(--sub);
+  font-size: 13px;
+}
+
+.cal2-grid {
+  padding: 8px 4px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+
+.cal2-cell {
+  height: 58px;
+  margin: 1px;
+  padding: 6px 0 0 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  border: 1.5px solid transparent;
+  border-radius: 12px;
+}
+
+.cal2-cell.blank {
+  pointer-events: none;
+}
+
+.cal2-cell b {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.cal2-cell.today b {
+  min-width: 20px;
+  padding: 0 4px;
+  border-radius: 10px;
+  background: var(--primary);
+  color: var(--on-primary);
+  text-align: center;
+}
+
+.cal2-cell small {
+  color: var(--sub);
+  font-size: 10px;
+}
+
+.cal2-cell.big {
+  background: var(--primary-soft);
+}
+
+.cal2-cell.picked {
+  border-color: var(--text);
+}
+
+.cal2-marks {
+  min-height: 5px;
+  display: flex;
+  gap: 3px;
+}
+
+.cal2-dot {
+  width: 5px;
+  height: 5px;
+  display: inline-block;
+  border-radius: 50%;
+  background: var(--text);
+}
+
+.cal2-dot.review {
+  background: #3b82f6;
+}
+
+.cal2-legend {
+  margin: 10px 0 6px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  color: var(--sub);
+  font-size: 12px;
+}
+
+.cal2-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cal2-swatch {
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+  border: 1px solid var(--primary-border);
+  border-radius: 50%;
+  background: var(--primary-soft);
+}
+
+/* 선택한 날 */
+.cal2-day {
+  margin-top: 22px;
+}
+
+.cal2-day h2 {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.cal2-day-sub {
+  margin: 10px 0 14px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cal2-chips {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cal2-chip {
+  height: 30px;
+  padding: 0 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 15px;
+  background: var(--primary-soft);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cal2-chip.action {
+  background: var(--surface);
+}
+
+.cal2-chip.muted {
+  background: var(--surface);
+  color: var(--sub);
+  font-weight: 500;
+}
+
+.cal2-day-total {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.cal2-day-total b {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.cal2-day-total small {
+  color: var(--sub);
+  font-size: 11px;
+}
+
+/* 지출 카드 (캘린더) */
+.hm-spend.focus {
+  background: var(--primary-soft);
+}
+
+.pay-card {
+  position: relative;
+}
+
+.pay-chip {
+  margin-bottom: 8px;
+  padding: 5px 11px;
+  display: inline-block;
+  border-radius: 14px;
+  background: var(--primary);
+  color: var(--on-primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pay-tag {
+  margin-left: 6px;
+  color: var(--primary-text);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+}
+
+.pay-split {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.pay-card .pay-detail {
+  margin: 10px 0 0;
+  background: var(--background);
+}
