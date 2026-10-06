@@ -585,7 +585,8 @@ export function MainApp({
   }
 
   return (
-    <>
+    // 메인 앱 전체를 한 축척(0.85배)으로 줄여 모든 화면의 글자 위계를 홈 기준으로 맞춘다
+    <div className="main-scale">
       {view === "tabs" ? (
         <>
           <div className="main-page">
@@ -648,6 +649,6 @@ export function MainApp({
           state={state}
         />
       )}
-    </>
+    </div>
   )
 }
