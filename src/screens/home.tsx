@@ -1,10 +1,8 @@
 import {
   Bus,
   ChevronRight,
-  MapPin,
   Package,
   Receipt,
-  Route,
   ShoppingBag,
   Sparkles,
   Ticket,
@@ -277,7 +275,7 @@ export function HomePage({
   const story = dayStory(todayList, state)
   const linkedPayment = (photo: Photo) =>
     todayList.find((payment) => photosFor(payment, state).some((item) => item.id === photo.id))
-  // 감지된 것만 알림으로 띄운다: 송금 맥락, 그룹 결제, 복원 결과(확인 전)
+  // 감지된 것만 알림으로 띄운다: 송금 맥락, 그룹 결제 (복원 결과는 알림 없이 캘린더 카드에서 확인)
   const notices: Notice[] = [
     ...(foundTransfer
       ? [
@@ -301,22 +299,6 @@ export function HomePage({
           },
         ]
       : []),
-    ...todayList.flatMap((payment) => {
-      const restored = restoredOf(payment, state)
-      if (!restored || restored.confirmed) return []
-      return [
-        {
-          key: `restore-${payment.id}`,
-          icon: restored.kind === "transit" ? Route : MapPin,
-          title:
-            restored.kind === "transit"
-              ? "탑승 지점이 복원됐어요"
-              : "결제 장소가 복원됐어요",
-          sub: `${restored.label} · 맞는지 확인해주세요`,
-          onClick: () => openPayment(payment),
-        },
-      ]
-    }),
   ]
   return (
     <>
