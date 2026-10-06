@@ -6312,6 +6312,23 @@ p {
   top: 0;
 }
 
+/* 캘린더 축척: 홈과 같은 0.82배 (헤더 82px → 67px, 좌우 21px → 17px) */
+.cal2-head {
+  height: 82px;
+  padding: 0 21px;
+  zoom: 0.82;
+}
+
+.cal2-scroll {
+  height: calc(100% - 82px * 0.82);
+  padding: 0;
+}
+
+.cal2-zoom {
+  padding: 16px 21px calc(70px / 0.82 + 16px);
+  zoom: 0.82;
+}
+
 /* 오늘 지출 합계: 금액만 보여 주고 크기는 한 단계 줄인다 */
 .hm-today-top strong {
   font-size: 22px;

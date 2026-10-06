@@ -117,63 +117,66 @@ export function CalendarHome({
         <HeaderActions accent openProfile={openProfile} openSearch={openSearch} />
       </div>
       <div className="cal2-scroll">
-        <section className="cal2-summary">
-          <span>{isThisMonth ? "이번 달 지출" : `${m}월 지출`}</span>
-          <strong>{won(summary.mine)}</strong>
-        </section>
-        {/* 달력 카드: 제목 줄 · 요일 · 날짜 칸 · 범례를 한 카드에 담는다 */}
-        <section className="cal2-board">
-          <div className="cal2-board-head">
-            <strong>{m}월 지출 기록</strong>
-            <span>날짜별 내 지출</span>
-          </div>
-          <div className="cal2-weekdays">
-            {weekdays.map((day) => (
-              <span key={day}>{day}</span>
-            ))}
-          </div>
-          <div className="cal2-grid">
-            {mondayCells(y, m).map((day, cellIndex) => {
-              if (day === null) return <span className="cal2-cell blank" key={`b${cellIndex}`} />
-              const date = ymd(y, m, day)
-              // 셀에는 내 지출(확정한 분할만 차감)을 보여 준다
-              const mine = dayMine(date, state)
-              const hasEvent = eventsOn(date, state).length > 0
-              return (
-                <Action
-                  className={cx(
-                    "cal2-cell",
-                    bigDays.has(day) && "big",
-                    sameDay(date, selected) && "picked",
-                    sameDay(date, TODAY) && "today",
-                  )}
-                  key={day}
-                  label={`${m}월 ${day}일${mine > 0 ? ` 내 지출 ${won(mine)}` : ""}${bigDays.has(day) ? ", 평소보다 지출 많은 날" : ""}${reviewDays.has(day) ? ", 정산 확인 필요" : ""}`}
-                  onClick={() => openDay(date)}
-                >
-                  <b>{day}</b>
-                  <small>{mine > 0 ? man(mine) : "—"}</small>
-                  <span className="cal2-marks">
-                    {hasEvent && <i className="cal2-dot" />}
-                    {reviewDays.has(day) && <i className="cal2-dot review" />}
-                  </span>
-                </Action>
-              )
-            })}
-          </div>
-          <div className="cal2-legend">
-            <span>
-              <i className="cal2-swatch" /> 평소보다 지출 많은 날
-            </span>
-            <span>
-              <i className="cal2-dot" /> 일정
-            </span>
-            <span>
-              <i className="cal2-dot review" /> 정산 확인
-            </span>
-          </div>
-        </section>
-        {detail}
+        {/* 홈과 같은 축척(0.82배)으로 글자·여백 밀도를 맞춘다 */}
+        <div className="cal2-zoom">
+          <section className="cal2-summary">
+            <span>{isThisMonth ? "이번 달 지출" : `${m}월 지출`}</span>
+            <strong>{won(summary.mine)}</strong>
+          </section>
+          {/* 달력 카드: 제목 줄 · 요일 · 날짜 칸 · 범례를 한 카드에 담는다 */}
+          <section className="cal2-board">
+            <div className="cal2-board-head">
+              <strong>{m}월 지출 기록</strong>
+              <span>날짜별 내 지출</span>
+            </div>
+            <div className="cal2-weekdays">
+              {weekdays.map((day) => (
+                <span key={day}>{day}</span>
+              ))}
+            </div>
+            <div className="cal2-grid">
+              {mondayCells(y, m).map((day, cellIndex) => {
+                if (day === null) return <span className="cal2-cell blank" key={`b${cellIndex}`} />
+                const date = ymd(y, m, day)
+                // 셀에는 내 지출(확정한 분할만 차감)을 보여 준다
+                const mine = dayMine(date, state)
+                const hasEvent = eventsOn(date, state).length > 0
+                return (
+                  <Action
+                    className={cx(
+                      "cal2-cell",
+                      bigDays.has(day) && "big",
+                      sameDay(date, selected) && "picked",
+                      sameDay(date, TODAY) && "today",
+                    )}
+                    key={day}
+                    label={`${m}월 ${day}일${mine > 0 ? ` 내 지출 ${won(mine)}` : ""}${bigDays.has(day) ? ", 평소보다 지출 많은 날" : ""}${reviewDays.has(day) ? ", 정산 확인 필요" : ""}`}
+                    onClick={() => openDay(date)}
+                  >
+                    <b>{day}</b>
+                    <small>{mine > 0 ? man(mine) : "—"}</small>
+                    <span className="cal2-marks">
+                      {hasEvent && <i className="cal2-dot" />}
+                      {reviewDays.has(day) && <i className="cal2-dot review" />}
+                    </span>
+                  </Action>
+                )
+              })}
+            </div>
+            <div className="cal2-legend">
+              <span>
+                <i className="cal2-swatch" /> 평소보다 지출 많은 날
+              </span>
+              <span>
+                <i className="cal2-dot" /> 일정
+              </span>
+              <span>
+                <i className="cal2-dot review" /> 정산 확인
+              </span>
+            </div>
+          </section>
+          {detail}
+        </div>
       </div>
     </>
   )
