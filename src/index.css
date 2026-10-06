@@ -4619,13 +4619,18 @@ p {
   background: var(--primary-soft);
 }
 
+/* 정산해야 하는 그룹 결제 카드: 라임 테두리 */
+.pay-tl-item .pay-card.pending {
+  border: 1.5px solid var(--primary);
+}
+
 .pay-chip {
   margin-left: 6px;
   padding: 1px 6px;
   display: inline-block;
   border-radius: 6px;
-  background: var(--blue);
-  color: #3b82f6;
+  background: var(--pending-light);
+  color: var(--expense-high);
   font-size: var(--fs-tag);
   line-height: var(--lh-tag);
   font-weight: var(--fw-tag);
