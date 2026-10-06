@@ -163,7 +163,7 @@ export function CalendarHome({
         </div>
         <div className="cal2-legend">
           <span>
-            <em className="cal2-legend-big">만원</em> 평소보다 지출 많은 날
+            <i className="cal2-swatch" /> 평소보다 지출 많은 날
           </span>
           <span>
             <i className="cal2-dot" /> 일정
