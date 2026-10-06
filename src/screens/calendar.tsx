@@ -16,6 +16,7 @@ import {
   evidenceOf,
   groupBasis,
   isRestored,
+  keyOf,
   label,
   man,
   monthSummary,
@@ -120,7 +121,10 @@ export function CalendarHome({
       <div className="cal2-scroll">
         <section className="cal2-summary">
           <span>{isThisMonth ? "이번 달 지출" : `${m}월 지출`}</span>
-          <strong>{won(summary.mine)}</strong>
+          <strong>
+            {won(summary.mine).replace("원", "")}
+            <em>원</em>
+          </strong>
         </section>
         <div className="cal2-weekdays">
           {weekdays.map((day) => (
@@ -141,6 +145,7 @@ export function CalendarHome({
                   bigDays.has(day) && "big",
                   sameDay(date, selected) && "picked",
                   sameDay(date, TODAY) && "today",
+                  keyOf(date) > keyOf(TODAY) && "future",
                 )}
                 key={day}
                 label={`${m}월 ${day}일${mine > 0 ? ` 내 지출 ${won(mine)}` : ""}${bigDays.has(day) ? ", 평소보다 지출 많은 날" : ""}${reviewDays.has(day) ? ", 정산 확인 필요" : ""}`}
@@ -158,7 +163,7 @@ export function CalendarHome({
         </div>
         <div className="cal2-legend">
           <span>
-            <i className="cal2-swatch" /> 평소보다 지출 많은 날
+            <em className="cal2-legend-big">만원</em> 평소보다 지출 많은 날
           </span>
           <span>
             <i className="cal2-dot" /> 일정
