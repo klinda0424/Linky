@@ -294,8 +294,9 @@ export function HomePage({
   const linkedPayment = (photo: Photo) =>
     selectedList.find((payment) => photosFor(payment, state).some((item) => item.id === photo.id))
   // 감지된 것만 알림으로 띄운다: 송금 맥락, 그룹 결제 (복원 결과는 알림 없이 캘린더 카드에서 확인)
+  // 오늘 받은 알림이라 다른 날짜를 골랐을 때는 보이지 않는다
   const notices: Notice[] = [
-    ...(foundTransfer
+    ...(isToday && foundTransfer
       ? [
           {
             key: "found",
@@ -306,7 +307,7 @@ export function HomePage({
           },
         ]
       : []),
-    ...(pendingSettlement
+    ...(isToday && pendingSettlement
       ? [
           {
             key: "settle",
@@ -369,7 +370,9 @@ export function HomePage({
                   : `${isToday ? "오늘 " : ""}결제 기록 없음`}
               </strong>
             </div>
-            <span className="hm-badge">정산 대기 {pendingSettlement?.count ?? 0}건</span>
+            {isToday && pendingSettlement && (
+              <span className="hm-badge">정산 대기 {pendingSettlement.count}건</span>
+            )}
           </div>
           <div className="hm-today-list">
             {selectedList.map((payment) => (
