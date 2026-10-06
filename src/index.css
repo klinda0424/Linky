@@ -3523,7 +3523,7 @@ p {
 
 .hm-head > span {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .hm-head > div {
@@ -3534,7 +3534,7 @@ p {
 
 .hm-head em {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
   font-style: normal;
 }
 
@@ -3575,7 +3575,7 @@ p {
 
 .hm-day small {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 /* 섹션 제목 줄 */
@@ -3629,7 +3629,7 @@ p {
 
 .hm-spend-orig {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .hm-spend-main strong {
@@ -3665,9 +3665,9 @@ p {
 }
 
 .hm-spend-actions .pill {
-  height: 24px;
+  height: 26px;
   padding: 0 10px;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 /* 지출 카드의 맞아요: 연한 라임 배경 */
@@ -3813,7 +3813,7 @@ p {
   border-radius: 12px;
   background: var(--background);
   color: var(--text);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   text-align: left;
   text-overflow: ellipsis;
@@ -3953,7 +3953,8 @@ p {
 
 .cal2-cell small {
   color: var(--sub);
-  font-size: 10px;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .cal2-cell.big {
@@ -4056,7 +4057,7 @@ p {
 }
 
 .cal2-records-label small {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 400;
 }
 
@@ -4179,7 +4180,7 @@ p {
   padding: 2px 0;
   background: var(--background);
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
 }
@@ -4214,7 +4215,7 @@ p {
   border-radius: 6px;
   background: var(--pending-light);
   color: var(--expense-high);
-  font-size: 11px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 600;
   vertical-align: 1px;
@@ -4227,7 +4228,7 @@ p {
 .pay-tag {
   margin-left: 6px;
   color: var(--primary-text);
-  font-size: 11px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 500;
 }
@@ -4241,8 +4242,8 @@ p {
 }
 
 .pay-price-row b {
-  font-size: 17px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 500;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
@@ -4264,8 +4265,8 @@ p {
 
 .pay-info p {
   color: var(--sub);
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 /* 그룹 결제 카드에서 정산 흐름(그룹 결제 확인)으로 가는 링크 */
@@ -4346,7 +4347,7 @@ p {
 
 .hm-today-top > div > span {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .hm-today-top strong {
@@ -4361,7 +4362,7 @@ p {
   border-radius: 10px;
   background: var(--background);
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
 }
 
@@ -4413,7 +4414,7 @@ p {
 
 .hm-today-row small {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .hm-today-row b {
@@ -4459,8 +4460,8 @@ p {
 
 .hm-notice small {
   color: var(--sub);
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .hm-story {
@@ -4496,8 +4497,8 @@ p {
   padding: 16px;
   border-radius: 14px;
   background: var(--primary-soft);
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.75;
   word-break: keep-all;
 }
 
@@ -4728,7 +4729,7 @@ p {
 
 .pd-origin small {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .pd-origin p {
@@ -4876,7 +4877,7 @@ p {
   width: 100%;
   padding-left: 24px;
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .pd-records {
@@ -4902,7 +4903,7 @@ p {
 
 .pd-record small {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .pd-record strong {
@@ -5036,7 +5037,7 @@ p {
 
 .pd-album small {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .pd-editing {
@@ -5351,7 +5352,7 @@ p {
 
 .tf-record small {
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .tf-record p {
@@ -5436,4 +5437,25 @@ p {
   border-top: 1px dashed #d7d7db;
   color: var(--sub);
   font-size: 13px;
+}
+
+/* 읽기 편한 글씨: 홈·캘린더·상세·제안 화면 안에서만 보조색 대비를 높인다 (흰 배경 기준 4.5:1 이상) */
+.hm-scroll,
+.cal2-scroll,
+.pd-scroll,
+.tf-scroll,
+.gs-sheet {
+  --sub: #666670;
+  --disabled: #8d8d95;
+}
+
+/* 한글 줄바꿈은 단어 단위로 */
+.hm-notice small,
+.hm-today-row strong,
+.hm-today-row small,
+.pay-info p,
+.tf-record p,
+.pd-reasons li,
+.cal2-chip {
+  word-break: keep-all;
 }

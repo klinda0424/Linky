@@ -178,7 +178,7 @@ function dayStory(day: YMD, list: Payment[], photoCount: number, state: LedgerSt
   ]
     .sort((a, b) => a.time.localeCompare(b.time))
     .slice(0, 4)
-  // 한 문장에 "~고"는 두 번까지: 세 가지씩 끊어 문장을 나눈다
+  // 일기처럼 "~했다"로 끝낸다. 한 문장에 "~고"는 두 번까지: 세 가지씩 끊어 문장을 나눈다
   let previous = ""
   const sentences: string[] = []
   items.forEach((item, index) => {
@@ -186,14 +186,14 @@ function dayStory(day: YMD, list: Payment[], photoCount: number, state: LedgerSt
     const prefix = period !== previous ? `${period}에는 ` : ""
     previous = period
     const last = index === items.length - 1 || index % 3 === 2
-    const clause = `${prefix}${item.text} ${item.verb}${last ? "어요." : "고,"}`
+    const clause = `${prefix}${item.text} ${item.verb}${last ? "다." : "고,"}`
     if (index % 3 === 0) sentences.push(clause)
     else sentences[sentences.length - 1] += ` ${clause}`
   })
   const transitFare = list
     .filter(isDailyTransit)
     .reduce((sum, payment) => sum + shareOf(payment, state), 0)
-  if (transitFare > 0) sentences.push(`대중교통 요금은 하루 합쳐 ${won(transitFare)}이에요.`)
+  if (transitFare > 0) sentences.push(`대중교통 요금은 하루 합쳐 ${won(transitFare)}이었다.`)
   if (sentences.length === 0) return ""
 
   // 머문 곳과 결제 지역이 모두 한 곳이면 그 지역을 먼저 말하고, 이번 주에 몇 번째인지 덧붙인다
@@ -204,9 +204,9 @@ function dayStory(day: YMD, list: Payment[], photoCount: number, state: LedgerSt
     const visitedDays = weekOf(day).filter(
       (weekDay) => keyOf(weekDay) <= keyOf(day) && paymentsOn(weekDay).some((payment) => payment.zone === zone),
     ).length
-    lead = `${dayWord}은 ${zone}에 주로 계셨군요.${visitedDays > 1 ? ` 이번 주 ${zone}에 간 날은 ${visitedDays}일째예요.` : ""} `
+    lead = `${dayWord}은 ${zone}에서 주로 시간을 보냈다.${visitedDays > 1 ? ` 이번 주 ${zone}에 간 날은 ${visitedDays}일째다.` : ""} `
   }
-  const photos = photoCount > 0 ? ` ${dayWord} 남긴 사진은 ${photoCount}장이에요.` : ""
+  const photos = photoCount > 0 ? ` ${dayWord} 남긴 사진은 ${photoCount}장이다.` : ""
   return `${lead}${sentences.join(" ")}${photos}`
 }
 
@@ -422,7 +422,7 @@ export function HomePage({
               <Sparkles size={14} strokeWidth={1.6} /> Linky
             </span>
           </div>
-          <p>{story ? `“${story}”` : "기록 없음"}</p>
+          <p>{story || "기록 없음"}</p>
         </section>
 
         <div className="hm-title-row">
