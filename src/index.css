@@ -4133,6 +4133,11 @@ p {
   border-color: var(--primary-border);
 }
 
+.report-link strong {
+  font-size: 17px;
+  font-weight: 600;
+}
+
 .report-link {
   width: 100%;
   min-height: 56px;
@@ -5496,4 +5501,10 @@ p {
 
 .rpt-split {
   margin-top: 14px;
+}
+
+/* 리포트 카드 제목: 라임 형광펜 */
+.block-heading > strong.rpt-hl {
+  padding: 0 3px;
+  background: linear-gradient(transparent 55%, var(--primary) 55%);
 }
