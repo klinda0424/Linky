@@ -4127,23 +4127,16 @@ p {
 }
 
 /* ---------- 캘린더 개편 (시안 기준) ---------- */
-.cal2-head {
-  height: 64px;
-  padding: 0 var(--page-padding);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
+/* 월 이동 줄: < 10월 > (헤더 아래, 이번 달 지출 위) */
 .cal2-month {
+  margin: -6px 0 12px -10px;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0;
 }
 
 .cal2-month h1 {
-  margin-right: 10px;
+  margin: 0 2px;
   font-size: 22px;
   line-height: 28px;
   font-weight: var(--fw-headline);
@@ -6353,7 +6346,6 @@ p {
 
 /* 홈·캘린더·리포트 헤더 높이 82px, 좌우 여백 21px */
 .cal-brandbar,
-.cal2-head,
 .main-simple-header.rp-head {
   height: 82px;
   padding: 0 21px;
