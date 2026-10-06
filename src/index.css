@@ -619,7 +619,7 @@ p {
 }
 
 .bottom-tabs {
-  height: 70px;
+  height: 76px;
   position: absolute;
   right: 0;
   bottom: 0;
@@ -5881,7 +5881,7 @@ p {
    ====================================================================== */
 .hm-scroll {
   padding-right: var(--page-padding);
-  padding-bottom: calc(70px + 16px);
+  padding-bottom: calc(76px + 16px);
   padding-left: var(--page-padding);
 }
 
@@ -6304,14 +6304,17 @@ p {
 /* 하단 탭: 선택 탭은 아이콘 채움 + 라벨 아래 라임 점 */
 .bottom-tab {
   position: relative;
+  justify-content: flex-start;
+  padding-top: 10px;
 }
 
+/* 선택 탭 점: 라벨 아래 약 6px, 점 아래 약 11px */
 .bottom-tab.active::after {
   content: "";
   width: 5px;
   height: 5px;
   position: absolute;
-  bottom: 8px;
+  bottom: 11px;
   border-radius: 50%;
   background: var(--primary);
 }
@@ -6368,11 +6371,11 @@ p {
 
 .hm-zoom,
 .report-zoom {
-  padding: 16px 21px calc(70px + 16px);
+  padding: 16px 21px calc(76px + 16px);
 }
 
 .cal2-zoom {
-  padding: 20px 21px calc(70px + 20px);
+  padding: 20px 21px calc(76px + 20px);
 }
 
 .hm-link {
