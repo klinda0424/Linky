@@ -78,7 +78,7 @@ function Facts({ lines }: { lines: (string | undefined)[] }) {
   )
 }
 
-// ---------- 리포트 탭: 주간 · 내 지출 패턴 · 다음 주 예고 · 지난주와 달라진 점 · 월간 · 정산 내역 ----------
+// ---------- 리포트 탭: 정산 내역 · 다음 주 예고 · 주간 · 내 지출 패턴 · 지난주와 달라진 점 · 월간 ----------
 // 카드마다 한 줄 요약 문장 → 근거 줄. 판단 없이 확인된 사실만 쓰고, 데이터가 없으면 "기록 없음".
 export function ReportTab({
   state,
@@ -99,6 +99,11 @@ export function ReportTab({
         <p>리포트</p>
       </div>
       <div className="report-scroll">
+        <Action className="main-card report-link" onClick={openSettlement}>
+          <strong>정산 내역</strong>
+          <ChevronRight size={17} strokeWidth={1.5} />
+        </Action>
+
         <section className="main-card report-preview">
           <div className="block-heading">
             <strong>다음 주 예고</strong>
@@ -232,10 +237,6 @@ export function ReportTab({
           />
         </section>
 
-        <Action className="main-card report-link" onClick={openSettlement}>
-          <strong>정산 내역</strong>
-          <ChevronRight size={17} strokeWidth={1.5} />
-        </Action>
       </div>
     </>
   )
