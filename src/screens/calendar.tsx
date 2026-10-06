@@ -264,23 +264,34 @@ export function DayPanel({
           </small>
         </div>
       </div>
-      {list.map((payment) => (
-        <PayCard
-          focus={activeFocus === payment.id}
-          key={payment.id}
-          markPersonal={markPersonal}
-          openRecord={openRecord}
-          openSplit={openSplit}
-          payment={payment}
-          state={state}
-          unlink={unlink}
-          relink={relink}
-          relinkPhoto={relinkPhoto}
-          unlinkPhoto={unlinkPhoto}
-          verify={verify}
-          confirmRestore={confirmRestore}
-        />
-      ))}
+      {/* 시간순 타임라인: 왼쪽 시각·점(근거가 있으면 채운 점, 없으면 빈 점), 오른쪽 결제 카드 */}
+      {list.length > 0 && (
+        <ol className="pay-timeline">
+          {list.map((payment) => {
+            const done = isRestored(payment, state)
+            return (
+              <li className={cx("pay-tl-item", done && "done")} key={payment.id}>
+                <time className="pay-tl-time">{payment.time}</time>
+                <i className="pay-tl-dot" aria-label={done ? "근거 있음" : "기록 없음"} />
+                <PayCard
+                  focus={activeFocus === payment.id}
+                  markPersonal={markPersonal}
+                  openRecord={openRecord}
+                  openSplit={openSplit}
+                  payment={payment}
+                  state={state}
+                  unlink={unlink}
+                  relink={relink}
+                  relinkPhoto={relinkPhoto}
+                  unlinkPhoto={unlinkPhoto}
+                  verify={verify}
+                  confirmRestore={confirmRestore}
+                />
+              </li>
+            )
+          })}
+        </ol>
+      )}
       {list.length === 0 && <p className="hm-empty">결제 기록 없음</p>}
     </section>
   )
@@ -353,11 +364,14 @@ function PayCard({
     <div className={cx("hm-spend", "pay-card", focus && "focus")} data-pay={payment.id}>
       <div className="hm-spend-main">
         <div>
-          <span className="hm-spend-orig">
-            {restored ? `${payment.time} · ${restored.original}` : payment.time}
-            {pendingGroup && <em className="pay-chip">정산 대기</em>}
-            {personal && <em className="pay-tag">개인 지출</em>}
-          </span>
+          {/* 시각은 타임라인 왼쪽에 있어 카드에는 원본 가맹점명과 상태 칩만 둔다 */}
+          {(restored || pendingGroup || personal) && (
+            <span className="hm-spend-orig">
+              {restored && <span>{restored.original}</span>}
+              {pendingGroup && <em className="pay-chip">정산 대기</em>}
+              {personal && <em className="pay-tag">개인 지출</em>}
+            </span>
+          )}
           <strong>{title}</strong>
         </div>
         {photoIds.length > 0 && <i className="photo-thumb t0 hm-spend-thumb" />}
