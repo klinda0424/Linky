@@ -432,7 +432,7 @@ p {
   border-radius: 4px;
   background: var(--surface);
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 400;
 }
 
@@ -1179,7 +1179,7 @@ p {
   border-radius: 4px;
   background: var(--surface);
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .settlement-item > p {
@@ -1191,7 +1191,7 @@ p {
   padding: 4px 6px;
   flex: 0 0 auto;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -1779,8 +1779,8 @@ p {
 }
 
 .cal-icon {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   justify-self: end;
   display: flex;
   align-items: center;
@@ -1788,8 +1788,8 @@ p {
 }
 
 .cal-arrow {
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3499,15 +3499,11 @@ p {
 /* 주 제목(이번 주 · 지난주 · N주 전): 리포트 제목과 같은 연한 라임 형광펜 */
 .hm-week-nav h2 {
   padding: 0 3px;
-  background: linear-gradient(
-    transparent 55%,
-    color-mix(in srgb, var(--primary) 40%, transparent) 55%
-  );
 }
 
 .hm-week-arrow {
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3770,7 +3766,7 @@ p {
 
 .hm-stop em small {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
 }
 
@@ -3836,8 +3832,8 @@ p {
 }
 
 .cal2-arrow {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3983,7 +3979,7 @@ p {
   justify-content: flex-end;
   gap: 14px;
   color: var(--sub);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .cal2-legend span {
@@ -4016,10 +4012,6 @@ p {
 /* 이날 쓴 금액: 리포트 제목과 같은 연한 라임 형광펜 */
 .cal2-day-amount {
   padding: 0 3px;
-  background: linear-gradient(
-    transparent 55%,
-    color-mix(in srgb, var(--primary) 40%, transparent) 55%
-  );
   font-size: 20px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -4096,7 +4088,7 @@ p {
 }
 
 .cal2-link {
-  height: 34px;
+  height: 40px;
   padding: 0 10px 0 12px;
   display: inline-flex;
   align-items: center;
@@ -4265,7 +4257,7 @@ p {
 /* 그룹 결제 카드에서 정산 흐름(그룹 결제 확인)으로 가는 링크 */
 .pay-settle-link {
   margin-top: 4px;
-  height: 34px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
