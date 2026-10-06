@@ -6229,7 +6229,7 @@ p {
 .cal-brandbar {
   height: 82px;
   padding: 0 21px;
-  zoom: 0.82;
+  zoom: 0.9;
 }
 
 .hm-scroll {
@@ -6240,8 +6240,8 @@ p {
 }
 
 .hm-zoom {
-  padding: 16px 21px calc(70px / 0.82 + 16px);
-  zoom: 0.82;
+  padding: 16px 21px calc(70px / 0.9 + 16px);
+  zoom: 0.9;
 }
 
 .hm-link {

@@ -25,6 +25,7 @@ import {
   won,
   ymd,
   zoneNames,
+  displayName,
 } from "@/lib/ledger"
 
 type Period = "day" | "week" | "month"
@@ -555,7 +556,7 @@ export function MapTab({
               <small>
                 결제 당시 내 위치 · {chosenPayment.place ?? "기록 없음"}
               </small>
-              <strong>{chosenPayment.merchant}</strong>
+              <strong>{displayName(chosenPayment, state)}</strong>
               <span>
                 {label(chosenPayment.date)} {chosenPayment.time} ·{" "}
                 {won(chosenPayment.amount)}
@@ -645,7 +646,7 @@ export function MapTab({
               {placeSelection.payments.map((payment) => (
                 <Action key={payment.id} onClick={() => openPayment(payment, date)}>
                   <time>{label(payment.date)} {payment.time}</time>
-                  <strong>{payment.merchant}</strong>
+                  <strong>{displayName(payment, state)}</strong>
                   <span>{won(payment.amount)}</span>
                   {payment.group && (
                     <small>내 몫 {won(Math.round(payment.amount / payment.group.length))}</small>

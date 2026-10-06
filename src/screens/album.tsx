@@ -19,6 +19,7 @@ import {
   sameDay,
   weekday,
   won,
+  displayName,
 } from "@/lib/ledger"
 
 const toMinutes = (time: string) => {
@@ -167,7 +168,7 @@ export function PhotoDetail({
               onClick={() => openPayment(payment)}
             >
               <div>
-                <strong>{payment.merchant}</strong>
+                <strong>{displayName(payment, state)}</strong>
                 <span>
                   {payment.time} · {evidenceText(evidenceOf(payment, state).length)}
                 </span>
@@ -248,7 +249,7 @@ export function EventReport({
                 onClick={() => openPayment(payment)}
               >
                 <div>
-                  <strong>{payment.merchant}</strong>
+                  <strong>{displayName(payment, state)}</strong>
                   <span>{payment.time}</span>
                 </div>
                 <p>{won(payment.amount)}</p>

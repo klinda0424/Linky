@@ -23,6 +23,7 @@ import {
   payments,
   shareOf,
   won as wonFull,
+  stripCorp,
 } from "@/lib/ledger"
 import {
   MEMBERS,
@@ -80,7 +81,7 @@ export function SettlementList({
                 {splits.map((payment) => (
                   <div key={payment.id}>
                     <div>
-                      <strong>{payment.merchant}</strong>
+                      <strong>{stripCorp(payment.merchant)}</strong>
                       <span>
                         {label(payment.date)} · {payment.group?.length}명
                       </span>
@@ -126,7 +127,7 @@ export function SettlementInbox({
           sub={settlementPeriod}
           title={
             meeting
-              ? `${meeting.merchant} ${man(meeting.amount)}\n그룹 지출 같아요`
+              ? `${stripCorp(meeting.merchant)} ${man(meeting.amount)}\n그룹 지출 같아요`
               : `${settlementTitle}\n그룹 지출 같아요`
           }
         />

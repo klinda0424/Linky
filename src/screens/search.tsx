@@ -16,6 +16,7 @@ import {
   weekday,
   won,
   zoneNames,
+  displayName,
 } from "@/lib/ledger"
 
 // 비정형 검색: 가맹점·내 위치·일정 제목·같이한 사람 말로 결제를 찾는다. 근거는 사용자 기록에서만 가져온다.
@@ -165,7 +166,7 @@ export function SearchScreen({
                   onClick={() => openPayment(payment)}
                 >
                   <div>
-                    <strong>{payment.merchant}</strong>
+                    <strong>{displayName(payment, state)}</strong>
                     <span>
                       {label(payment.date)} ({weekday(payment.date)}){" "}
                       {payment.time} · {evidenceText(evidenceOf(payment, state).length)}

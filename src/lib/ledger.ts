@@ -412,7 +412,7 @@ export function restoredOf(payment: Payment, state: LedgerState): Restored | nul
     return {
       kind: "place",
       original: payment.merchant,
-      label: payment.restored.label,
+      label: stripCorp(payment.restored.label),
       spot: payment.restored.spot,
       evidence,
       confirmed,
@@ -758,3 +758,8 @@ if (import.meta.env.DEV) {
     console.error(error)
   }
 }
+
+// 맥락이 복원된 결제는 이름 앞의 (주)를 떼어 보여 준다. 원본(가맹점명)은 그대로 둔다.
+export const stripCorp = (name: string) => name.replace(/^\(주\)\s*/, "")
+export const displayName = (payment: Payment, state: LedgerState) =>
+  isRestored(payment, state) ? stripCorp(payment.merchant) : payment.merchant

@@ -40,6 +40,8 @@ import {
   type Payment,
   type TransferGuess,
   type YMD,
+  displayName,
+  stripCorp,
 } from "@/lib/ledger"
 
 const weekNames = ["일", "월", "화", "수", "목", "금", "토"]
@@ -107,7 +109,7 @@ function TodayRow({
     ? `${restored.label}${restored.spot ? ` · ${restored.spot}` : ""}`
     : payment.kind === "transfer"
       ? `${payment.counterparty} 송금`
-      : payment.merchant
+      : displayName(payment, state)
   const sub = [
     showDate ? label(payment.date) : undefined,
     payment.time,
@@ -371,7 +373,7 @@ export function HomePage({
             icon: Users,
             // 대표 결제가 있으면 "고깃집 12만원, 그룹 지출 같아요"와 입금 근거를 보인다
             title: meeting
-              ? `${meeting.merchant} ${man(meeting.amount)}원, 그룹 지출 같아요`
+              ? `${stripCorp(meeting.merchant)} ${man(meeting.amount)}원, 그룹 지출 같아요`
               : "그룹 결제가 감지됐어요",
             sub: meeting?.deposits
               ? `입금 ${meeting.deposits.length}건이 들어왔어요`

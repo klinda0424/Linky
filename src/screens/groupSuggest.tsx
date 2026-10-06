@@ -13,6 +13,7 @@ import {
   receivableOf,
   shareOf,
   won,
+  stripCorp,
 } from "@/lib/ledger"
 
 // ---------- 그룹 지출 같아요: 정산 제안 시트 ----------
@@ -61,7 +62,7 @@ export function GroupSuggestSheet({
           <>
             <p className="sheet-title">내 몫으로 반영했어요</p>
             <p className="sheet-sub">
-              {payment.merchant} · {people.length}명 · 내 몫 {won(perPerson)}
+              {stripCorp(payment.merchant)} · {people.length}명 · 내 몫 {won(perPerson)}
             </p>
             <div className="split-result">
               <div>
@@ -97,7 +98,7 @@ export function GroupSuggestSheet({
               <i aria-hidden="true" />
             </div>
             <p className="gs-sub">
-              {payment.merchant} {won(payment.amount)} · {label(payment.date)} {payment.time}
+              {stripCorp(payment.merchant)} {won(payment.amount)} · {label(payment.date)} {payment.time}
             </p>
             <div className="gs-people">
               {people.map((name) => (

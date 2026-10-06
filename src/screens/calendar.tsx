@@ -31,6 +31,7 @@ import {
   weekday,
   won,
   ymd,
+  displayName,
 } from "@/lib/ledger"
 
 const weekdays = ["월", "화", "수", "목", "금", "토", "일"]
@@ -378,7 +379,7 @@ function PayCard({
     ? `${restored.label}${restored.spot ? ` · ${restored.spot}` : ""}`
     : transfer
       ? `${payment.counterparty} 송금`
-      : payment.merchant
+      : displayName(payment, state)
   // 내 위치·일정·사진 근거 줄은 카드에 두지 않는다(수정을 누르면 근거 목록이 열린다).
   // 정산·이체처럼 상태를 알려야 하는 안내만 남긴다.
   const footText = pendingGroup
