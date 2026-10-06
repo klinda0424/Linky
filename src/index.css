@@ -5055,7 +5055,7 @@ p {
   position: relative;
 }
 
-/* 날짜 상세 결제 타임라인: 점·세로선 | 카드 (시각은 카드 안 첫 줄) */
+/* 날짜 상세 결제 타임라인: [점 / 시각 / 세로선] | 카드 */
 .pay-timeline {
   margin: 0;
   padding: 0;
@@ -5065,53 +5065,74 @@ p {
 .pay-tl-item {
   position: relative;
   display: grid;
-  grid-template-columns: 14px minmax(0, 1fr);
+  grid-template-columns: 34px minmax(0, 1fr);
   align-items: start;
 }
 
-/* 점과 점을 잇는 세로선 (첫 항목은 점부터, 마지막 항목은 점까지) */
+/* 점과 점을 잇는 세로선 (첫 항목은 점부터, 마지막 항목은 점까지). 시각 글자 뒤는 가린다 */
 .pay-tl-item::before {
   content: "";
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 4px;
+  left: 16.5px;
   width: 1px;
   background: var(--border);
 }
 
 .pay-tl-item:first-child::before {
-  top: 20px;
+  top: 21px;
 }
 
 .pay-tl-item:last-child::before {
   bottom: auto;
-  height: 20px;
+  height: 21px;
 }
 
 .pay-tl-item:only-child::before {
   display: none;
 }
 
-.pay-tl-dot {
+.pay-tl-rail {
   position: relative;
   z-index: 1;
-  width: 9px;
-  height: 9px;
-  margin: 16px 0 0;
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.pay-tl-rail time {
+  padding: 2px 0;
+  background: var(--background);
+  color: var(--sub);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* 근거 없음: 빈 점 */
+.pay-tl-dot {
+  width: 10px;
+  height: 10px;
   border: 1.5px solid var(--disabled);
   border-radius: 50%;
   background: var(--background);
   box-sizing: border-box;
 }
 
+/* 근거 있음(복원): 라임 점 + 번지는 빛 */
 .pay-tl-item.done .pay-tl-dot {
-  border-color: var(--primary-strong);
+  border: 0;
   background: var(--primary);
+  box-shadow:
+    0 0 0 3px var(--primary-soft),
+    0 0 6px 2px var(--primary-soft);
 }
 
 .pay-tl-item .pay-card {
-  margin-left: 6px;
+  margin-left: 4px;
 }
 
 .pay-chip {

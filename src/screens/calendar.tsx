@@ -264,14 +264,17 @@ export function DayPanel({
           </small>
         </div>
       </div>
-      {/* 시간순 타임라인: 왼쪽 점·세로선(근거가 있으면 채운 점, 없으면 빈 점), 오른쪽 결제 카드 */}
+      {/* 시간순 타임라인: 왼쪽 점·시각·세로선(근거가 있으면 라임 점, 없으면 빈 점), 오른쪽 결제 카드 */}
       {list.length > 0 && (
         <ol className="pay-timeline">
           {list.map((payment) => {
             const done = isRestored(payment, state)
             return (
               <li className={cx("pay-tl-item", done && "done")} key={payment.id}>
-                <i className="pay-tl-dot" aria-label={done ? "근거 있음" : "기록 없음"} />
+                <div className="pay-tl-rail">
+                  <i className="pay-tl-dot" aria-label={done ? "근거 있음" : "기록 없음"} />
+                  <time>{payment.time}</time>
+                </div>
                 <PayCard
                   focus={activeFocus === payment.id}
                   markPersonal={markPersonal}
@@ -363,11 +366,14 @@ function PayCard({
     <div className={cx("hm-spend", "pay-card", focus && "focus")} data-pay={payment.id}>
       <div className="hm-spend-main">
         <div>
-          <span className="hm-spend-orig">
-            <span>{restored ? `${payment.time} · ${restored.original}` : payment.time}</span>
-            {pendingGroup && <em className="pay-chip">정산 대기</em>}
-            {personal && <em className="pay-tag">개인 지출</em>}
-          </span>
+          {/* 시각은 타임라인 왼쪽에 있어 카드에는 원본 가맹점명과 상태 칩만 둔다 */}
+          {(restored || pendingGroup || personal) && (
+            <span className="hm-spend-orig">
+              {restored && <span>{restored.original}</span>}
+              {pendingGroup && <em className="pay-chip">정산 대기</em>}
+              {personal && <em className="pay-tag">개인 지출</em>}
+            </span>
+          )}
           <strong>{title}</strong>
         </div>
         {photoIds.length > 0 && <i className="photo-thumb t0 hm-spend-thumb" />}
