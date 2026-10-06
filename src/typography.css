@@ -56,3 +56,32 @@ b,
 strong {
   font-weight: var(--fw-title);
 }
+
+/* ===== 타이포 토큰 v2 (2026-10-07 확정안) =====
+   이름: --tk-<토큰>-{size,lh,weight,color}. 홈부터 적용하고, 확인 뒤 리포트·캘린더 순으로 옮긴다.
+   규칙: 700은 headline·금액 강조만, 600은 제목·버튼·선택 상태만, 나머지는 400~500.
+   보조 정보(라벨·캡션·날짜)는 항상 --tk-mute + 400. */
+:root {
+  --tk-ink: #1a1a1a;
+  --tk-body: #6b6f76;
+  --tk-mute: #8b8f97;
+  --tk-tag: #3f6b00;
+  --tk-accent: #4c7a00;
+
+  --tk-headline-size: 24px;      --tk-headline-lh: 30px;      --tk-headline-weight: 700; --tk-headline-color: var(--tk-ink);
+  --tk-section-title-size: 18px; --tk-section-title-lh: 26px; --tk-section-title-weight: 600; --tk-section-title-color: var(--tk-ink);
+  --tk-title-size: 16px;         --tk-title-lh: 24px;         --tk-title-weight: 600; --tk-title-color: var(--tk-ink);
+  --tk-date-size: 16px;          --tk-date-lh: 24px;          --tk-date-weight: 500;  --tk-date-color: var(--tk-ink);
+  --tk-card-title-size: 15px;    --tk-card-title-lh: 22px;    --tk-card-title-weight: 600; --tk-card-title-color: var(--tk-ink);
+  --tk-item-title-size: 15px;    --tk-item-title-lh: 22px;    --tk-item-title-weight: 500; --tk-item-title-color: var(--tk-ink);
+  --tk-item-amount-size: 16px;   --tk-item-amount-lh: 22px;   --tk-item-amount-weight: 600; --tk-item-amount-color: var(--tk-ink);
+  --tk-body-size: 14px;          --tk-body-lh: 20px;          --tk-body-weight: 400;  --tk-body-color: var(--tk-body);
+  --tk-body-strong-size: 14px;   --tk-body-strong-lh: 20px;   --tk-body-strong-weight: 500; --tk-body-strong-color: var(--tk-ink);
+  --tk-link-size: 14px;          --tk-link-lh: 20px;          --tk-link-weight: 400;  --tk-link-color: var(--tk-ink);
+  --tk-button-size: 14px;        --tk-button-lh: 20px;        --tk-button-weight: 600; --tk-button-color: var(--tk-ink);
+  --tk-label-size: 13px;         --tk-label-lh: 18px;         --tk-label-weight: 400; --tk-label-color: var(--tk-mute);
+  --tk-caption-size: 12px;       --tk-caption-lh: 16px;       --tk-caption-weight: 400; --tk-caption-color: var(--tk-mute);
+  --tk-caption-sm-size: 11px;    --tk-caption-sm-lh: 14px;    --tk-caption-sm-weight: 400; --tk-caption-sm-color: var(--tk-mute);
+  --tk-tag-size: 12px;           --tk-tag-lh: 16px;           --tk-tag-weight: 500;   --tk-tag-color: var(--tk-tag);
+  --tk-logo-size: 20px;          --tk-logo-lh: 28px;          --tk-logo-weight: 600;  --tk-logo-color: var(--tk-ink);
+}

@@ -6319,3 +6319,177 @@ p {
   line-height: var(--lh-tag);
   font-weight: var(--fw-tag);
 }
+
+/* ===== 홈 타이포 v2: typography.css의 --tk-* 토큰만 사용 (확정안 2026-10-07) =====
+   홈 영역(.hm-scroll, .cal-brandbar, .bottom-tabs)에만 적용한다. 앞쪽 규칙은 지우지 않고 이 블록이 덮어쓴다. */
+.cal-brandbar .brand {
+  font-size: var(--tk-logo-size);
+  line-height: var(--tk-logo-lh);
+  font-weight: var(--tk-logo-weight);
+  color: var(--tk-logo-color);
+}
+
+/* headline: 화면 핵심 숫자 */
+.hm-scroll .hm-today-top > strong {
+  font-size: var(--tk-headline-size);
+  line-height: var(--tk-headline-lh);
+  font-weight: var(--tk-headline-weight);
+  color: var(--tk-headline-color);
+  white-space: nowrap;
+}
+
+/* section-title: 오늘의 동선·오늘의 사진 */
+.hm-scroll .hm-title-row h2 {
+  font-size: var(--tk-section-title-size);
+  line-height: var(--tk-section-title-lh);
+  font-weight: var(--tk-section-title-weight);
+  color: var(--tk-section-title-color);
+}
+
+/* title: 주차 타이틀 */
+.hm-scroll .hm-week-nav h2 {
+  font-size: var(--tk-title-size);
+  line-height: var(--tk-title-lh);
+  font-weight: var(--tk-title-weight);
+  color: var(--tk-title-color);
+}
+
+/* card-title: 카드 안 제목 */
+.hm-scroll .hm-link-text strong,
+.hm-scroll .hm-notice strong,
+.hm-scroll .hm-notice.alert strong,
+.hm-scroll .hm-story-head strong {
+  font-size: var(--tk-card-title-size);
+  line-height: var(--tk-card-title-lh);
+  font-weight: var(--tk-card-title-weight);
+  color: var(--tk-card-title-color);
+}
+
+/* item-title / item-amount: 리스트 행 */
+.hm-scroll .hm-today-row strong {
+  font-size: var(--tk-item-title-size);
+  line-height: var(--tk-item-title-lh);
+  font-weight: var(--tk-item-title-weight);
+  color: var(--tk-item-title-color);
+}
+
+.hm-scroll .hm-today-row b {
+  font-size: var(--tk-item-amount-size);
+  line-height: var(--tk-item-amount-lh);
+  font-weight: var(--tk-item-amount-weight);
+  color: var(--tk-item-amount-color);
+  white-space: nowrap;
+}
+
+/* body: 카드 본문 설명 */
+.hm-scroll .hm-link-text small,
+.hm-scroll .hm-notice small,
+.hm-scroll .hm-notice.alert small,
+.hm-scroll .hm-story p {
+  font-size: var(--tk-body-size);
+  line-height: var(--tk-body-lh);
+  font-weight: var(--tk-body-weight);
+  color: var(--tk-body-color);
+}
+
+/* 본문 속 강조 숫자: 색만 바꾸고 굵기는 본문 그대로 */
+.hm-scroll .hm-notice small b {
+  color: var(--tk-accent);
+  font-weight: inherit;
+}
+
+/* body-strong: 사진 캡션 */
+.hm-scroll .hm-photo span {
+  font-size: var(--tk-body-strong-size);
+  line-height: var(--tk-body-strong-lh);
+  font-weight: var(--tk-body-strong-weight);
+  color: var(--tk-body-strong-color);
+}
+
+/* link: "텍스트 ›" */
+.hm-scroll .home-more {
+  font-size: var(--tk-link-size);
+  line-height: var(--tk-link-lh);
+  font-weight: var(--tk-link-weight);
+  color: var(--tk-link-color);
+  text-decoration: none;
+}
+
+/* button: pill */
+.hm-scroll .hm-link-pill {
+  font-size: var(--tk-button-size);
+  line-height: var(--tk-button-lh);
+  font-weight: var(--tk-button-weight);
+  color: var(--tk-button-color);
+}
+
+/* label: 라벨·날짜 범위·보조 캡션 */
+.hm-scroll .hm-head em,
+.hm-scroll .hm-today-label > span:first-child,
+.hm-scroll .hm-recent,
+.hm-scroll .hm-empty,
+.hm-scroll .home-sub {
+  font-size: var(--tk-label-size);
+  line-height: var(--tk-label-lh);
+  font-weight: var(--tk-label-weight);
+  color: var(--tk-label-color);
+}
+
+/* caption: 요일·리스트 캡션·동선 날짜 */
+.hm-scroll .hm-day span,
+.hm-scroll .hm-today-row small,
+.hm-scroll .hm-route-date {
+  font-size: var(--tk-caption-size);
+  line-height: var(--tk-caption-lh);
+  font-weight: var(--tk-caption-weight);
+  color: var(--tk-caption-color);
+}
+
+/* caption-sm: 캘린더 하단 금액·탭바 라벨 */
+.hm-scroll .hm-day small,
+.bottom-tab {
+  font-size: var(--tk-caption-sm-size);
+  line-height: var(--tk-caption-sm-lh);
+  font-weight: var(--tk-caption-sm-weight);
+  color: var(--tk-caption-sm-color);
+  white-space: nowrap;
+}
+
+/* tag: 뱃지·지도 칩 */
+.hm-scroll .hm-linky,
+.hm-scroll .hm-stop em {
+  font-size: var(--tk-tag-size);
+  line-height: var(--tk-tag-lh);
+  font-weight: var(--tk-tag-weight);
+  color: var(--tk-tag-color);
+}
+
+/* 캘린더 날짜 숫자 16/500, 선택일 16/600 흰색 + 하단 금액 11/600 */
+.hm-scroll .hm-day strong {
+  font-size: var(--tk-date-size);
+  line-height: var(--tk-date-lh);
+  font-weight: var(--tk-date-weight);
+  color: var(--tk-date-color);
+}
+
+.hm-scroll .hm-day.today strong {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.hm-scroll .hm-day.today small {
+  font-weight: 600;
+  color: var(--tk-ink);
+}
+
+/* 하단 탭 선택: 11/14, 600, #1A1A1A */
+.bottom-tab.active {
+  font-weight: 600;
+  color: var(--tk-ink);
+}
+
+/* 금액·건수는 자릿수가 늘어도 줄바꿈하지 않는다 */
+.hm-scroll .hm-today-label,
+.hm-scroll .hm-notice small b {
+  white-space: nowrap;
+}

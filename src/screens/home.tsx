@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import {
   Bus,
   ChevronLeft,
@@ -136,7 +137,7 @@ type Notice = {
   key: string
   icon: typeof Sparkles
   title: string
-  sub: string
+  sub: ReactNode
   // 주의가 필요한 알림(그룹 결제)은 붉은 계열로 보인다
   alert?: boolean
   onClick: () => void
@@ -371,13 +372,17 @@ export function HomePage({
           {
             key: "settle",
             icon: Users,
-            // 대표 결제가 있으면 "고깃집 12만원, 그룹 지출 같아요"와 입금 근거를 보인다
+            // 대표 결제가 있으면 "한돈명가 120,000원, 정산할 게 있어요"와 입금 근거를 보인다
             title: meeting
-              ? `${stripCorp(meeting.merchant)} ${man(meeting.amount)}원, 그룹 지출 같아요`
+              ? `${stripCorp(meeting.merchant).replace(/\s+\S*점$/, "")} ${won(meeting.amount)}, 정산할 게 있어요`
               : "그룹 결제가 감지됐어요",
-            sub: meeting?.deposits
-              ? `입금 ${meeting.deposits.length}건이 들어왔어요`
-              : `정산할지 확인해주세요 · 정산 대기 ${pendingSettlement.count}건`,
+            sub: meeting?.deposits ? (
+              <>
+                입금 <b>{meeting.deposits.length}건</b>이 들어왔어요
+              </>
+            ) : (
+              `정산할지 확인해주세요 · 정산 대기 ${pendingSettlement.count}건`
+            ),
             alert: true,
             onClick: openSettlement,
           },
@@ -451,10 +456,10 @@ export function HomePage({
         <section className="main-card hm-today">
           <div className="hm-today-top">
             <div className="hm-today-label">
-              <span>{isToday ? "오늘 지출" : `${label(day)} 지출`}</span>
-              {isToday && pendingSettlement && (
-                <span className="hm-badge">정산 대기 {pendingSettlement.count}건</span>
-              )}
+              <span>
+                {isToday ? "오늘 지출" : `${label(day)} 지출`}
+                {selectedList.length > 0 && ` · ${selectedList.length}건`}
+              </span>
             </div>
             <strong>
               {selectedList.length > 0 ? won(selectedMine) : "결제 기록 없음"}
@@ -488,7 +493,7 @@ export function HomePage({
         <div className="hm-title-row">
           <h2>{isToday ? "오늘의 동선" : `${label(day)}의 동선`}</h2>
           <Action className="home-more" onClick={() => openMap(day)}>
-            지도로 보기
+            동선 크게 보기 ›
           </Action>
         </div>
         {stops.length === 0 ? (
@@ -496,12 +501,12 @@ export function HomePage({
         ) : (
           <RouteMap day={day} onOpen={() => openMap(day)} stops={stops} />
         )}
-        <p className="home-sub">결제 당시 내 위치</p>
+        <p className="home-sub">결제한 시간의 내 위치</p>
 
         <div className="hm-title-row">
           <h2>{isToday ? "오늘의 사진" : `${label(day)}의 사진`}</h2>
           <Action className="home-more" onClick={openAlbum}>
-            앨범 보기
+            사진 모두 보기 ›
           </Action>
         </div>
         {selectedPhotos.length === 0 ? (
@@ -520,7 +525,7 @@ export function HomePage({
                   <i className={cx("photo-thumb", `t${index % 5}`)} />
                   <span>
                     {paid
-                      ? (restoredOf(paid, state)?.label ?? paid.merchant)
+                      ? (restoredOf(paid, state)?.label ?? displayName(paid, state))
                       : `${photo.zone} ${photo.time}`}
                   </span>
                 </Action>
