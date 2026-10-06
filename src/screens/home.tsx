@@ -451,9 +451,7 @@ export function HomePage({
             <div>
               <span>{isToday ? "오늘 지출" : `${label(day)} 지출`}</span>
               <strong>
-                {selectedList.length > 0
-                  ? `${isToday ? "오늘 " : ""}${selectedList.length}건 · ${won(selectedMine)}`
-                  : `${isToday ? "오늘 " : ""}결제 기록 없음`}
+                {selectedList.length > 0 ? won(selectedMine) : "결제 기록 없음"}
               </strong>
             </div>
             {isToday && pendingSettlement && (
