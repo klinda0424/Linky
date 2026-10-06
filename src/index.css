@@ -4539,9 +4539,9 @@ p {
 
 /* 오늘 지출 카드 */
 .hm-spend {
-  margin-bottom: 10px;
-  padding: 16px;
-  border-radius: 18px;
+  margin-bottom: 8px;
+  padding: 12px 14px;
+  border-radius: 16px;
   background: var(--surface);
 }
 
@@ -4558,12 +4558,12 @@ p {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
 }
 
 .hm-spend-orig {
   color: var(--sub);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .hm-spend-main strong {
@@ -4586,34 +4586,40 @@ p {
 }
 
 .hm-spend-thumb {
-  width: 76px;
-  height: 68px;
+  width: 56px;
+  height: 52px;
   flex: none;
   border-radius: 12px;
 }
 
 .hm-spend-foot {
-  margin-top: 12px;
-  padding-top: 12px;
+  margin-top: 8px;
+  padding-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   border-top: 1px dashed #d7d7db;
 }
 
 .hm-spend-foot p {
+  min-width: 0;
+  flex: 1;
   color: var(--sub);
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .hm-spend-actions {
-  margin-top: 10px;
+  flex: none;
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+  gap: 6px;
 }
 
 .hm-spend-actions .pill {
-  height: 32px;
-  padding: 0 16px;
+  height: 28px;
+  padding: 0 12px;
+  font-size: 12px;
 }
 
 /* 오늘의 하루 */
