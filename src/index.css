@@ -3416,19 +3416,24 @@ p {
   border-color: var(--primary-border);
 }
 
-.report-link strong {
-  font-size: 17px;
+/* 리포트 상단 프로필 아이콘 옆 "정산함" 버튼 (프로필 아이콘 40px + 간격 4px만큼 비켜 둔다) */
+.report-settle-btn {
+  height: 30px;
+  margin-right: 36px;
+  padding: 0 12px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+  font-size: 13px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
-.report-link {
-  width: 100%;
-  min-height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 15px;
-  font-weight: 600;
+.report-settle-btn:active {
+  background: var(--surface);
 }
 
 .home-more {

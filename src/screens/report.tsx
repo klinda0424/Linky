@@ -1,4 +1,3 @@
-import { ChevronRight } from "lucide-react"
 import { Action, cx } from "@/components/common"
 import { label, man, won, type LedgerState } from "@/lib/ledger"
 import {
@@ -78,7 +77,7 @@ function Facts({ lines }: { lines: (string | undefined)[] }) {
   )
 }
 
-// ---------- 리포트 탭: 정산 내역 · 다음 주 예고 · 주간 · 내 지출 패턴 · 지난주와 달라진 점 · 월간 ----------
+// ---------- 리포트 탭: (상단 정산함 버튼) 다음 주 예고 · 주간 · 내 지출 패턴 · 지난주와 달라진 점 · 월간 ----------
 // 카드마다 한 줄 요약 문장 → 근거 줄. 판단 없이 확인된 사실만 쓰고, 데이터가 없으면 "기록 없음".
 export function ReportTab({
   state,
@@ -97,13 +96,12 @@ export function ReportTab({
     <>
       <div className="main-simple-header">
         <p>리포트</p>
+        {/* 정산 내역은 상단 프로필 아이콘 옆 "정산함" 버튼으로 연다 */}
+        <Action className="report-settle-btn" onClick={openSettlement}>
+          정산함
+        </Action>
       </div>
       <div className="report-scroll">
-        <Action className="main-card report-link" onClick={openSettlement}>
-          <strong>정산 내역</strong>
-          <ChevronRight size={17} strokeWidth={1.5} />
-        </Action>
-
         <section className="main-card report-preview">
           <div className="block-heading">
             <strong>다음 주 예고</strong>
