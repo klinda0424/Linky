@@ -1,4 +1,3 @@
-import { useState } from "react"
 import {
   Bus,
   ChevronLeft,
@@ -10,7 +9,6 @@ import {
   Ticket,
   Users,
   Utensils,
-  X,
 } from "lucide-react"
 import { Action, cx } from "@/components/common"
 import { HeaderActions } from "@/components/layout"
@@ -61,11 +59,11 @@ const firstPaymentDay = payments.reduce((first, payment) =>
   keyOf(payment.date) < keyOf(first.date) ? payment : first,
 ).date
 
-// 이번 주에서 몇 주 전인지 → "이번 주" · "지난주" · "N주 전"
-function weekName(weeksAgo: number) {
-  if (weeksAgo === 0) return "이번 주"
-  if (weeksAgo === 1) return "지난주"
-  return `${weeksAgo}주 전`
+// "10월 4주차": 그 주 토요일이 속한 달에서 일요일 시작 달력 기준 몇 번째 줄인지
+function weekTitle(week: YMD[]) {
+  const last = week[6]
+  const offset = new Date(last.y, last.m - 1, 1).getDay()
+  return `${last.m}월 ${Math.ceil((last.d + offset) / 7)}주차`
 }
 
 // 오늘 이전의 가장 최근 결제 몇 건 (오늘 기록이 없을 때 홈이 비어 보이지 않게 한다)
@@ -119,7 +117,7 @@ function TodayRow({
   return (
     <Action className="hm-today-row" onClick={() => open(payment)}>
       <span className="hm-today-icon">
-        <Icon size={18} strokeWidth={1.6} />
+        <Icon size={20} strokeWidth={1.6} />
       </span>
       <div>
         <strong>{title}</strong>
@@ -168,52 +166,70 @@ const periodOf = (time: string) => {
 // 그래서 특정 시각의 이동으로 쓰지 않고 하루 합산 요금으로 따로 적는다.
 const isDailyTransit = (payment: Payment) => /후불교통/.test(payment.merchant)
 
-// 결제 한 건을 "무엇을 했는지"로 쓴다. 가맹점명이 반복되는 "결제를 했고"를 피한다.
-function paymentStep(payment: Payment, state: LedgerState) {
-  const restored = restoredOf(payment, state)
-  if (payment.transit) return { text: `${payment.transit.from} 인근에서 택시를`, verb: "탔" }
-  if (restored) return { text: `${restored.label}에`, verb: "다녀왔" }
-  if (payment.kind === "transfer") return { text: `${payment.counterparty}에게`, verb: "송금했" }
-  if (/점$/.test(payment.merchant)) return { text: `${payment.merchant}에`, verb: "들렀" }
-  return { text: `${payment.merchant}에서 결제를`, verb: "했" }
-}
+// 가맹점명 앞의 (주)를 떼어 문장에 쓴다
+const shortName = (payment: Payment, state: LedgerState) =>
+  (restoredOf(payment, state)?.label ?? payment.merchant).replace(/^\(주\)/, "")
 
+// 하루를 정보 나열이 아니라 "일정·장소와 결제의 관계"로 짧게 정리한다.
+// 감정·의도는 추측하지 않고, 내 일정·위치·결제 기록에서 확인된 사실의 관계만 쓴다.
 function dayStory(day: YMD, list: Payment[], photoCount: number, state: LedgerState) {
   const dayWord = sameDay(day, TODAY) ? "오늘" : "이날"
-  const dayStays = state.sources.location ? stays.filter((stay) => sameDay(stay.date, day)) : []
-  const items = [
-    ...dayStays.map((stay) => ({ time: stay.from, text: `${stay.name}에`, verb: "머물렀" })),
-    ...eventsOn(day, state).map((event) => ({
+  const normal = list.filter((payment) => !isDailyTransit(payment))
+  type Clause = { time: string; rank: number; stem: string }
+  const clauses: Clause[] = []
+  const inEvent = new Set<string>()
+
+  // 1) 일정과 그 시간대의 결제 (결제가 없었다는 것도 관계로 말한다)
+  for (const event of eventsOn(day, state)) {
+    const linked = normal.filter((payment) =>
+      eventsFor(payment, state).some((item) => item.id === event.id),
+    )
+    linked.forEach((payment) => inEvent.add(payment.id))
+    const names = linked.map((payment) => shortName(payment, state)).join("·")
+    clauses.push({
       time: event.start,
-      text: `'${event.title}' 일정이`,
-      verb: "있었",
-    })),
-    // 일정 시간대에 한 결제는 일정이 이미 설명하므로 따로 적지 않는다
-    ...list
-      .filter((payment) => !isDailyTransit(payment) && eventsFor(payment, state).length === 0)
-      .map((payment) => ({ time: payment.time, ...paymentStep(payment, state) })),
-  ]
+      rank: 0,
+      stem: `'${event.title}' 일정이 있던 ${periodOf(event.start)}에는 ${
+        linked.length > 0 ? `${names} 결제가 있었` : "결제가 없었"
+      }`,
+    })
+  }
+  // 2) 일정과 상관없는 결제
+  for (const payment of normal) {
+    if (inEvent.has(payment.id)) continue
+    const period = periodOf(payment.time)
+    if (payment.transit) {
+      clauses.push({ time: payment.time, rank: 2, stem: `${payment.transit.from} 인근에서 택시를 탔` })
+    } else if (payment.kind === "transfer") {
+      clauses.push({ time: payment.time, rank: 1, stem: `${period}에는 ${payment.counterparty}에게 송금했` })
+    } else {
+      const name = shortName(payment, state)
+      clauses.push({
+        time: payment.time,
+        rank: 1,
+        stem: restoredOf(payment, state)
+          ? `${period}에는 ${name}에 다녀왔`
+          : `${period}에는 ${name}에서 결제가 있었`,
+      })
+    }
+  }
+  // 관계가 담긴 문장을 먼저 남기고, 세 개까지만 시간순으로 잇는다
+  const picked = clauses
+    .sort((a, b) => a.rank - b.rank || a.time.localeCompare(b.time))
+    .slice(0, 3)
     .sort((a, b) => a.time.localeCompare(b.time))
-    .slice(0, 4)
-  // 일기처럼 "~했다"로 끝낸다. 한 문장에 "~고"는 두 번까지: 세 가지씩 끊어 문장을 나눈다
-  let previous = ""
-  const sentences: string[] = []
-  items.forEach((item, index) => {
-    const period = periodOf(item.time)
-    const prefix = period !== previous ? `${period}에는 ` : ""
-    previous = period
-    const last = index === items.length - 1 || index % 3 === 2
-    const clause = `${prefix}${item.text} ${item.verb}${last ? "다." : "고,"}`
-    if (index % 3 === 0) sentences.push(clause)
-    else sentences[sentences.length - 1] += ` ${clause}`
-  })
+  const sentence = picked
+    .map((clause, index) => `${clause.stem}${index === picked.length - 1 ? "어요." : "고,"}`)
+    .join(" ")
+
   const transitFare = list
     .filter(isDailyTransit)
     .reduce((sum, payment) => sum + shareOf(payment, state), 0)
-  if (transitFare > 0) sentences.push(`대중교통 요금은 하루 합쳐 ${won(transitFare)}이었다.`)
-  if (sentences.length === 0) return ""
+  const fare = transitFare > 0 ? ` 대중교통 요금은 하루 합쳐 ${won(transitFare)}이었어요.` : ""
+  if (!sentence && !fare) return ""
 
   // 머문 곳과 결제 지역이 모두 한 곳이면 그 지역을 먼저 말하고, 이번 주에 몇 번째인지 덧붙인다
+  const dayStays = state.sources.location ? stays.filter((stay) => sameDay(stay.date, day)) : []
   const zones = new Set([...dayStays.map((stay) => stay.zone), ...list.map((payment) => payment.zone)])
   let lead = ""
   if (zones.size === 1 && dayStays.length + list.length > 1) {
@@ -221,10 +237,10 @@ function dayStory(day: YMD, list: Payment[], photoCount: number, state: LedgerSt
     const visitedDays = weekOf(day).filter(
       (weekDay) => keyOf(weekDay) <= keyOf(day) && paymentsOn(weekDay).some((payment) => payment.zone === zone),
     ).length
-    lead = `${dayWord}은 ${zone}에서 주로 시간을 보냈다.${visitedDays > 1 ? ` 이번 주 ${zone}에 간 날은 ${visitedDays}일째다.` : ""} `
+    lead = `${dayWord}은 ${zone}에서 주로 시간을 보냈어요.${visitedDays > 1 ? ` 이번 주 ${zone}에 간 날은 ${visitedDays}일째예요.` : ""} `
   }
-  const photos = photoCount > 0 ? ` ${dayWord} 남긴 사진은 ${photoCount}장이다.` : ""
-  return `${lead}${sentences.join(" ")}${photos}`
+  const photos = photoCount > 0 ? ` ${dayWord} 남긴 사진은 ${photoCount}장이에요.` : ""
+  return `${lead}${sentence}${fare}${photos}`
 }
 
 // ---------- 오늘의 동선: 체류 구간과 결제 위치를 시간순으로 잇는 미니 지도 ----------
@@ -319,8 +335,6 @@ export function HomePage({
   foundTransfer?: { payment: Payment; guess: TransferGuess }
   openTransfer: () => void
 }) {
-  // 배너는 닫아도 홈을 다시 열면 다시 보인다 (정산 후보 자체는 그대로 남아 있다)
-  const [foundHidden, setFoundHidden] = useState(false)
   // 고른 날이 속한 주를 보여 준다. 화살표로 한 주씩 이동하고, 이번 주보다 뒤로는 가지 않는다
   const week = weekOf(day)
   const weeksAgo = Math.round(
@@ -344,14 +358,10 @@ export function HomePage({
   const story = dayStory(day, selectedList, selectedPhotos.length, state)
   const linkedPayment = (photo: Photo) =>
     selectedList.find((payment) => photosFor(payment, state).some((item) => item.id === photo.id))
-  // 송금 맥락은 화면 위에 떠 있는 얇은 배너로, 그룹 결제는 카드로 띄운다
-  const foundBanner =
-    isToday && foundTransfer
-      ? {
-          line1: `${foundTransfer.payment.counterparty} ${won(foundTransfer.payment.amount)} 송금`,
-          line2: `어제 ${foundTransfer.guess.place ?? "내"} 기록과 이어져요`,
-        }
-      : undefined
+  // 송금 맥락은 주간 캘린더 바로 아래 연라임 카드로, 그룹 결제는 아래 알림 카드로 띄운다
+  const foundBody = foundTransfer
+    ? `${foundTransfer.payment.counterparty} ${won(foundTransfer.payment.amount)} 송금, ${foundTransfer.guess.place ?? "내"} 기록과 이어져요`
+    : undefined
   // 감지된 것만 알림으로 띄운다: 송금 맥락, 그룹 결제 (복원 결과는 알림 없이 캘린더 카드에서 확인)
   // 오늘 받은 알림이라 다른 날짜를 골랐을 때는 보이지 않는다
   const notices: Notice[] = [
@@ -383,20 +393,6 @@ export function HomePage({
         <HeaderActions openProfile={openProfile} openSearch={openSearch} />
       </div>
       <div className="main-scroll hm-scroll">
-        {foundBanner && !foundHidden && (
-          <div className="hm-found">
-            <Action className="hm-found-main" onClick={openTransfer}>
-              <span className="hm-found-avatar">L</span>
-              <span className="hm-found-text">
-                <b>{foundBanner.line1}</b>
-                <small>{foundBanner.line2}</small>
-              </span>
-            </Action>
-            <Action className="hm-found-close" label="알림 닫기" onClick={() => setFoundHidden(true)}>
-              <X size={18} strokeWidth={1.6} />
-            </Action>
-          </div>
-        )}
         <section className="hm-weekcard">
           <div className="hm-head">
             <div className="hm-week-nav">
@@ -408,14 +404,14 @@ export function HomePage({
               >
                 <ChevronLeft size={20} strokeWidth={1.8} />
               </Action>
-              <h2>{weekName(weeksAgo)}</h2>
+              <h2>{weekTitle(week)}</h2>
               {weeksAgo > 0 && (
                 <Action className="hm-week-arrow" label="다음 주" onClick={() => moveWeek(1)}>
                   <ChevronRight size={20} strokeWidth={1.8} />
                 </Action>
               )}
             </div>
-            <em>{week[6].m}월</em>
+            <em>{`${week[0].m}.${week[0].d} – ${week[6].m}.${week[6].d}`}</em>
           </div>
           <div className="hm-week">
             {week.map((weekDay) => {
@@ -436,6 +432,17 @@ export function HomePage({
             })}
           </div>
         </section>
+
+        {isToday && foundBody && (
+          <Action className="hm-link" onClick={openTransfer}>
+            <Sparkles size={20} strokeWidth={1.6} />
+            <span className="hm-link-text">
+              <strong>링키가 찾았어요</strong>
+              <small>{foundBody}</small>
+            </span>
+            <span className="hm-link-pill">확인</span>
+          </Action>
+        )}
 
         <section className="main-card hm-today">
           <div className="hm-today-top">
