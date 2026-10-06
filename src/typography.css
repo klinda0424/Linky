@@ -1,0 +1,53 @@
+/* 타이포 토큰 (홈 화면 기준). 홈 이후 화면은 이 토큰으로 순차 교체한다.
+   Pretendard, 자간 -0.02em, 숫자는 tabular-nums.
+   규칙: 700은 합계·금액에만, 600은 제목류에만, 나머지는 400~500. */
+:root {
+  --text-body: #6b6f76;
+  --text-mute: #8b8f97;
+  --lime-card: #f4fadf;
+
+  --fs-headline: 24px;
+  --lh-headline: 30px;
+  --fw-headline: 700;
+
+  --fs-title: 20px;
+  --lh-title: 28px;
+  --fw-title: 600;
+
+  --fs-item-title: 15px;
+  --lh-item-title: 22px;
+  --fw-item-title: 600;
+
+  --fs-item-amount: 16px;
+  --lh-item-amount: 22px;
+  --fw-item-amount: 700;
+
+  --fs-body: 14px;
+  --lh-body: 20px;
+  --fw-body: 400;
+
+  --fs-label: 13px;
+  --lh-label: 18px;
+  --fw-label: 400;
+
+  --fs-caption: 12px;
+  --lh-caption: 16px;
+  --fw-caption: 400;
+
+  --fs-tag: 12px;
+  --lh-tag: 16px;
+  --fw-tag: 600;
+
+  --fs-tab: 11px;
+  --lh-tab: 14px;
+  --fw-tab: 400;
+  --fw-tab-active: 600;
+}
+
+/* 홈 화면에만 먼저 적용한다 */
+.hm-scroll,
+.cal-brandbar,
+.bottom-tabs {
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
