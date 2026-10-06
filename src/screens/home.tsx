@@ -5,6 +5,7 @@ import {
   Package,
   Receipt,
   ShoppingBag,
+  Link2,
   Sparkles,
   Ticket,
   Users,
@@ -271,7 +272,14 @@ function RouteMap({ day, stops, onOpen }: { day: YMD; stops: Stop[]; onOpen: () 
     x: stops.length === 1 ? 50 : 24 + (index / (stops.length - 1)) * 52,
     y: index % 2 === 0 ? 30 : 46,
   }))
-  const path = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ")
+  // 지점 사이를 부드러운 곡선으로 잇는다
+  const path = points
+    .map((p, i) => {
+      if (i === 0) return `M ${p.x} ${p.y}`
+      const prev = points[i - 1]
+      return `Q ${(prev.x + p.x) / 2} ${Math.min(prev.y, p.y) - 14} ${p.x} ${p.y}`
+    })
+    .join(" ")
   return (
     <Action className="hm-route" label={`${label(day)} 동선 지도로 보기`} onClick={onOpen}>
       <span className="hm-route-date">
@@ -280,8 +288,12 @@ function RouteMap({ day, stops, onOpen }: { day: YMD; stops: Stop[]; onOpen: () 
       <svg aria-hidden="true" preserveAspectRatio="none" viewBox="0 0 100 100">
         {points.length > 1 && <path d={path} />}
       </svg>
-      {points.map((p) => (
-        <span className="hm-stop" key={p.key} style={{ left: `${p.x}%`, top: `${p.y}%` }}>
+      {points.map((p, index) => (
+        <span
+          className={cx("hm-stop", index === points.length - 1 && points.length > 1 && "last")}
+          key={p.key}
+          style={{ left: `${p.x}%`, top: `${p.y}%` }}
+        >
           <i />
           <em>{p.zone}</em>
         </span>
@@ -374,7 +386,9 @@ export function HomePage({
     <>
       <div className="cal-brandbar">
         <div className="brand cal-brand">
-          <span className="brand-mark">L</span>
+          <span className="brand-mark">
+            <Link2 size={18} strokeWidth={2.2} />
+          </span>
           <span>Linky</span>
         </div>
         <HeaderActions openProfile={openProfile} openSearch={openSearch} />
@@ -497,11 +511,12 @@ export function HomePage({
               const paid = linkedPayment(photo)
               return (
                 <Action
-                  className={cx("photo-thumb", `t${index % 5}`, "hm-photo")}
+                  className="hm-photo"
                   key={photo.id}
                   label={`${photo.title} 사진`}
                   onClick={() => openPhoto(photo)}
                 >
+                  <i className={cx("photo-thumb", `t${index % 5}`)} />
                   <span>
                     {paid
                       ? (restoredOf(paid, state)?.label ?? paid.merchant)

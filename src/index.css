@@ -5454,9 +5454,9 @@ p {
 
 .hm-day strong {
   color: var(--text);
-  font-size: 16px;
-  line-height: 22px;
-  font-weight: 500;
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+  font-weight: var(--fw-item-title);
 }
 
 .hm-day small {
@@ -5468,12 +5468,12 @@ p {
 
 /* 선택일: 날짜와 금액을 600으로 */
 .hm-day.today strong {
-  font-weight: 600;
+  font-weight: var(--fw-title);
 }
 
 .hm-day.today small {
   color: var(--text);
-  font-weight: 600;
+  font-weight: var(--fw-title);
 }
 
 /* 링키 카드: 연라임 면, 테두리 없음, 카드 전체가 확인 화면으로 가는 버튼 */
@@ -5689,3 +5689,185 @@ p {
 .bottom-tab.tab-home.active svg path:last-child {
   fill: rgba(26, 26, 26, 0.14);
 }
+
+/* ======================================================================
+   홈 시안 반영 (Figma Make 결과 기준)
+   ====================================================================== */
+/* 헤더: 링크 아이콘 로고 + 하단 구분선 */
+.cal-brandbar {
+  height: 56px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cal-brandbar .brand-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+}
+
+.cal-brandbar .brand {
+  gap: 10px;
+  font-size: var(--fs-title);
+  line-height: var(--lh-title);
+  font-weight: var(--fw-title);
+}
+
+.hm-scroll {
+  padding-top: 16px;
+}
+
+/* 링키 카드: 확인 버튼은 흰 pill, 본문은 연한 회색 */
+.hm-link-pill {
+  background: var(--background);
+  color: #1a1a1a;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: var(--fw-item-title);
+}
+
+/* 주간 캘린더: 선택일은 검은 원 */
+.hm-day.today strong {
+  background: #1a1a1a;
+  color: #ffffff;
+}
+
+.hm-day.today small {
+  color: #1a1a1a;
+}
+
+.hm-week-arrow {
+  width: 24px;
+  height: 32px;
+  justify-content: flex-start;
+}
+
+.hm-week-nav {
+  margin-left: 0;
+}
+
+/* 오늘 지출: 정산 대기 뱃지는 둥근 연라임 pill */
+.hm-badge {
+  padding: 6px 14px;
+  border-radius: 999px;
+  color: var(--text-body);
+}
+
+/* 그룹 결제 알림: 제목은 본문색, 보조 문구만 붉은색 */
+.hm-notice.alert strong {
+  color: var(--text);
+}
+
+.hm-notice.alert small {
+  color: var(--expense-high);
+}
+
+/* 섹션 우측 링크: 밑줄 텍스트 */
+.home-more {
+  color: var(--text);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+  font-weight: var(--fw-label);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.home-sub {
+  color: var(--text-mute);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+}
+
+/* 동선 지도: 곡선 점선, 시작은 검은 점, 끝은 라임 점 */
+.hm-route::before,
+.hm-route::after {
+  background: #ececee;
+}
+
+.hm-route path {
+  stroke-width: 2;
+  stroke-dasharray: 1 7;
+  stroke-linecap: round;
+}
+
+.hm-stop i {
+  width: 14px;
+  height: 14px;
+  border: 0;
+  background: #1a1a1a;
+  box-shadow: none;
+}
+
+.hm-stop.last i {
+  border: 3px solid #1a1a1a;
+  background: var(--primary);
+}
+
+.hm-stop em {
+  color: var(--text);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+  font-weight: var(--fw-body);
+}
+
+/* 오늘의 사진: 위 이미지 + 아래 라벨 띠 */
+.hm-photo {
+  width: 220px;
+  height: auto;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 20px;
+  background: var(--surface);
+  text-align: left;
+}
+
+.hm-photo i {
+  width: 100%;
+  height: 150px;
+  display: block;
+  border-radius: 0;
+}
+
+.hm-photo span {
+  position: static;
+  padding: 12px 16px;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: var(--fw-body);
+}
+
+/* 하단 탭: 선택 탭은 아이콘 채움 + 라벨 아래 라임 점 */
+.bottom-tab {
+  position: relative;
+}
+
+.bottom-tab.active::after {
+  content: "";
+  width: 5px;
+  height: 5px;
+  position: absolute;
+  bottom: 8px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+.bottom-tab.tab-home.active svg path:last-child {
+  fill: currentColor;
+}
+
+/* 오늘 내 하루: 안쪽 라임 박스 없이 카드 하나로 */
+.hm-story p {
+  margin-top: 12px;
+  padding: 0;
+  background: transparent;
+  line-height: 24px;
+}
+
+.hm-link {
+  box-shadow: none;
+}
+
