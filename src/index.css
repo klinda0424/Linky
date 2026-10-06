@@ -908,21 +908,6 @@ p {
   animation: sheet-up 0.26s ease;
 }
 
-.split-people {
-  margin: 22px 0;
-  display: flex;
-  align-items: flex-start;
-  gap: 17px;
-}
-
-.split-people > div {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-}
-
 .person-avatar {
   width: 44px;
   height: 44px;
@@ -955,16 +940,6 @@ p {
 .person-avatar.small {
   width: 34px;
   height: 34px;
-}
-
-.split-basis {
-  margin-top: 14px;
-  padding: 9px 12px;
-  border-radius: 10px;
-  background: var(--surface);
-  color: var(--sub);
-  font-size: 13px;
-  line-height: 1.4;
 }
 
 /* 인원 분할 확인 후 반영 결과 */
@@ -1048,27 +1023,6 @@ p {
 
 .split-history p strong {
   color: var(--text);
-}
-
-.per-person {
-  margin-bottom: 17px;
-  padding: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-radius: 12px;
-  background: var(--primary-soft);
-}
-
-.per-person span {
-  color: var(--sub);
-  font-size: 13px;
-}
-
-.per-person strong {
-  color: var(--primary-text);
-  font-size: 20px;
-  font-weight: 700;
 }
 
 .table-content,
@@ -3530,6 +3484,42 @@ p {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+}
+
+/* 주 이동: < 이번 주 / < 지난주 > */
+.hm-week-nav {
+  margin-left: -8px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* 주 제목(이번 주 · 지난주 · N주 전): 리포트 제목과 같은 연한 라임 형광펜 */
+.hm-week-nav h2 {
+  padding: 0 3px;
+  background: linear-gradient(
+    transparent 55%,
+    color-mix(in srgb, var(--primary) 40%, transparent) 55%
+  );
+}
+
+.hm-week-arrow {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--text);
+}
+
+.hm-week-arrow:active {
+  background: var(--surface);
+}
+
+.hm-week-arrow[aria-disabled="true"],
+.hm-week-arrow.disabled {
+  color: var(--disabled);
 }
 
 .hm-head em {
