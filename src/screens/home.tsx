@@ -109,11 +109,8 @@ function TodayRow({
     : payment.kind === "transfer"
       ? `${payment.counterparty} 송금`
       : payment.merchant
-  const sub = [
-    showDate ? label(payment.date) : undefined,
-    payment.time,
-    restored ? restored.original : category,
-  ]
+  // 아래 줄에는 시각만 둔다 (원래 가맹점명·분류는 쓰지 않는다)
+  const sub = [showDate ? label(payment.date) : undefined, payment.time]
     .filter(Boolean)
     .join(" · ")
   return (
@@ -462,6 +459,12 @@ export function HomePage({
               {weeksAgo > 0 && (
                 <Action className="hm-week-arrow" label="다음 주" onClick={() => moveWeek(1)}>
                   <ChevronRight size={20} strokeWidth={1.8} />
+                </Action>
+              )}
+              {/* 다른 날을 보고 있을 때만: 오늘(10/31)로 바로 이동 */}
+              {!isToday && (
+                <Action className="hm-today-link" label="오늘로 이동" onClick={() => selectDay(TODAY)}>
+                  오늘
                 </Action>
               )}
             </div>
