@@ -106,6 +106,7 @@ export function MainApp({
       !(state.transferDeclined ?? []).includes(item.id) &&
       transferGuess(item, state) !== null,
   )
+  const foundGuess = foundTransfer ? transferGuess(foundTransfer, state) : null
   const transferPayment = payments.find((item) => item.id === transferId)
   const confirmTransfer = (payment: Payment) => {
     setLedger((value) => ({
@@ -223,14 +224,13 @@ export function MainApp({
             setView("settlement")
           }}
           foundTransfer={
-            foundTransfer
-              ? {
-                  counterparty: foundTransfer.counterparty ?? "",
-                  amount: foundTransfer.amount,
-                  place: transferGuess(foundTransfer, state)?.place,
-                }
+            foundTransfer && foundGuess
+              ? { payment: foundTransfer, guess: foundGuess }
               : undefined
           }
+          confirmRestore={confirmRestore}
+          confirmTransfer={confirmTransfer}
+          declineTransfer={declineTransfer}
           openTransfer={() => {
             setTransferId(foundTransfer?.id)
             setView("transfer")

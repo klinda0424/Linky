@@ -4,6 +4,7 @@ import { MainHeader } from "@/components/layout"
 import {
   label,
   transferGuess,
+  type TransferGuess,
   weekday,
   won,
   type Evidence,
@@ -16,6 +17,25 @@ const givenName = (name: string) => (name.length === 3 ? name.slice(1) : name)
 
 // 사진 내용 인식 문구("파스타 · 2인 세팅")에서 첫 단어만 쓴다
 const subjectOf = (contents: string[]) => contents[0]?.split("·")[0]?.trim()
+
+// 홈 알림·확인 화면이 같은 질문 문구를 쓴다
+export function transferQuestion(payment: Payment, guess: TransferGuess) {
+  const name = givenName(payment.counterparty ?? "")
+  const subject = subjectOf(guess.photoContents)
+  return `이 송금, ${guess.place ? `${guess.place}에서 ` : ""}${name}님과 먹은 ${subject ?? "식사"} 정산 아닌가요?`
+}
+
+// 근거 한 줄: 그날 사진 · 일정 · 체류 (사실만)
+export function transferEvidenceLine(guess: TransferGuess) {
+  const subject = subjectOf(guess.photoContents)
+  return [
+    subject ? `그날 사진 ${subject}` : undefined,
+    guess.eventTitle ? `일정 '${guess.eventTitle}'` : undefined,
+    guess.place ? `${guess.place} 체류` : undefined,
+  ]
+    .filter(Boolean)
+    .join(" · ")
+}
 
 const evidenceIcon = (kind: Evidence["kind"]) =>
   kind === "location" ? MapPin : kind === "calendar" ? CalendarDays : Camera
@@ -35,8 +55,6 @@ export function TransferConfirm({
   decline: () => void
 }) {
   const guess = transferGuess(payment, state)
-  const name = givenName(payment.counterparty ?? "")
-  const subject = guess ? subjectOf(guess.photoContents) : undefined
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="링키가 찾았어요" />
@@ -53,8 +71,7 @@ export function TransferConfirm({
         {guess ? (
           <>
             <h2 className="transfer-question">
-              이 송금, {guess.place ? `${guess.place}에서 ` : ""}
-              {name}님과 먹은 {subject ?? "식사"} 정산 아닌가요?
+              {transferQuestion(payment, guess)}
             </h2>
             <p className="transfer-lead">내 기록에서 이런 근거를 찾았어요.</p>
             <ul className="transfer-basis">
