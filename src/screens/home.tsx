@@ -273,13 +273,13 @@ export function HomePage({
               <Action className="pill" onClick={() => declineTransfer(foundTransfer.payment)}>
                 아니에요
               </Action>
+              {pendingSettlement && (
+                <Action className="hm-found-link" onClick={openSettlement}>
+                  정산 대기함 {pendingSettlement.count}건
+                  <ChevronRight size={14} strokeWidth={1.8} />
+                </Action>
+              )}
             </div>
-            {pendingSettlement && (
-              <Action className="hm-found-link" onClick={openSettlement}>
-                정산 대기함 {pendingSettlement.count}건
-                <ChevronRight size={14} strokeWidth={1.8} />
-              </Action>
-            )}
           </section>
         )}
         {!foundTransfer && pendingSettlement && (
