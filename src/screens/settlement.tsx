@@ -34,6 +34,7 @@ import {
   MEMBERS,
   meeting,
   type Member,
+  settlementDeposits,
   settlementItems,
   settlementPeriod,
   settlementTitle,
@@ -242,15 +243,17 @@ export function SettlementInbox({
               : `${settlementTitle}\n그룹 지출 같아요`
           }
         />
-        {basis && (
-          <div className="group-basis">
-            <span>근거</span>
+        <div className="group-basis">
+          <span>근거</span>
+          {settlementDeposits.length > 0 && (
+            <p>입금 {settlementDeposits.length}건이 들어왔어요</p>
+          )}
+          {basis && basis.detail && (
             <p>
-              {basis.source} {basis.count}명
-              {basis.detail ? ` · ${basis.detail}` : ""}
+              {basis.source} {basis.count}명 · {basis.detail}
             </p>
-          </div>
-        )}
+          )}
+        </div>
         <div className="settlement-summary">
           <div>
             <span>정산 대기</span>
@@ -315,11 +318,17 @@ export function SettlementTable({
 }) {
   const summary = summarize(excluded)
   const empty = summary.items.length === 0
-  // 민지만 아직 대기 (입금 확인 시연용)
-  const people = MEMBERS.map(
-    (name) =>
-      [name, won(summary.paid[name]), name === "민지" ? "waiting" : "done"] as const,
-  )
+  // 내가 낸 금액, 나머지는 결제 후 입금한 금액
+  const people = MEMBERS.map((name) => {
+    const deposit = settlementDeposits.find((item) => item.from === name)
+    return [
+      name,
+      name === "나" || !deposit
+        ? `낸 금액 ${won(summary.paid[name])}`
+        : `입금 ${won(deposit.amount)}`,
+      "done",
+    ] as const
+  })
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="정산표" />
@@ -340,7 +349,7 @@ export function SettlementTable({
               <PersonAvatar name={name} />
               <div>
                 <strong>{name}</strong>
-                <span>낸 금액 {amount}</span>
+                <span>{amount}</span>
               </div>
               {!empty && <StatusChip type={status} />}
             </div>
@@ -472,29 +481,28 @@ export function SettlementEdit({
   )
 }
 
+// 입금 3건이 이미 들어온 상태로 시작한다. notify·matched는 MainApp 연결 호환용(사용하지 않음)
 export function SettlementConfirm({
   back,
   result,
-  notify,
   excluded,
-  matched,
 }: {
   back: () => void
   result: () => void
-  notify: () => void
   excluded: string[]
-  // 민지 입금까지 매칭되면 true → 결과 확인 가능
-  matched: boolean
+  notify?: () => void
+  matched?: boolean
 }) {
   const summary = summarize(excluded)
   const deposits = MEMBERS.filter((name) => name !== "나")
+  const timeOf = (name: string) => settlementDeposits.find((item) => item.from === name)?.time
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="정산 확정" />
       <div className="confirm-content">
         <div className="auto-banner">
           <Check size={15} strokeWidth={2} />
-          입금이 확인되면 자동으로 반영돼요. 수동으로 확인할 수도 있어요.
+          입금 {settlementDeposits.length}건이 확인됐어요.
         </div>
         <div className="receive-card">
           <span>내가 받아야 할 금액</span>
@@ -505,7 +513,7 @@ export function SettlementConfirm({
           <div>
             <span>입금 현황</span>
             <strong>
-              {deposits.length}명 중 {matched ? deposits.length : deposits.length - 1}명 입금 완료
+              {deposits.length}명 중 {deposits.length}명 입금 완료
             </strong>
           </div>
         </div>
@@ -516,25 +524,16 @@ export function SettlementConfirm({
               <strong>
                 {name} · {won(summary.owes[name])}
               </strong>
-              {name !== "민지" || matched ? (
-                <span className="deposit-done">✓ 입금 확인</span>
-              ) : (
-                <span className="deposit-waiting">◷ 대기 중</span>
-              )}
+              <span className="deposit-done">
+                ✓ {timeOf(name) ? `${timeOf(name)} ` : ""}입금 확인
+              </span>
             </div>
           ))}
         </div>
       </div>
-      <div className="confirm-bottom">
-        <Action className="secondary-button" onClick={notify}>
-          친구에게 알림 보내기
-        </Action>
-        <Action
-          className="primary-button"
-          disabled={!matched}
-          onClick={result}
-        >
-          {matched ? "결과 보기" : "입금 확인 중"}
+      <div className="confirm-bottom single">
+        <Action className="primary-button" onClick={result}>
+          결과 보기
         </Action>
       </div>
     </div>
