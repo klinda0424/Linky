@@ -123,7 +123,7 @@ export function ReportTab({
 
         <section className="main-card">
           <div className="block-heading">
-            <strong>주간 리포트</strong>
+            <strong className="rpt-hl">주간 리포트</strong>
             <span>
               {label(weekly.from)} ~ {label(weekly.to)}
             </span>
@@ -165,7 +165,7 @@ export function ReportTab({
 
         <section className="main-card">
           <div className="block-heading">
-            <strong>내 지출 패턴</strong>
+            <strong className="rpt-hl">내 지출 패턴</strong>
             <span>{pattern ? `${pattern.month}월` : ""}</span>
           </div>
           {pattern ? (
@@ -197,7 +197,7 @@ export function ReportTab({
 
         <section className="main-card">
           <div className="block-heading">
-            <strong>지난주와 달라진 점</strong>
+            <strong className="rpt-hl">지난주와 달라진 점</strong>
           </div>
           {changed ? (
             <p className="rpt-head">
@@ -210,7 +210,7 @@ export function ReportTab({
 
         <section className="main-card">
           <div className="block-heading">
-            <strong>월간 리포트</strong>
+            <strong className="rpt-hl">월간 리포트</strong>
             <span>{monthly.month}월</span>
           </div>
           <p className="rpt-head">
