@@ -461,12 +461,6 @@ export function HomePage({
                   <ChevronRight size={20} strokeWidth={1.8} />
                 </Action>
               )}
-              {/* 다른 날을 보고 있을 때만: 오늘(10/31)로 바로 이동 */}
-              {!isToday && (
-                <Action className="hm-today-link" label="오늘로 이동" onClick={() => selectDay(TODAY)}>
-                  오늘
-                </Action>
-              )}
             </div>
             <em>{`${week[0].m}.${week[0].d} – ${week[6].m}.${week[6].d}`}</em>
           </div>

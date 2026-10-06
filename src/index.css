@@ -6201,16 +6201,6 @@ p {
   gap: 6px;
 }
 
-/* 오늘로 이동: 작은 회색 글자 */
-.hm-today-link {
-  margin-left: 4px;
-  padding: 4px 2px;
-  color: var(--text-mute);
-  font-size: var(--fs-caption);
-  line-height: var(--lh-caption);
-  font-weight: var(--fw-label);
-}
-
 /* 오늘 지출: 정산 대기 뱃지는 둥근 연라임 pill */
 .hm-badge {
   padding: 6px 14px;
