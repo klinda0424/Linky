@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react"
-import { CalendarDays, Camera, ChevronLeft, ChevronRight, Plus, Route } from "lucide-react"
+import { CalendarDays, Camera, ChevronLeft, ChevronRight, Link2, Plus, Route } from "lucide-react"
 import { Action, cx } from "@/components/common"
 import { HeaderActions } from "@/components/layout"
 import {
@@ -93,31 +93,38 @@ export function CalendarHome({
   const isThisMonth = y === TODAY.y && m === TODAY.m
   return (
     <>
-      <div className="cal2-head">
-        <div className="cal2-month">
-          <h1>{m}월</h1>
-          <Action
-            className="cal2-arrow"
-            disabled={index === 0}
-            label="이전 달"
-            onClick={() => goMonth(index - 1)}
-          >
-            <ChevronLeft size={20} strokeWidth={1.8} />
-          </Action>
-          <Action
-            className="cal2-arrow"
-            disabled={index === monthsAvailable.length - 1}
-            label="다음 달"
-            onClick={() => goMonth(index + 1)}
-          >
-            <ChevronRight size={20} strokeWidth={1.8} />
-          </Action>
+      {/* 상단: 홈과 같은 Linky 로고 · 검색 · 프로필 */}
+      <div className="cal-brandbar">
+        <div className="brand cal-brand">
+          <span className="brand-mark">
+            <Link2 size={18} strokeWidth={2.2} />
+          </span>
+          <span>Linky</span>
         </div>
-        <HeaderActions accent openProfile={openProfile} openSearch={openSearch} />
+        <HeaderActions openProfile={openProfile} openSearch={openSearch} />
       </div>
       <div className="cal2-scroll">
-        {/* 홈과 같은 축척(0.82배)으로 글자·여백 밀도를 맞춘다 */}
         <div className="cal2-zoom">
+          {/* 월 이동: < 10월 > */}
+          <div className="cal2-month">
+            <Action
+              className="cal2-arrow"
+              disabled={index === 0}
+              label="이전 달"
+              onClick={() => goMonth(index - 1)}
+            >
+              <ChevronLeft size={20} strokeWidth={1.8} />
+            </Action>
+            <h1>{m}월</h1>
+            <Action
+              className="cal2-arrow"
+              disabled={index === monthsAvailable.length - 1}
+              label="다음 달"
+              onClick={() => goMonth(index + 1)}
+            >
+              <ChevronRight size={20} strokeWidth={1.8} />
+            </Action>
+          </div>
           <section className="cal2-summary">
             <span>{isThisMonth ? "이번 달 지출" : `${m}월 지출`}</span>
             <strong>{won(summary.mine)}</strong>

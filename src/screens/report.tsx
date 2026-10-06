@@ -10,6 +10,7 @@ import {
   weeklyChange,
   weeklyReport,
 } from "@/lib/report"
+import { reportDemoFacts } from "@/mock/report"
 
 type ReportView = "weekly" | "monthly"
 
@@ -59,25 +60,25 @@ function ReportSwitch({ value, change }: { value: ReportView; change: (view: Rep
   )
 }
 
-function PeriodNav({ label: periodLabel, previous, next }: { label: string; previous: () => void; next: () => void }) {
+function PeriodNav({ label: periodLabel, previous, next }: { label?: string; previous: () => void; next: () => void }) {
   return (
-    <div className="rpt-period">
+    <div className={cx("rpt-period", !periodLabel && "compact")}>
       <button aria-label="이전 기간" className="rpt-period-button" onClick={previous} type="button">
-        <ChevronLeft size={20} strokeWidth={1.8} />
+        <ChevronLeft size={16} strokeWidth={1.8} />
       </button>
-      <span>{periodLabel}</span>
+      {periodLabel && <span>{periodLabel}</span>}
       <button aria-label="다음 기간" className="rpt-period-button" onClick={next} type="button">
-        <ChevronRight size={20} strokeWidth={1.8} />
+        <ChevronRight size={16} strokeWidth={1.8} />
       </button>
     </div>
   )
 }
 
-function MetricRows({ rows }: { rows: Array<[string, string | undefined]> }) {
+function MetricRows({ rows }: { rows: Array<[string, string | undefined, string?]> }) {
   return (
     <dl className="rpt-metrics">
-      {rows.map(([name, value]) => (
-        <div key={name}>
+      {rows.map(([name, value, className]) => (
+        <div className={className} key={name}>
           <dt>{name}</dt>
           <dd>{value || "기록 없음"}</dd>
         </div>
@@ -112,42 +113,57 @@ export function ReportTab({ state, openSettlement }: { state: LedgerState; openS
       </div>
       <div className="report-scroll">
         <div className="report-zoom">
-          {view === "weekly" && (
-            <section className="main-card report-preview">
-              <div className="block-heading">
-                <strong>다음 주 예고</strong>
-                <span>{preview ? `${label(preview.from)}부터` : ""}</span>
-              </div>
-              {preview ? (
-                <>
-                  <div className="rpt-preview-count">
-                    <span>일정</span>
-                    <b>{preview.events.length}건</b>
-                  </div>
-                  <div className="rpt-preview-events">
-                    {preview.events.map((event) => (
-                      <div key={`${event.date.y}-${event.date.m}-${event.date.d}-${event.start}`}>
-                        <p>{`${label(event.date)} ${event.start} · ${event.title}`}</p>
-                        {event.repeatedFact && <small>{event.repeatedFact}</small>}
-                      </div>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <p className="report-line">기록 없음</p>
-              )}
-            </section>
-          )}
-
           <ReportSwitch change={setView} value={view} />
 
           {view === "weekly" ? (
             <>
+              <section className="main-card rpt-change-card rpt-insight-card">
+                <strong>지난주와 달라진 점</strong>
+                {changed ? (
+                  <>
+                    <span>{changed.category}</span>
+                    <b>-{won(changed.diff)}</b>
+                    <p>지난주보다 줄었어요</p>
+                  </>
+                ) : (
+                  <p className="report-line">기록 없음</p>
+                )}
+              </section>
+
+              <section className="main-card report-preview">
+                <div className="block-heading">
+                  <strong>다음 주 예고</strong>
+                </div>
+                {preview ? (
+                  <>
+                    <div className="rpt-preview-count">
+                      <span>일정</span>
+                      <b>{preview.events.length}건</b>
+                    </div>
+                    <div className="rpt-preview-events">
+                      {preview.events.map((event) => (
+                        <div key={`${event.date.y}-${event.date.m}-${event.date.d}-${event.start}`}>
+                          <p>{`${label(event.date)} ${event.start} · ${event.title}`}</p>
+                          {event.title.includes("지은") ? (
+                            <small>
+                              전에 지은이랑 약속에선 평균 {won(reportDemoFacts.jieunAppointmentAverage)} 정도의 지출이 있었어요.
+                            </small>
+                          ) : event.repeatedFact ? (
+                            <small>{event.repeatedFact}</small>
+                          ) : null}
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <p className="report-line">기록 없음</p>
+                )}
+              </section>
+
               <section className="main-card rpt-report-card">
                 <div className="rpt-card-heading">
                   <strong>주간 리포트</strong>
                   <PeriodNav
-                    label={`${label(weekly.from)} ~ ${label(weekly.to)}`}
                     next={() => setWeekAnchor((date) => addDays(date, 7))}
                     previous={() => setWeekAnchor((date) => addDays(date, -7))}
                   />
@@ -178,56 +194,10 @@ export function ReportTab({ state, openSettlement }: { state: LedgerState; openS
                 )}
               </section>
 
-              <section className="main-card rpt-change-card">
-                <strong>지난주와 달라진 점</strong>
-                {changed ? (
-                  <>
-                    <span>{changed.category}</span>
-                    <b>-{won(changed.diff)}</b>
-                    <p>지난주보다 줄었어요</p>
-                  </>
-                ) : (
-                  <p className="report-line">기록 없음</p>
-                )}
-              </section>
             </>
           ) : (
             <>
-              <section className="main-card rpt-report-card rpt-month-card">
-                <div className="rpt-card-heading">
-                  <strong>월간 리포트</strong>
-                  <PeriodNav
-                    label={`${monthly.month}월`}
-                    next={() => setMonthAnchor((date) => moveMonth(date, 1))}
-                    previous={() => setMonthAnchor((date) => moveMonth(date, -1))}
-                  />
-                </div>
-                {monthly.count === 0 ? (
-                  <p className="report-line">기록 없음</p>
-                ) : (
-                  <>
-                    <div className="rpt-total">
-                      <span>실제로 쓴 돈</span>
-                      <b>{won(monthly.mine)}</b>
-                      <p>결제 총액 {won(monthly.total)} 중 내 지출</p>
-                    </div>
-                    <MetricRows
-                      rows={[
-                        ["내 기록으로 채운 결제", `${monthly.restoredCount}건 / ${monthly.count}건`],
-                        ["가장 큰 카테고리", monthly.categories[0] ? `${monthly.categories[0][0]} ${monthly.categories[0][1]}%` : undefined],
-                        [
-                          "전월과의 차이",
-                          monthly.mineChange === undefined
-                            ? undefined
-                            : `${monthly.mineChange > 0 ? "+" : "-"}${won(Math.abs(monthly.mineChange))}`,
-                        ],
-                      ]}
-                    />
-                  </>
-                )}
-              </section>
-
-              <section className="main-card rpt-pattern-card">
+              <section className="main-card rpt-pattern-card rpt-insight-card">
                 <div className="block-heading">
                   <strong>내 지출 패턴</strong>
                   <span>{pattern ? `${pattern.month}월` : `${monthly.month}월`}</span>
@@ -262,6 +232,41 @@ export function ReportTab({ state, openSettlement }: { state: LedgerState; openS
                   <p className="report-line">기록 없음</p>
                 )}
               </section>
+
+              <section className="main-card rpt-report-card rpt-month-card">
+                <div className="rpt-card-heading">
+                  <strong>월간 리포트</strong>
+                  <PeriodNav
+                    label={`${monthly.month}월`}
+                    next={() => setMonthAnchor((date) => moveMonth(date, 1))}
+                    previous={() => setMonthAnchor((date) => moveMonth(date, -1))}
+                  />
+                </div>
+                {monthly.count === 0 ? (
+                  <p className="report-line">기록 없음</p>
+                ) : (
+                  <>
+                    <div className="rpt-total">
+                      <span>실제로 쓴 돈</span>
+                      <b>{won(monthly.mine)}</b>
+                      <p>결제 총액 {won(monthly.total)} 중 내 지출</p>
+                    </div>
+                    <MetricRows
+                      rows={[
+                        ["가장 큰 카테고리", monthly.categories[0] ? `${monthly.categories[0][0]} ${monthly.categories[0][1]}%` : undefined],
+                        [
+                          "전월과의 차이",
+                          monthly.mineChange === undefined
+                            ? undefined
+                            : `${monthly.mineChange > 0 ? "+" : "-"}${won(Math.abs(monthly.mineChange))}`,
+                          monthly.mineChange !== undefined && monthly.mineChange < 0 ? "decreased" : undefined,
+                        ],
+                      ]}
+                    />
+                  </>
+                )}
+              </section>
+
             </>
           )}
         </div>

@@ -619,7 +619,7 @@ p {
 }
 
 .bottom-tabs {
-  height: 70px;
+  height: 76px;
   position: absolute;
   right: 0;
   bottom: 0;
@@ -647,8 +647,8 @@ p {
 }
 
 .bottom-tab svg {
-  width: 21px;
-  height: 21px;
+  width: 24px;
+  height: 24px;
 }
 
 .bottom-tab.active {
@@ -4127,23 +4127,16 @@ p {
 }
 
 /* ---------- 캘린더 개편 (시안 기준) ---------- */
-.cal2-head {
-  height: 64px;
-  padding: 0 var(--page-padding);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
+/* 월 이동 줄: < 10월 > (헤더 아래, 이번 달 지출 위) */
 .cal2-month {
+  margin: -6px 0 12px -10px;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0;
 }
 
 .cal2-month h1 {
-  margin-right: 10px;
+  margin: 0 2px;
   font-size: 22px;
   line-height: 28px;
   font-weight: var(--fw-headline);
@@ -4308,15 +4301,15 @@ p {
   background: var(--primary-soft);
 }
 
-/* 선택한 날: 칸 테두리 + 날짜 숫자 검은 원 */
+/* 선택한 날: 테두리·검은 원 없이 칸만 회색 배경 (오늘이면 라임 원은 그대로) */
 .cal2-cell.picked {
-  border-color: var(--text);
+  border-color: transparent;
+  background: var(--surface);
 }
 
-.cal2-cell.picked b {
-  padding: 0;
-  background: var(--text);
-  color: var(--background);
+.cal2-cell.picked:not(.today) b {
+  background: transparent;
+  color: var(--text);
 }
 
 /* 오늘·선택한 날 숫자는 항상 정원 (오늘 강조의 min-width 20px에 눌려 타원이 되지 않게) */
@@ -5881,7 +5874,7 @@ p {
    ====================================================================== */
 .hm-scroll {
   padding-right: var(--page-padding);
-  padding-bottom: calc(70px + 16px);
+  padding-bottom: calc(76px + 16px);
   padding-left: var(--page-padding);
 }
 
@@ -6304,14 +6297,17 @@ p {
 /* 하단 탭: 선택 탭은 아이콘 채움 + 라벨 아래 라임 점 */
 .bottom-tab {
   position: relative;
+  justify-content: flex-start;
+  padding-top: 10px;
 }
 
+/* 선택 탭 점: 라벨 아래 약 6px, 점 아래 약 11px */
 .bottom-tab.active::after {
   content: "";
   width: 5px;
   height: 5px;
   position: absolute;
-  bottom: 8px;
+  bottom: 11px;
   border-radius: 50%;
   background: var(--primary);
 }
@@ -6333,132 +6329,75 @@ p {
 }
 
 /* ======================================================================
-   홈 축척: 시안(가로 518px 프레임)과 같은 비율로 보이도록 홈 내용을 0.82배로 줄인다.
-   글자·여백·아이콘이 함께 줄어 시안과 같은 밀도가 된다 (375 / 518 = 0.724보다 조금 크게 0.82).
+   앱 축척: 시안(가로 518px 프레임) 밀도에 맞추려고 메인 앱 전체(홈·캘린더·리포트·지도·앨범·
+   지출 상세·정산·프로필 등)를 한 번에 0.85배로 줄인다. 상태바와 온보딩은 축척 밖이다.
+   0.85배 기준 글자 크기: 섹션 제목 18→15.3, 행 16→13.6, 본문 14→11.9, 캡션 12→10.2.
    ====================================================================== */
-.cal-brandbar {
+.main-scale {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(375px / 0.85);
+  height: calc(812px / 0.85);
+  zoom: 0.85;
+}
+
+/* 축척 안에서 상태바(실제 44px) 아래부터 시작하도록 */
+.main-scale .main-page {
+  inset: calc(44px / 0.85) 0 0;
+}
+
+/* 홈·캘린더·리포트 헤더 높이 82px, 좌우 여백 21px */
+.cal-brandbar,
+.main-simple-header.rp-head {
   height: 82px;
   padding: 0 21px;
-  zoom: 0.82;
 }
 
-.hm-scroll {
-  padding-top: 0;
-  padding-right: 0;
-  padding-bottom: 0;
-  padding-left: 0;
+.hm-scroll,
+.cal2-scroll,
+.report-scroll {
+  height: calc(100% - 82px);
+  padding: 0;
 }
 
-.hm-zoom {
-  padding: 16px 21px calc(70px / 0.82 + 16px);
-  zoom: 0.82;
+.hm-zoom,
+.report-zoom {
+  padding: 16px 21px calc(76px + 16px);
+}
+
+.report-zoom {
+  --report-blue-text: #4774ad;
+}
+
+.cal2-zoom {
+  padding: 20px 21px calc(76px + 20px);
 }
 
 .hm-link {
   top: 0;
 }
 
-/* 캘린더 축척: 홈과 같은 0.82배 (헤더 82px → 67px, 좌우 21px → 17px) */
-.cal2-head {
-  height: 82px;
-  padding: 0 21px;
-  zoom: 0.82;
+/* 정산함 버튼: 프로필 아이콘(오른쪽 12px, 폭 40px) 왼쪽 4px */
+.rp-head .report-settle-btn {
+  height: 36px;
+  margin-right: 35px;
+  padding: 0 14px;
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
 }
 
-.cal2-scroll {
-  height: calc(100% - 82px * 0.82);
-  padding: 0;
+.report-profile {
+  top: 21px;
 }
 
-.cal2-zoom {
-  padding: 20px 21px calc(70px / 0.82 + 20px);
-  zoom: 0.82;
-}
-
-/* 리포트 축척: 홈·캘린더와 같은 0.82배 (헤더 82px → 67px, 좌우 21px → 17px) */
-.main-simple-header.rp-head {
-  height: 82px;
-  padding: 0 21px;
-  zoom: 0.82;
-}
-
-.report-scroll {
-  height: calc(100% - 82px * 0.82);
-  padding: 0;
-}
-
-.report-zoom {
-  padding: 16px 21px calc(70px / 0.82 + 16px);
-  zoom: 0.82;
-}
-
-/* 리포트: 주간/월간 전환과 기간별 사실 요약 */
+/* 리포트: 최신 전역 0.85 축척 안에서 주간/월간 정보 위계를 구성한다. */
 .report-zoom .main-card {
   margin-bottom: 16px;
   padding: 24px;
   border: 1px solid var(--border);
   border-radius: 24px;
   background: var(--background);
-}
-
-.report-zoom .report-preview {
-  padding: 20px;
-  border: 0;
-  background: var(--primary-soft);
-}
-
-.report-preview .block-heading > strong {
-  font-size: var(--fs-title);
-  line-height: var(--lh-title);
-  font-weight: var(--fw-title);
-}
-
-.rpt-preview-count {
-  margin-top: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.rpt-preview-count span {
-  color: var(--text-mute);
-  font-size: var(--fs-label);
-  line-height: var(--lh-label);
-  font-weight: var(--fw-label);
-}
-
-.rpt-preview-count b {
-  font-size: 28px;
-  line-height: 32px;
-  font-weight: var(--fw-headline);
-}
-
-.rpt-preview-events {
-  margin-top: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.rpt-preview-events > div {
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: var(--background);
-}
-
-.rpt-preview-events p {
-  font-size: var(--fs-item-title);
-  line-height: var(--lh-item-title);
-  font-weight: var(--fw-item-title);
-}
-
-.rpt-preview-events small {
-  margin-top: 4px;
-  display: block;
-  color: var(--text-mute);
-  font-size: var(--fs-caption);
-  line-height: var(--lh-caption);
-  font-weight: var(--fw-caption);
 }
 
 .rpt-switch {
@@ -6496,15 +6435,20 @@ p {
   outline-offset: 2px;
 }
 
+.report-zoom .rpt-insight-card {
+  border: 0;
+  background: var(--blue);
+}
+
 .rpt-card-heading {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
 }
 
 .rpt-card-heading > strong,
-.rpt-change-card > strong {
+.rpt-insight-card > strong {
   font-size: var(--fs-title);
   line-height: var(--lh-title);
   font-weight: var(--fw-title);
@@ -6512,12 +6456,18 @@ p {
 }
 
 .rpt-period {
-  min-width: 0;
+  min-width: 150px;
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) 36px;
+  grid-template-columns: 30px minmax(0, 1fr) 30px;
   align-items: center;
   color: var(--text-mute);
   text-align: center;
+}
+
+.rpt-period.compact {
+  min-width: 64px;
+  grid-template-columns: repeat(2, 30px);
+  gap: 4px;
 }
 
 .rpt-period > span {
@@ -6530,8 +6480,8 @@ p {
 }
 
 .rpt-period-button {
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   padding: 0;
   display: flex;
   align-items: center;
@@ -6547,8 +6497,94 @@ p {
   background: var(--surface);
 }
 
+.rpt-change-card > span {
+  margin-top: 24px;
+  display: block;
+  color: var(--text-mute);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: var(--fw-body);
+}
+
+.rpt-change-card > b {
+  margin-top: 4px;
+  display: block;
+  font-size: 28px;
+  line-height: 34px;
+  font-weight: var(--fw-headline);
+}
+
+.rpt-change-card > p:not(.report-line) {
+  margin-top: 8px;
+  color: var(--text-body);
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+  font-weight: var(--fw-body);
+}
+
+.report-zoom .report-preview {
+  padding: 20px;
+  border: 0;
+  background: var(--primary-soft);
+}
+
+.report-preview .block-heading > strong {
+  font-size: var(--fs-title);
+  line-height: var(--lh-title);
+  font-weight: var(--fw-title);
+}
+
+.rpt-preview-count {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rpt-preview-count span {
+  color: var(--text-mute);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+  font-weight: var(--fw-label);
+}
+
+.rpt-preview-count b {
+  font-size: 26px;
+  line-height: 30px;
+  font-weight: var(--fw-headline);
+}
+
+.rpt-preview-events {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rpt-preview-events > div {
+  padding: 13px 15px;
+  border-radius: 14px;
+  background: var(--background);
+}
+
+.rpt-preview-events p {
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+  font-weight: var(--fw-item-title);
+}
+
+.rpt-preview-events small {
+  margin-top: 6px;
+  display: block;
+  color: var(--text-body);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+  font-weight: var(--fw-label);
+  word-break: keep-all;
+}
+
 .rpt-total {
-  margin-top: 30px;
+  margin-top: 26px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -6563,9 +6599,9 @@ p {
 }
 
 .rpt-total > b {
-  margin-top: 6px;
-  font-size: 34px;
-  line-height: 40px;
+  margin-top: 5px;
+  font-size: 30px;
+  line-height: 36px;
   font-weight: var(--fw-headline);
   letter-spacing: -0.03em;
 }
@@ -6579,13 +6615,13 @@ p {
 }
 
 .rpt-report-card .rpt-columns {
-  margin-top: 30px;
-  padding-bottom: 20px;
+  margin-top: 26px;
+  padding-bottom: 18px;
   border-bottom: 1px solid var(--border);
 }
 
 .rpt-report-card .rpt-col-track {
-  height: 86px;
+  height: 80px;
 }
 
 .rpt-report-card .rpt-col-track i {
@@ -6599,6 +6635,8 @@ p {
 
 .rpt-report-card .rpt-col em {
   color: var(--text-mute);
+  font-size: 11px;
+  line-height: 14px;
 }
 
 .rpt-report-card .rpt-col.today b {
@@ -6607,7 +6645,7 @@ p {
 }
 
 .rpt-metrics {
-  margin: 18px 0 0;
+  margin: 16px 0 0;
 }
 
 .rpt-metrics > div {
@@ -6638,30 +6676,29 @@ p {
   font-weight: var(--fw-item-title);
 }
 
-.report-zoom .rpt-change-card {
-  padding: 24px;
-  border: 0;
-  background: var(--blue);
+.rpt-metrics .decreased dd {
+  color: var(--report-blue-text);
 }
 
-.rpt-change-card > span {
-  margin-top: 28px;
-  display: block;
-  color: var(--text-mute);
-  font-size: var(--fs-body);
-  line-height: var(--lh-body);
-  font-weight: var(--fw-body);
+.rpt-month-card .rpt-metrics,
+.rpt-pattern-card .rpt-metrics {
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
 }
 
-.rpt-change-card > b {
-  margin-top: 4px;
+.rpt-pattern-main {
+  margin-top: 24px;
+}
+
+.rpt-pattern-main > b {
+  margin-top: 5px;
   display: block;
   font-size: 30px;
   line-height: 36px;
   font-weight: var(--fw-headline);
 }
 
-.rpt-change-card > p:not(.report-line) {
+.rpt-pattern-main > p {
   margin-top: 8px;
   color: var(--text-body);
   font-size: var(--fs-item-title);
@@ -6669,49 +6706,24 @@ p {
   font-weight: var(--fw-body);
 }
 
-.rpt-month-card .rpt-metrics,
-.rpt-pattern-card .rpt-metrics {
-  padding-top: 10px;
-  border-top: 1px solid var(--border);
-}
-
-.rpt-pattern-main {
-  margin-top: 28px;
-}
-
-.rpt-pattern-main > b {
-  margin-top: 6px;
-  display: block;
-  font-size: 34px;
-  line-height: 40px;
-  font-weight: var(--fw-headline);
-}
-
-.rpt-pattern-main > p {
-  margin-top: 10px;
-  color: var(--text-body);
-  font-size: var(--fs-item-title);
-  line-height: var(--lh-item-title);
-  font-weight: var(--fw-body);
-}
-
 .rpt-average-grid {
-  margin-top: 24px;
-  padding: 18px;
+  margin-top: 20px;
+  padding: 16px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   border-radius: 16px;
-  background: var(--surface);
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .rpt-average-grid > div {
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .rpt-average-grid > div + div {
-  padding-left: 20px;
+  padding-left: 18px;
   border-left: 1px solid var(--border);
 }
 
@@ -6724,18 +6736,9 @@ p {
 }
 
 .rpt-average-grid b {
-  font-size: 22px;
-  line-height: 28px;
+  font-size: 20px;
+  line-height: 26px;
   font-weight: var(--fw-title);
-}
-
-/* 정산함 버튼: 축척 안에서 프로필 아이콘(오른쪽 12px, 폭 40px) 왼쪽 4px에 오도록 */
-.rp-head .report-settle-btn {
-  height: 36px;
-  margin-right: 47px;
-  padding: 0 14px;
-  font-size: var(--fs-label);
-  line-height: var(--lh-label);
 }
 
 /* 오늘 지출 합계: 금액만 보여 주고 크기는 한 단계 줄인다 */
@@ -6744,3 +6747,48 @@ p {
   line-height: 28px;
 }
 
+
+/* ======================================================================
+   글자 위계 통일: 모든 하위 화면을 홈과 같은 단계로 맞춘다 (화면 크기 = 값 × 0.85)
+   - 화면·섹션 제목 = title(18 → 15.3)   - 핵심 금액 = 22px(→ 18.7, 홈 오늘 지출과 같게)
+   - 행 제목 = item-title(16 → 13.6)      - 행 금액 = item-amount(16/600 → 13.6)
+   ====================================================================== */
+
+/* 하위 화면 상단 제목, 섹션 제목 */
+.main-scale .main-subheader > p,
+.main-scale .section-title,
+.main-scale .sub-heading,
+.main-scale .album-head strong,
+.main-scale .pd-title {
+  font-size: var(--fs-title);
+  line-height: var(--lh-title);
+  font-weight: var(--fw-title);
+}
+
+/* 화면의 핵심 금액: 홈 "오늘 지출" 합계와 같은 크기 */
+.main-scale .settlement-summary strong,
+.main-scale .pd-amount-row > strong {
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: var(--fw-headline);
+}
+
+/* 목록 행 제목: 홈 결제 행과 같은 크기 */
+.main-scale .settlement-item strong,
+.main-scale .profile-row > strong,
+.main-scale .list-copy .label-row > strong,
+.main-scale .tf-summary > strong,
+.main-scale .pd-place-text > strong,
+.main-scale .people-settlement strong {
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+  font-weight: var(--fw-item-title);
+}
+
+/* 행 금액: 홈 결제 금액과 같은 크기·굵기 */
+.main-scale .report-pay > p,
+.main-scale .tf-summary > b {
+  font-size: var(--fs-item-amount);
+  line-height: var(--lh-item-amount);
+  font-weight: var(--fw-item-amount);
+}

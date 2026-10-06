@@ -39,6 +39,14 @@ const keepInside = (k: number, x: number, y: number, width: number, height: numb
   x: clamp(x, width * (1 - k), 0),
   y: clamp(y, height * (1 - k), 0),
 })
+// 앱 화면 축척(CSS zoom) 안에서도 손가락 좌표를 지도 안쪽 좌표(px)로 바꾼다.
+// s = 화면에 보이는 폭 / 지도 자체 폭 (축척이 없으면 1)
+const localBox = (el: HTMLElement) => {
+  const rect = el.getBoundingClientRect()
+  const s = el.offsetWidth ? rect.width / el.offsetWidth : 1
+  return { left: rect.left, top: rect.top, width: el.offsetWidth, height: el.offsetHeight, s }
+}
+
 const distance = (a: { clientX: number; clientY: number }, b: { clientX: number; clientY: number }) =>
   Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY)
 type Selected =
@@ -112,9 +120,9 @@ export function MapTab({
     const onWheel = (event: WheelEvent) => {
       if (!event.ctrlKey && !event.metaKey) return
       event.preventDefault()
-      const rect = canvas.getBoundingClientRect()
-      const cx = event.clientX - rect.left
-      const cy = event.clientY - rect.top
+      const rect = localBox(canvas)
+      const cx = (event.clientX - rect.left) / rect.s
+      const cy = (event.clientY - rect.top) / rect.s
       setView((current) => {
         const k = clamp(current.k * Math.exp(-event.deltaY * 0.01), MIN_ZOOM, MAX_ZOOM)
         const px = (cx - current.x) / current.k
@@ -126,7 +134,7 @@ export function MapTab({
     return () => canvas.removeEventListener("wheel", onWheel)
   }, [])
   const onTouchStart = (event: TouchEvent<HTMLDivElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect()
+    const rect = localBox(event.currentTarget)
     if (event.touches.length === 2) {
       const [a, b] = [event.touches[0], event.touches[1]]
       gesture.current = {
@@ -135,8 +143,8 @@ export function MapTab({
         k: view.k,
         x: view.x,
         y: view.y,
-        fromX: (a.clientX + b.clientX) / 2 - rect.left,
-        fromY: (a.clientY + b.clientY) / 2 - rect.top,
+        fromX: ((a.clientX + b.clientX) / 2 - rect.left) / rect.s,
+        fromY: ((a.clientY + b.clientY) / 2 - rect.top) / rect.s,
         moved: false,
       }
     } else if (event.touches.length === 1 && view.k > 1) {
@@ -146,8 +154,8 @@ export function MapTab({
         k: view.k,
         x: view.x,
         y: view.y,
-        fromX: event.touches[0].clientX,
-        fromY: event.touches[0].clientY,
+        fromX: event.touches[0].clientX / rect.s,
+        fromY: event.touches[0].clientY / rect.s,
         moved: false,
       }
     }
@@ -155,20 +163,20 @@ export function MapTab({
   const onTouchMove = (event: TouchEvent<HTMLDivElement>) => {
     const g = gesture.current
     if (!g) return
-    const rect = event.currentTarget.getBoundingClientRect()
+    const rect = localBox(event.currentTarget)
     if (g.mode === "pinch" && event.touches.length === 2) {
       const [a, b] = [event.touches[0], event.touches[1]]
       const k = clamp((g.k * distance(a, b)) / g.startDistance, MIN_ZOOM, MAX_ZOOM)
-      const cx = (a.clientX + b.clientX) / 2 - rect.left
-      const cy = (a.clientY + b.clientY) / 2 - rect.top
+      const cx = ((a.clientX + b.clientX) / 2 - rect.left) / rect.s
+      const cy = ((a.clientY + b.clientY) / 2 - rect.top) / rect.s
       // 처음 두 손가락 가운데에 있던 지도 지점이 지금 손가락 가운데에 오도록 맞춘다
       const px = (g.fromX - g.x) / g.k
       const py = (g.fromY - g.y) / g.k
       g.moved = true
       setView({ k, ...keepInside(k, cx - px * k, cy - py * k, rect.width, rect.height) })
     } else if (g.mode === "pan" && event.touches.length === 1) {
-      const dx = event.touches[0].clientX - g.fromX
-      const dy = event.touches[0].clientY - g.fromY
+      const dx = event.touches[0].clientX / rect.s - g.fromX
+      const dy = event.touches[0].clientY / rect.s - g.fromY
       if (Math.abs(dx) + Math.abs(dy) > 6) g.moved = true
       setView((current) => ({
         k: current.k,
