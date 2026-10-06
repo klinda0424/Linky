@@ -5240,6 +5240,25 @@ p {
   line-height: 1.4;
 }
 
+/* 그룹 결제 카드에서 정산 흐름(그룹 결제 확인)으로 가는 링크 */
+.pay-settle-link {
+  margin-top: 4px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--background);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pay-settle-link:active {
+  background: var(--surface);
+}
+
 /* 그룹 결제: 내 몫·받을 돈을 한 줄씩 (라벨 왼쪽, 금액 오른쪽) */
 .pay-info .pay-split {
   margin: 0;
