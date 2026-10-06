@@ -5,12 +5,12 @@ import {
   monthlyReport,
   nextWeekPreview,
   patternReport,
-  praise,
+  weeklyChange,
   weeklyReport,
 } from "@/lib/report"
 
-// ---------- 리포트 탭: 주간 · 내 지출 패턴 · 다음 주 예고 · 칭찬 · 월간 · 정산 내역 ----------
-// 판단 없는 사실만 쓴다. 조절 제안은 다음 주 예고에서만, 데이터가 없으면 "기록 없음".
+// ---------- 리포트 탭: 주간 · 내 지출 패턴 · 다음 주 예고 · 지난주와 달라진 점 · 월간 · 정산 내역 ----------
+// 판단 없이 확인된 사실만 쓰고, 데이터가 없으면 "기록 없음".
 export function ReportTab({
   state,
   openSettlement,
@@ -21,7 +21,7 @@ export function ReportTab({
   const weekly = weeklyReport(state)
   const pattern = patternReport(state)
   const preview = nextWeekPreview(state)
-  const dropped = praise(state)
+  const changed = weeklyChange(state)
   const monthly = monthlyReport(state)
   return (
     <>
@@ -80,26 +80,26 @@ export function ReportTab({
             <span>{preview ? `${label(preview.from)}부터` : ""}</span>
           </div>
           {preview ? (
-            <>
-              <p className="report-line">약속 {preview.eventCount}건 잡혀 있어요</p>
-              <p className="report-line">
-                {preview.foodAverage !== undefined
-                  ? `이런 주엔 보통 식비·카페 ${won(preview.foodAverage)} 나갔어요`
-                  : "비슷한 주의 식비 기록 없음"}
-              </p>
-            </>
+            preview.events.map((event) => (
+              <div key={event.id}>
+                <p className="report-line">
+                  {label(event.date)} {event.start} · {event.title}
+                </p>
+                {event.repeatedFact && <p className="report-line">{event.repeatedFact}</p>}
+              </div>
+            ))
           ) : (
-            <p className="report-line">다음 주 일정 기록 없음</p>
+            <p className="report-line">기록 없음</p>
           )}
         </section>
 
         <section className="main-card">
           <div className="block-heading">
-            <strong>칭찬</strong>
+            <strong>지난주와 달라진 점</strong>
           </div>
           <p className="report-line">
-            {dropped
-              ? `지난주보다 ${dropped.category} 지출이 ${won(dropped.diff)} 줄었어요`
+            {changed
+              ? `지난주보다 ${changed.category} 지출이 ${won(changed.diff)} 줄었어요`
               : "기록 없음"}
           </p>
         </section>

@@ -65,6 +65,8 @@ export function MainApp({
   // 날짜 시트: 캘린더 탭 위에 열린다. 지도 핀·검색에서 넘어오면 해당 결제를 강조한다.
   const [sheetDay, setSheetDay] = useState<YMD>()
   const [focusPayment, setFocusPayment] = useState<string>()
+  // 검색 결과 위에 여는 결제 상세. 검색 화면을 유지해 검색어·결과가 사라지지 않게 한다.
+  const [searchPayment, setSearchPayment] = useState<Payment>()
   const [mapDay, setMapDay] = useState<YMD>()
   const [mapPeriod, setMapPeriod] = useState<"day" | "month">("day")
   const [returnToMonth, setReturnToMonth] = useState<YMD>()
@@ -334,8 +336,40 @@ export function MainApp({
       case "search":
         return (
           <SearchScreen
-            back={toTabs}
-            openPayment={openPayment}
+            back={() => {
+              setSearchPayment(undefined)
+              toTabs()
+            }}
+            closeDetail={() => setSearchPayment(undefined)}
+            detail={
+              searchPayment ? (
+                <DayPanel
+                  back={() => setSearchPayment(undefined)}
+                  canReturn={false}
+                  confirmRestore={confirmRestore}
+                  day={searchPayment.date}
+                  focusPayment={searchPayment.id}
+                  markPersonal={markPersonal}
+                  openRecord={openRecord}
+                  openSplit={setSplitting}
+                  relink={relink}
+                  relinkPhoto={relinkPhoto}
+                  showMap={(day) => {
+                    setSearchPayment(undefined)
+                    setMapDay(day)
+                    setMapPeriod("day")
+                    setReturnToMonth(undefined)
+                    setTab("map")
+                    setView("tabs")
+                  }}
+                  state={state}
+                  unlink={unlink}
+                  unlinkPhoto={unlinkPhoto}
+                  verify={verify}
+                />
+              ) : undefined
+            }
+            openPayment={setSearchPayment}
             state={state}
           />
         )

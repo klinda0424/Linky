@@ -125,6 +125,8 @@ export function PrivacySettings({
   toggle: (key: PermissionKey) => void
   back: () => void
 }) {
+  const [pendingOff, setPendingOff] = useState<PermissionKey>()
+
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="개인정보·권한" />
@@ -139,11 +141,20 @@ export function PrivacySettings({
               <div className="privacy-head">
                 <span className="icon-box neutral">{item.icon}</span>
                 <strong>{item.title}</strong>
-                <Toggle
-                  locked={item.required}
-                  on={values[item.key]}
-                  onClick={() => toggle(item.key)}
-                />
+                {item.required ? (
+                  <Badge>필수 연결</Badge>
+                ) : (
+                  <>
+                    <Badge>선택</Badge>
+                    <Toggle
+                      on={values[item.key]}
+                      onClick={() => {
+                        if (values[item.key]) setPendingOff(item.key)
+                        else toggle(item.key)
+                      }}
+                    />
+                  </>
+                )}
               </div>
               <dl>
                 <div>
@@ -161,6 +172,35 @@ export function PrivacySettings({
                   </div>
                 )}
               </dl>
+              {item.required && (
+                <p className="privacy-off">
+                  결제 기록을 날짜별로 보여주는 데 필요한 정보라 이 화면에서 해제할 수 없어요.
+                </p>
+              )}
+              {pendingOff === item.key && (
+                <>
+                  <div className="settings-note" role="alert">
+                    <Info size={15} strokeWidth={1.7} />
+                    <span>
+                      끄면 {item.title} 기록이 결제 근거에서 빠져요. 이 선택 권한을 끌까요?
+                    </span>
+                  </div>
+                  <div className="detail-actions">
+                    <Action className="pill" onClick={() => setPendingOff(undefined)}>
+                      유지
+                    </Action>
+                    <Action
+                      className="pill primary"
+                      onClick={() => {
+                        toggle(item.key)
+                        setPendingOff(undefined)
+                      }}
+                    >
+                      끄기
+                    </Action>
+                  </div>
+                </>
+              )}
               {!values[item.key] && (
                 <p className="privacy-off">
                   수집을 해제했어요. 이 기록은 결제 근거에서 빠져요.

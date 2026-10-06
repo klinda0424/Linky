@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, type ReactNode } from "react"
 import { ChevronRight, Search, X } from "lucide-react"
 import { Action, cx } from "@/components/common"
 import { MainHeader } from "@/components/layout"
@@ -25,10 +25,14 @@ export function SearchScreen({
   state,
   back,
   openPayment,
+  detail,
+  closeDetail,
 }: {
   state: LedgerState
   back: () => void
   openPayment: (payment: Payment) => void
+  detail?: ReactNode
+  closeDetail: () => void
 }) {
   const [query, setQuery] = useState("")
   const [submitted, setSubmitted] = useState("")
@@ -50,6 +54,15 @@ export function SearchScreen({
     ).values(),
   ]
   const total = results.reduce((sum, payment) => sum + payment.amount, 0)
+
+  if (detail)
+    return (
+      <div className="main-page sub-page">
+        <MainHeader back={closeDetail} title="결제 상세" />
+        <div className="search-content">{detail}</div>
+      </div>
+    )
+
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="검색" />

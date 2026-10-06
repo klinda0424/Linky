@@ -7,6 +7,7 @@ import {
   payments,
   shareOf,
   ymd,
+  type CalEvent,
   type LedgerState,
   type Payment,
   type YMD,
@@ -89,41 +90,67 @@ export function patternReport(state: LedgerState) {
   }
 }
 
-const eventCountIn = (from: YMD, state: LedgerState) =>
-  state.sources.calendar
-    ? events.filter(
-        (event) =>
-          keyOf(event.date) >= keyOf(from) && keyOf(event.date) <= keyOf(addDays(from, 6)),
-      ).length
-    : 0
+const minutes = (time: string) => {
+  const [hour, minute] = time.split(":").map(Number)
+  return hour * 60 + minute
+}
 
-// 다음 주 예고: 다음 주 일정 수와, 일정이 그만큼 이상 있던 지난 주들의 식비·카페 평균
+const paymentsForEvent = (event: CalEvent) =>
+  payments.filter(
+    (payment) =>
+      keyOf(payment.date) === keyOf(event.date) &&
+      minutes(payment.time) >= minutes(event.start) - 60 &&
+      minutes(payment.time) <= minutes(event.end) + 60,
+  )
+
+// 같은 장소의 과거 일정이 2번 이상 있고, 같은 결제 분류가 2번 이상 함께 기록된 경우만 반복 사실로 쓴다.
+// 일정-결제 연결은 원장의 기존 규칙과 같은 일정 시간대 ±60분을 사용한다.
+function repeatedFactFor(event: CalEvent, state: LedgerState) {
+  const observed = events.filter(
+    (past) => past.zone === event.zone && keyOf(past.date) < keyOf(TODAY),
+  )
+  if (!state.sources.calendar || observed.length < 2) return undefined
+
+  const counts = new Map<string, number>()
+  for (const past of observed) {
+    const categories = new Set(paymentsForEvent(past).map(categoryOf))
+    for (const category of categories)
+      counts.set(category, (counts.get(category) ?? 0) + 1)
+  }
+  const [category, matchedCount] =
+    [...counts.entries()]
+      .filter(([, count]) => count >= 2)
+      .sort((a, b) => b[1] - a[1])[0] ?? []
+  if (!category || !matchedCount) return undefined
+
+  return `기록된 ${event.zone} 일정 ${observed.length}번 중 ${matchedCount}번에서 ${category} 결제가 함께 기록됐어요.`
+}
+
+// 다음 주 예고: 확정된 일정과, 같은 장소의 과거 일정에서 반복 확인된 결제 사실
 export function nextWeekPreview(state: LedgerState) {
   const nextSunday = addDays(sundayOf(TODAY), 7)
-  const eventCount = eventCountIn(nextSunday, state)
-  if (eventCount === 0) return undefined
-  const similar = Array.from({ length: 8 }, (_, index) => addDays(sundayOf(TODAY), -7 * index))
-    .filter((sunday) => eventCountIn(sunday, state) >= eventCount)
-    .map((sunday) =>
-      sum(
-        paymentsIn(sunday, addDays(sunday, 6)).filter(
-          (payment) => payment.category === "식비·카페",
-        ),
-        state,
-      ),
-    )
-    .filter((amount) => amount > 0)
+  const nextEvents = state.sources.calendar
+    ? events
+        .filter(
+          (event) =>
+            keyOf(event.date) >= keyOf(nextSunday) &&
+            keyOf(event.date) <= keyOf(addDays(nextSunday, 6)),
+        )
+        .sort((a, b) => keyOf(a.date) - keyOf(b.date) || a.start.localeCompare(b.start))
+    : []
+  if (nextEvents.length === 0) return undefined
+
   return {
     from: nextSunday,
-    eventCount,
-    foodAverage: similar.length
-      ? Math.round(similar.reduce((a, b) => a + b, 0) / similar.length)
-      : undefined,
+    events: nextEvents.map((event) => ({
+      ...event,
+      repeatedFact: repeatedFactFor(event, state),
+    })),
   }
 }
 
-// 칭찬: 지난주보다 가장 많이 줄어든 카테고리 (내 기록끼리의 비교만)
-export function praise(state: LedgerState) {
+// 지난주와 달라진 점: 가장 많이 줄어든 카테고리 (내 기록끼리의 사실 비교만)
+export function weeklyChange(state: LedgerState) {
   const thisSunday = sundayOf(TODAY)
   const lastSunday = addDays(thisSunday, -7)
   const now = new Map(groupSum(paymentsIn(thisSunday, addDays(thisSunday, 6)), state, categoryOf))
