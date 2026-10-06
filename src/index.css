@@ -4169,8 +4169,8 @@ p {
   min-height: 32px;
   padding: 0 4px;
   color: var(--primary-text);
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .home-sub {
@@ -4351,8 +4351,8 @@ p {
 }
 
 .hm-scroll h2 {
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 /* 링키가 찾았어요 */
@@ -4459,7 +4459,7 @@ p {
 
 .hm-head > span {
   color: var(--sub);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .hm-head > div {
@@ -4470,7 +4470,7 @@ p {
 
 .hm-head em {
   color: var(--sub);
-  font-size: 13px;
+  font-size: 12px;
   font-style: normal;
 }
 
@@ -4499,14 +4499,14 @@ p {
   justify-content: center;
   border-radius: 50%;
   color: var(--text);
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .hm-day.today strong {
   background: var(--primary);
   color: var(--on-primary);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .hm-day small {
@@ -4523,8 +4523,8 @@ p {
 }
 
 .hm-title-row > b {
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .hm-empty {
@@ -4536,7 +4536,7 @@ p {
 .hm-recent {
   margin: 4px 0 8px;
   color: var(--sub);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 /* 오늘 지출 카드 */
@@ -4705,8 +4705,8 @@ p {
   border-radius: 14px;
   background: var(--background);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .hm-route svg {
@@ -4753,7 +4753,7 @@ p {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
   font-size: 12px;
   font-style: normal;
-  font-weight: 700;
+  font-weight: 600;
   white-space: nowrap;
   transform: translateX(-50%);
 }
@@ -4797,7 +4797,7 @@ p {
   background: var(--background);
   color: var(--text);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
   text-align: left;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -5153,12 +5153,12 @@ p {
 
 .hm-today-top > div > span {
   color: var(--sub);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .hm-today-top strong {
-  font-size: 20px;
-  font-weight: 800;
+  font-size: 18px;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
@@ -5169,7 +5169,7 @@ p {
   background: var(--background);
   color: var(--sub);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .hm-today-list {
@@ -5212,8 +5212,8 @@ p {
 }
 
 .hm-today-row strong {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   line-height: 1.3;
   word-break: keep-all;
 }
@@ -5225,8 +5225,8 @@ p {
 
 .hm-today-row b {
   flex: none;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .hm-notice {
@@ -5258,8 +5258,8 @@ p {
 }
 
 .hm-notice strong {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .hm-notice small {
@@ -5281,8 +5281,8 @@ p {
 }
 
 .hm-story-head strong {
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .hm-linky {
@@ -5292,8 +5292,8 @@ p {
   gap: 5px;
   border-radius: 12px;
   background: var(--primary-soft);
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .hm-story p {
@@ -5301,7 +5301,7 @@ p {
   padding: 16px;
   border-radius: 14px;
   background: var(--primary-soft);
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.6;
   word-break: keep-all;
 }
