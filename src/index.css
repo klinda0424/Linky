@@ -3494,6 +3494,15 @@ p {
   gap: 2px;
 }
 
+/* 주 제목(이번 주 · 지난주 · N주 전): 리포트 제목과 같은 연한 라임 형광펜 */
+.hm-week-nav h2 {
+  padding: 0 3px;
+  background: linear-gradient(
+    transparent 55%,
+    color-mix(in srgb, var(--primary) 40%, transparent) 55%
+  );
+}
+
 .hm-week-arrow {
   width: 30px;
   height: 30px;
