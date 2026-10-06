@@ -394,6 +394,7 @@ export function HomePage({
         <HeaderActions openProfile={openProfile} openSearch={openSearch} />
       </div>
       <div className="main-scroll hm-scroll">
+        <div className="hm-zoom">
         {isToday && foundBody && (
           <Action className="hm-link" onClick={openTransfer}>
             <Sparkles size={20} strokeWidth={1.6} />
@@ -527,6 +528,7 @@ export function HomePage({
             })}
           </div>
         )}
+        </div>
       </div>
     </>
   )
