@@ -5331,3 +5331,169 @@ p {
 .hm-notice.alert strong {
   color: var(--expense-high);
 }
+
+/* ---------- 리포트 탭 차트 (한 가지 색: 라임, 가장 큰 값만 진하게) ---------- */
+.rpt-sub {
+  margin-top: 4px;
+  color: var(--sub);
+  font-size: 12px;
+}
+
+.rpt-label {
+  margin: 18px 0 8px;
+  color: var(--sub);
+  font-size: 12px;
+}
+
+.rpt-columns {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.rpt-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.rpt-col em {
+  height: 14px;
+  color: var(--text);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.rpt-col-track {
+  width: 100%;
+  height: 56px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.rpt-col-track i {
+  width: 70%;
+  max-width: 28px;
+  border-radius: 4px 4px 0 0;
+  background: var(--primary-border);
+}
+
+.rpt-col-track i.top {
+  background: var(--primary);
+}
+
+.rpt-col-track i.zero {
+  border-radius: 1px;
+  background: var(--border);
+}
+
+.rpt-col b {
+  color: var(--sub);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.rpt-col.today b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.rpt-split-bar {
+  height: 14px;
+  display: flex;
+  gap: 2px;
+}
+
+.rpt-split-bar i {
+  border-radius: 7px;
+  background: var(--primary-border);
+}
+
+.rpt-split-bar i.first {
+  background: var(--primary);
+}
+
+.rpt-split-legend {
+  margin-top: 8px;
+  display: flex;
+  gap: 16px;
+  color: var(--sub);
+  font-size: 12px;
+}
+
+.rpt-split-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.rpt-split-legend u {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary-border);
+}
+
+.rpt-split-legend u.first {
+  background: var(--primary);
+}
+
+.rpt-split-legend b {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.rpt-head {
+  margin-top: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.rpt-head b {
+  font-weight: 700;
+}
+
+.rpt-facts {
+  margin-top: 14px;
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+  list-style: none;
+}
+
+.rpt-facts li {
+  padding-left: 14px;
+  position: relative;
+  color: var(--sub);
+  font-size: 13px;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.rpt-facts li::before {
+  width: 5px;
+  height: 5px;
+  position: absolute;
+  top: 8px;
+  left: 0;
+  border-radius: 50%;
+  background: var(--primary);
+  content: "";
+}
+
+.report-preview .rpt-facts {
+  border-top-color: var(--primary-border);
+}
+
+.rpt-split {
+  margin-top: 14px;
+}
