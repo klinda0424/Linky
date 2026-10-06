@@ -13,6 +13,7 @@ export type MainView =
   | "privacy"
   | "notifications"
   | "transfer"
+  | "paymentDetail"
   | "settlementList"
   | "settlement"
   | "settlementTable"

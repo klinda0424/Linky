@@ -180,6 +180,7 @@ export function DayPanel({
   canReturn,
   back,
   showMap,
+  openDetail,
   openRecord,
   openSplit,
   markPersonal,
@@ -200,6 +201,8 @@ export function DayPanel({
   canReturn: boolean
   back: () => void
   showMap: (day: YMD) => void
+  // 지출 카드를 누르면 별도 "지출 내역" 화면으로 간다
+  openDetail: (payment: Payment) => void
   openRecord: (paymentId?: string) => void
   openSplit: (payment: Payment) => void
   markPersonal: (paymentId: string) => void
@@ -296,6 +299,7 @@ export function DayPanel({
                 <PayCard
                   focus={activeFocus === payment.id}
                   markPersonal={markPersonal}
+                  openDetail={openDetail}
                   openRecord={openRecord}
                   openSplit={openSplit}
                   payment={payment}
@@ -326,6 +330,7 @@ function PayCard({
   payment,
   state,
   focus,
+  openDetail,
   openRecord,
   openSplit,
   markPersonal,
@@ -340,6 +345,7 @@ function PayCard({
   payment: Payment
   state: LedgerState
   focus: boolean
+  openDetail: (payment: Payment) => void
   openRecord: (paymentId?: string) => void
   openSplit: (payment: Payment) => void
   markPersonal: (paymentId: string) => void
@@ -387,7 +393,7 @@ function PayCard({
   const needsConfirm = pendingGroup || Boolean(restored)
   return (
     <div className={cx("hm-spend", "pay-card", focus && "focus")} data-pay={payment.id}>
-      <div className="hm-spend-main">
+      <Action className="hm-spend-main" onClick={() => openDetail(payment)}>
         <div>
           {/* 시각은 타임라인 왼쪽에 있어 카드에는 원본 가맹점명과 상태 칩만 둔다 */}
           {(restored || pendingGroup || personal) && (
@@ -400,7 +406,7 @@ function PayCard({
           <strong>{title}</strong>
         </div>
         {photoIds.length > 0 && <i className="photo-thumb t0 hm-spend-thumb" />}
-      </div>
+      </Action>
       <div className="pay-price-row">
         <b>
           {pendingGroup ? (
@@ -414,13 +420,13 @@ function PayCard({
           )}
         </b>
         <div className="hm-spend-actions">
-          {needsConfirm && (
+          {/* 맞아요를 누른 뒤에는 수정만 남는다 */}
+          {needsConfirm && (pendingGroup || !verified) && (
             <Action
               className="pill primary"
-              disabled={!pendingGroup && verified}
               onClick={() => (pendingGroup ? openSplit(payment) : confirmRestore(payment.id))}
             >
-              {!pendingGroup && verified ? "확인했어요" : "맞아요"}
+              맞아요
             </Action>
           )}
           {!asTransfer && evidence.length > 0 && (

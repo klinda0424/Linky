@@ -26,11 +26,12 @@ import {
   PrivacySettings,
   ProfileInfoSettings,
 } from "@/screens/profile"
+import { GroupSuggestSheet } from "@/screens/groupSuggest"
+import { PaymentDetail } from "@/screens/payment"
 import { AlbumPicker, addedPhotoText } from "@/screens/record"
 import { SearchScreen } from "@/screens/search"
 import { TransferConfirm } from "@/screens/transfer"
 import {
-  GroupSplitSheet,
   SettlementConfirm,
   SettlementEdit,
   SettlementInbox,
@@ -75,6 +76,8 @@ export function MainApp({
   const [splitting, setSplitting] = useState<Payment>()
   // 링키가 찾았어요: 확인 중인 송금
   const [transferId, setTransferId] = useState<string>()
+  // 지출 내역 상세: 홈 오늘 지출에서 연 결제
+  const [detailId, setDetailId] = useState<string>()
   const [photo, setPhoto] = useState<Photo>()
   const [event, setEvent] = useState<CalEvent>()
   const [excluded, setExcluded] = useState<string[]>([])
@@ -111,6 +114,11 @@ export function MainApp({
   )
   const foundGuess = foundTransfer ? transferGuess(foundTransfer, state) : null
   const transferPayment = payments.find((item) => item.id === transferId)
+  const detailPayment = payments.find((item) => item.id === detailId)
+  const openDetail = (payment: Payment) => {
+    setDetailId(payment.id)
+    setView("paymentDetail")
+  }
   const confirmTransfer = (payment: Payment) => {
     setLedger((value) => ({
       ...value,
@@ -200,7 +208,7 @@ export function MainApp({
         },
       }
     })
-    setView("tabs")
+    if (view !== "paymentDetail") setView("tabs")
     setRecordTarget(undefined)
   }
   const openRecord = (paymentId?: string) => {
@@ -245,7 +253,7 @@ export function MainApp({
                     : undefined
                 })()
           }
-          openPayment={(payment) => openPayment(payment)}
+          openPayment={openDetail}
           openProfile={() => setView("profile")}
           openSearch={() => setView("search")}
           selectDay={setHomeDay}
@@ -276,6 +284,7 @@ export function MainApp({
               day={sheetDay ?? TODAY}
               focusPayment={focusPayment}
               markPersonal={markPersonal}
+              openDetail={openDetail}
               openRecord={openRecord}
               openSettlement={() => {
                 setInboxFromHome(true)
@@ -357,6 +366,7 @@ export function MainApp({
                   day={searchPayment.date}
                   focusPayment={searchPayment.id}
                   markPersonal={markPersonal}
+                  openDetail={openDetail}
                   openRecord={openRecord}
                   openSplit={setSplitting}
                   relink={relink}
@@ -456,6 +466,20 @@ export function MainApp({
             values={notifications}
           />
         )
+      case "paymentDetail":
+        return detailPayment ? (
+          <PaymentDetail
+            back={toTabs}
+            confirmRestore={confirmRestore}
+            openRecord={openRecord}
+            payment={detailPayment}
+            relink={relink}
+            relinkPhoto={relinkPhoto}
+            state={state}
+            unlink={unlink}
+            unlinkPhoto={unlinkPhoto}
+          />
+        ) : null
       case "transfer":
         return transferPayment ? (
           <TransferConfirm
@@ -584,8 +608,19 @@ export function MainApp({
         />
       )}
       {splitting && (
-        <GroupSplitSheet
+        <GroupSuggestSheet
           close={() => setSplitting(undefined)}
+          // "그룹 지출이 아니에요" → 개인 지출로 두고 시트를 닫는다
+          notGroup={() => {
+            markPersonal(splitting.id)
+            setSplitting(undefined)
+          }}
+          // "인원 수정" → 정산 흐름(정산표 수정)으로 이동
+          editPeople={() => {
+            setSplitting(undefined)
+            setInboxFromHome(true)
+            setView("settlement")
+          }}
           // 확인하면 원장만 갱신하고, 시트는 반영 결과(S4-3)를 보여 준 뒤 사용자가 닫는다
           confirm={() => {
             confirmSplit(splitting.id)
