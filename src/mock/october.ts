@@ -1,5 +1,5 @@
 // 2026년 10월 목업 (주인공 김소연). 캘린더·지도·앨범·검색·리포트가 lib/ledger.ts를 거쳐 이 파일만 참조한다.
-// 합계는 파일 맨 아래 verifyOctober()가 명세와 일치하는지 검증한다.
+// 10/30~31 시나리오 기록은 mock/scenario.ts에 있다.
 import type { CalEvent, Category, Payment, Photo, TrailPoint } from "@/lib/ledger"
 
 const d = (day: number) => ({ y: 2026, m: 10, d: day })
@@ -150,68 +150,3 @@ export const octoberPayments: Payment[] = [
   o(30, "08:30", "스타벅스 광화문점", 5800, "식비·카페", "광화문", true),
   o(30, "12:40", "(주)샐러디 선릉점", 9500, "식비·카페", "선릉", false),
 ]
-
-// 장면 5: 주문내역 캡처를 올리면 인식되는 구매 품목 (결제 시각 기준)
-
-export const OCTOBER_TARGET = {
-  gross: 1362000,
-  settled: 162000,
-  mine: 1200000,
-  maxDay: { day: 12, total: 173500 },
-  days: { complete: 18, partial: 9, none: 4 },
-  categories: {
-    "식비·카페": 480000,
-    "쇼핑": 300000,
-    "문화·여가": 150000,
-    "생활·기타": 150000,
-    "교통": 120000,
-  } satisfies Record<Category, number>,
-} as const
-
-// 내 몫: 그룹 결제는 인원수로 나눈다
-export const myShare = (payment: Payment) =>
-  payment.group ? Math.round(payment.amount / payment.group.length) : payment.amount
-
-// 명세 일치 여부를 검증한다. statusOf에는 ledger의 dayStatus를 넘겨 복원 일수까지 확인한다.
-export function verifyOctober(
-  statusOf: (day: number) => "complete" | "partial" | "none" | "empty",
-) {
-  const errors: string[] = []
-  const expect = (label: string, actual: unknown, expected: unknown) => {
-    if (actual !== expected) errors.push(`${label}: ${String(actual)} (기대 ${String(expected)})`)
-  }
-  const sum = (list: Payment[], pick: (payment: Payment) => number) =>
-    list.reduce((total, payment) => total + pick(payment), 0)
-
-  const gross = sum(octoberPayments, (payment) => payment.amount)
-  const mine = sum(octoberPayments, myShare)
-  expect("결제 총액", gross, OCTOBER_TARGET.gross)
-  expect("내 지출", mine, OCTOBER_TARGET.mine)
-  expect("정산 차감", gross - mine, OCTOBER_TARGET.settled)
-
-  for (const [category, target] of Object.entries(OCTOBER_TARGET.categories))
-    expect(
-      `카테고리 ${category}`,
-      sum(octoberPayments.filter((payment) => payment.category === category), myShare),
-      target,
-    )
-
-  const totals: number[] = []
-  const status = { complete: 0, partial: 0, none: 0 }
-  for (let day = 1; day <= 31; day += 1) {
-    const list = octoberPayments.filter((payment) => payment.date.d === day)
-    if (list.length < 1 || list.length > 4) errors.push(`${day}일 결제 ${list.length}건 (기대 1~4)`)
-    totals[day] = sum(list, (payment) => payment.amount)
-    const result = statusOf(day)
-    if (result !== "empty") status[result] += 1
-  }
-  expect("10/12 결제 합계", totals[OCTOBER_TARGET.maxDay.day], OCTOBER_TARGET.maxDay.total)
-  const others = totals.filter((_, day) => day !== OCTOBER_TARGET.maxDay.day && day > 0)
-  if (Math.max(...others) >= totals[OCTOBER_TARGET.maxDay.day])
-    errors.push("10/12보다 큰(같은) 날이 있음")
-  expect("복원 완료 일수", status.complete, OCTOBER_TARGET.days.complete)
-  expect("부분 복원 일수", status.partial, OCTOBER_TARGET.days.partial)
-  expect("기록 없음 일수", status.none, OCTOBER_TARGET.days.none)
-
-  if (errors.length > 0) throw new Error(`10월 목업 검증 실패\n${errors.join("\n")}`)
-}

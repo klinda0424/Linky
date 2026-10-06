@@ -11,6 +11,7 @@ import {
 } from "lucide-react"
 import { Action, cx } from "@/components/common"
 import { HeaderActions } from "@/components/layout"
+import { meeting } from "@/lib/settlement"
 import {
   TODAY,
   dayMine,
@@ -332,8 +333,13 @@ export function HomePage({
           {
             key: "settle",
             icon: Users,
-            title: "그룹 결제가 감지됐어요",
-            sub: `정산할지 확인해주세요 · 정산 대기 ${pendingSettlement.count}건`,
+            // 대표 결제가 있으면 "고깃집 12만원, 그룹 지출 같아요"와 입금 근거를 보인다
+            title: meeting
+              ? `${meeting.merchant} ${man(meeting.amount)}원, 그룹 지출 같아요`
+              : "그룹 결제가 감지됐어요",
+            sub: meeting?.deposits
+              ? `입금 ${meeting.deposits.length}건이 들어왔어요`
+              : `정산할지 확인해주세요 · 정산 대기 ${pendingSettlement.count}건`,
             alert: true,
             onClick: openSettlement,
           },
