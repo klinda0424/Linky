@@ -4595,12 +4595,12 @@ p {
 }
 
 .hm-spend-foot {
-  margin-top: 8px;
-  padding-top: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
   border-top: 1px dashed #d7d7db;
 }
 
@@ -4615,13 +4615,13 @@ p {
 .hm-spend-actions {
   flex: none;
   display: flex;
-  gap: 6px;
+  gap: 4px;
 }
 
 .hm-spend-actions .pill {
-  height: 28px;
-  padding: 0 12px;
-  font-size: 12px;
+  height: 24px;
+  padding: 0 10px;
+  font-size: 11px;
 }
 
 /* 오늘의 하루 */
@@ -5074,7 +5074,7 @@ p {
 }
 
 .pay-price-row {
-  margin-top: 2px;
+  margin-top: 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
