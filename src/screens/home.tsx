@@ -1,4 +1,14 @@
-import { ChevronRight } from "lucide-react"
+import {
+  Bus,
+  ChevronRight,
+  Package,
+  Receipt,
+  ShoppingBag,
+  Sparkles,
+  Ticket,
+  Users,
+  Utensils,
+} from "lucide-react"
 import { Action, cx } from "@/components/common"
 import { HeaderActions } from "@/components/layout"
 import {
@@ -11,7 +21,9 @@ import {
   payments,
   photosFor,
   photosOn,
-  receivableOf,
+  categoryOf,
+  eventsFor,
+  eventsOn,
   type Photo,
   restoredOf,
   sameDay,
@@ -21,11 +33,11 @@ import {
   won,
   ymd,
   type LedgerState,
+  type Category,
   type Payment,
   type TransferGuess,
   type YMD,
 } from "@/lib/ledger"
-import { transferEvidenceLine, transferQuestion } from "@/screens/transfer"
 
 const weekNames = ["일", "월", "화", "수", "목", "금", "토"]
 
@@ -51,86 +63,133 @@ const minutes = (time: string) => {
   return h * 60 + m
 }
 
-// ---------- 오늘 지출 카드: 원본 → 복원 결과 → 근거 → 맞아요/수정 ----------
-function SpendCard({
+const categoryIcon: Record<Category, typeof Utensils> = {
+  "식비·카페": Utensils,
+  쇼핑: ShoppingBag,
+  "문화·여가": Ticket,
+  "생활·기타": Package,
+  교통: Bus,
+}
+
+// ---------- 오늘 지출: 내역만 보여 준다 (복원·정산 확인은 아래 알림에서) ----------
+function TodayRow({
   payment,
   state,
   showDate,
-  openPayment,
-  confirmRestore,
+  open,
 }: {
   payment: Payment
   state: LedgerState
   showDate?: boolean
-  openPayment: (payment: Payment) => void
-  confirmRestore: (paymentId: string) => void
+  open: (payment: Payment) => void
 }) {
   const restored = restoredOf(payment, state)
-  const mine = shareOf(payment, state)
-  const share = payment.group ? Math.round(payment.amount / payment.group.length) : payment.amount
-  const thumb = restored ? photosFor(payment, state)[0] : undefined
-  // 그룹 결제를 아직 나누지도, 개인 지출로 두지도 않았으면 정산 대기
-  const pendingGroup =
-    Boolean(payment.group) &&
-    !state.splitConfirmed.includes(payment.id) &&
-    !(state.personal ?? []).includes(payment.id)
+  const category = categoryOf(payment, state)
+  const Icon = category ? categoryIcon[category] : Receipt
   const title = restored
     ? `${restored.label}${restored.spot ? ` · ${restored.spot}` : ""}`
-    : payment.merchant
+    : payment.kind === "transfer"
+      ? `${payment.counterparty} 송금`
+      : payment.merchant
+  const sub = [
+    showDate ? label(payment.date) : undefined,
+    payment.time,
+    restored ? restored.original : category,
+  ]
+    .filter(Boolean)
+    .join(" · ")
   return (
-    <div className="hm-spend">
-      {pendingGroup && <span className="pay-chip">정산 대기</span>}
-      <Action className="hm-spend-main" onClick={() => openPayment(payment)}>
-        <div>
-          <span className="hm-spend-orig">
-            {showDate ? `${label(payment.date)} ` : ""}
-            {restored ? restored.original : payment.time}
-          </span>
-          <strong>{title}</strong>
-        </div>
-        {thumb && <i className="photo-thumb t0 hm-spend-thumb" />}
-      </Action>
-      <div className="pay-price-row">
-        <b>
-          {pendingGroup ? (
-            `총 ${won(payment.amount)}`
-          ) : mine !== payment.amount ? (
-            <>
-              <s>{won(payment.amount)}</s>내 몫 {won(mine)}
-            </>
-          ) : (
-            won(payment.amount)
-          )}
-        </b>
-        {restored && (
-          <div className="hm-spend-actions">
-            <Action
-              className="pill primary"
-              disabled={restored.confirmed}
-              onClick={() => confirmRestore(payment.id)}
-            >
-              {restored.confirmed ? "확인했어요" : "맞아요"}
-            </Action>
-            <Action className="pill" onClick={() => openPayment(payment)}>
-              수정
-            </Action>
-          </div>
-        )}
+    <Action className="hm-today-row" onClick={() => open(payment)}>
+      <span className="hm-today-icon">
+        <Icon size={18} strokeWidth={1.6} />
+      </span>
+      <div>
+        <strong>{title}</strong>
+        <small>{sub}</small>
       </div>
-      {pendingGroup && (
-        <div className="pay-info">
-          <p className="pay-split">
-            총 결제 {won(payment.amount)} → 내 몫 {won(share)} · 받을 돈 {won(receivableOf(payment))}
-          </p>
-          {payment.deposits && <p>입금 {payment.deposits.length}건이 들어왔어요</p>}
-        </div>
-      )}
-    </div>
+      <b>{won(shareOf(payment, state))}</b>
+    </Action>
   )
 }
 
+// ---------- 감지 알림 ----------
+type Notice = {
+  key: string
+  icon: typeof Sparkles
+  title: string
+  sub: string
+  // 주의가 필요한 알림(그룹 결제)은 붉은 계열로 보인다
+  alert?: boolean
+  onClick: () => void
+}
+
+function NoticeCard({ notice }: { notice: Notice }) {
+  const Icon = notice.icon
+  return (
+    <Action className={cx("main-card", "hm-notice", notice.alert && "alert")} onClick={notice.onClick}>
+      <span className="hm-notice-icon">
+        <Icon size={22} strokeWidth={1.5} />
+      </span>
+      <div>
+        <strong>{notice.title}</strong>
+        <small>{notice.sub}</small>
+      </div>
+      <ChevronRight size={17} strokeWidth={1.5} />
+    </Action>
+  )
+}
+
+// ---------- 오늘 내 하루: 머문 곳·일정·이동을 시간순으로 이어 쓴 사실 서술 (금액은 쓰지 않는다) ----------
+const periodOf = (time: string) => {
+  const hour = Number(time.split(":")[0])
+  return hour < 12 ? "오전" : hour < 17 ? "낮" : hour < 21 ? "저녁" : "밤"
+}
+
+function dayStory(list: Payment[], photoCount: number, state: LedgerState) {
+  const dayEvents = eventsOn(TODAY, state)
+  const items = [
+    ...(state.sources.location
+      ? stays
+          .filter((stay) => sameDay(stay.date, TODAY))
+          .map((stay) => ({ time: stay.from, text: `${stay.name}에`, verb: "머물렀" }))
+      : []),
+    ...dayEvents.map((event) => ({
+      time: event.start,
+      text: `'${event.title}' 일정이`,
+      verb: "있었",
+    })),
+    // 일정 시간대에 한 결제는 일정이 이미 설명하므로 따로 적지 않는다
+    ...list
+      .filter((payment) => eventsFor(payment, state).length === 0)
+      .map((payment) => {
+        const restored = restoredOf(payment, state)
+        return payment.transit
+          ? { time: payment.time, text: `${payment.transit.from} 인근에서 택시를`, verb: "탔" }
+          : restored
+            ? { time: payment.time, text: `${restored.label}에`, verb: "다녀왔" }
+            : {
+                time: payment.time,
+                text: `${payment.place ?? payment.merchant}에서 결제를`,
+                verb: "했",
+              }
+      }),
+  ]
+    .sort((a, b) => a.time.localeCompare(b.time))
+    .slice(0, 4)
+  let previous = ""
+  const parts = items.map((item, index) => {
+    const period = periodOf(item.time)
+    const prefix = period !== previous ? `${period}에는 ` : ""
+    previous = period
+    return `${prefix}${item.text} ${item.verb}${index < items.length - 1 ? "고" : "어요"}`
+  })
+  if (parts.length === 0) return ""
+  const photos = photoCount > 0 ? ` 오늘 남긴 사진은 ${photoCount}장이에요.` : ""
+  return `${parts.join(", ")}.${photos}`
+}
+
 // ---------- 오늘의 동선: 체류 구간과 결제 위치를 시간순으로 잇는 미니 지도 ----------
-type Stop = { key: string; zone: string; text: string[]; seed: string }
+type Stop = { key: string; zone: string; seed: string }
 
 function routeStops(list: Payment[], state: LedgerState): Stop[] {
   if (!state.sources.location) return []
@@ -141,7 +200,6 @@ function routeStops(list: Payment[], state: LedgerState): Stop[] {
         id: stay.id,
         time: stay.from,
         zone: stay.zone,
-        text: `${stay.from}~${stay.to} 체류`,
       })),
     ...list.flatMap((payment) =>
       payment.place || payment.transit
@@ -150,18 +208,16 @@ function routeStops(list: Payment[], state: LedgerState): Stop[] {
               id: payment.id,
               time: payment.time,
               zone: payment.zone,
-              text: payment.transit ? `${payment.time} 이동 중` : payment.time,
             },
           ]
         : [],
     ),
   ].sort((a, b) => a.time.localeCompare(b.time))
-  // 같은 구역이 이어지면 한 지점으로 묶고 시각을 모은다
+  // 같은 구역이 이어지면 한 지점으로 묶는다
   const stops: Stop[] = []
   for (const step of steps) {
     const last = stops[stops.length - 1]
-    if (last && last.zone === step.zone) last.text.push(step.text)
-    else stops.push({ key: step.id, zone: step.zone, text: [step.text], seed: step.id })
+    if (!last || last.zone !== step.zone) stops.push({ key: step.id, zone: step.zone, seed: step.id })
   }
   return stops
 }
@@ -185,19 +241,14 @@ function RouteMap({ stops, onOpen }: { stops: Stop[]; onOpen: () => void }) {
       {points.map((p) => (
         <span className="hm-stop" key={p.key} style={{ left: `${p.x}%`, top: `${p.y}%` }}>
           <i />
-          <em>
-            {p.zone}
-            {p.text.map((line) => (
-              <small key={line}>{line}</small>
-            ))}
-          </em>
+          <em>{p.zone}</em>
         </span>
       ))}
     </Action>
   )
 }
 
-// ---------- 홈: 링키가 찾았어요 · 이번 주 · 오늘 지출 · 오늘의 하루 · 동선 · 사진 ----------
+// ---------- 홈: 이번 주 · 오늘 지출 · 감지 알림 · 오늘의 하루 · 동선 · 사진 ----------
 export function HomePage({
   state,
   openSearch,
@@ -211,9 +262,6 @@ export function HomePage({
   pendingSettlement,
   foundTransfer,
   openTransfer,
-  confirmTransfer,
-  declineTransfer,
-  confirmRestore,
 }: {
   state: LedgerState
   openSearch: () => void
@@ -229,9 +277,6 @@ export function HomePage({
   // "링키가 찾았어요": 가맹점 없는 송금에서 맥락을 찾았을 때만 값이 있다
   foundTransfer?: { payment: Payment; guess: TransferGuess }
   openTransfer: () => void
-  confirmTransfer: (payment: Payment) => void
-  declineTransfer: (payment: Payment) => void
-  confirmRestore: (paymentId: string) => void
 }) {
   const week = weekOf(TODAY)
   const todayList = paymentsOn(TODAY)
@@ -241,15 +286,35 @@ export function HomePage({
     (photo) => !state.photoUnlinked.includes(photo.id),
   )
   const stops = routeStops(todayList, state)
-  // 오늘 가장 오래 머문 곳 (위치 체류 기록 기준)
-  const longestStay = state.sources.location
-    ? stays
-        .filter((stay) => sameDay(stay.date, TODAY))
-        .sort((a, b) => minutes(b.to) - minutes(b.from) - (minutes(a.to) - minutes(a.from)))[0]
-    : undefined
-  const movingCount = todayList.filter((payment) => payment.transit).length
+  const story = dayStory(todayList, todayPhotos.length, state)
   const linkedPayment = (photo: Photo) =>
     todayList.find((payment) => photosFor(payment, state).some((item) => item.id === photo.id))
+  // 감지된 것만 알림으로 띄운다: 송금 맥락, 그룹 결제 (복원 결과는 알림 없이 캘린더 카드에서 확인)
+  const notices: Notice[] = [
+    ...(foundTransfer
+      ? [
+          {
+            key: "found",
+            icon: Sparkles,
+            title: "링키가 찾았어요",
+            sub: `${foundTransfer.payment.counterparty} ${won(foundTransfer.payment.amount)} 송금, ${foundTransfer.guess.place ?? "내"} 기록과 이어져요`,
+            onClick: openTransfer,
+          },
+        ]
+      : []),
+    ...(pendingSettlement
+      ? [
+          {
+            key: "settle",
+            icon: Users,
+            title: "그룹 결제가 감지됐어요",
+            sub: `정산할지 확인해주세요 · 정산 대기 ${pendingSettlement.count}건`,
+            alert: true,
+            onClick: openSettlement,
+          },
+        ]
+      : []),
+  ]
   return (
     <>
       <div className="cal-brandbar">
@@ -260,45 +325,6 @@ export function HomePage({
         <HeaderActions openProfile={openProfile} openSearch={openSearch} />
       </div>
       <div className="main-scroll hm-scroll">
-        {foundTransfer && (
-          <section className="hm-found">
-            <Action className="hm-found-body" onClick={openTransfer}>
-              <strong className="hm-found-title">링키가 찾았어요</strong>
-              <p>{transferQuestion(foundTransfer.payment, foundTransfer.guess)}</p>
-              <div className="hm-found-amount">
-                <span>{foundTransfer.payment.counterparty}</span>
-                <b>{won(foundTransfer.payment.amount)}</b>
-              </div>
-              <small>{transferEvidenceLine(foundTransfer.guess)}</small>
-            </Action>
-            <div className="hm-found-actions">
-              <Action className="pill primary" onClick={() => confirmTransfer(foundTransfer.payment)}>
-                맞아요
-              </Action>
-              <Action className="pill" onClick={() => declineTransfer(foundTransfer.payment)}>
-                아니에요
-              </Action>
-              {pendingSettlement && (
-                <Action className="hm-found-link" onClick={openSettlement}>
-                  정산 대기함 {pendingSettlement.count}건
-                  <ChevronRight size={14} strokeWidth={1.8} />
-                </Action>
-              )}
-            </div>
-          </section>
-        )}
-        {!foundTransfer && pendingSettlement && (
-          <Action className="main-card settle-alert" onClick={openSettlement}>
-            <div>
-              <strong>정산할 결제가 있어요</strong>
-              <span>
-                정산 대기 {pendingSettlement.count}건 · {won(pendingSettlement.total)}
-              </span>
-            </div>
-            <ChevronRight size={17} strokeWidth={1.5} />
-          </Action>
-        )}
-
         <div className="hm-head">
           <span>
             {label(week[0])} — {label(week[6])}
@@ -329,47 +355,42 @@ export function HomePage({
           })}
         </div>
 
-        <div className="hm-title-row">
-          <h2>오늘 지출</h2>
-          <b>{todayList.length > 0 ? won(todayMine) : "기록 없음"}</b>
-        </div>
-        {todayList.map((payment) => (
-          <SpendCard
-            confirmRestore={confirmRestore}
-            key={payment.id}
-            openPayment={openPayment}
-            payment={payment}
-            state={state}
-          />
-        ))}
-        {todayList.length === 0 && <p className="hm-empty">오늘 결제 기록 없음</p>}
-        {recent.length > 0 && <p className="hm-recent">최근 결제</p>}
-        {recent.map((payment) => (
-          <SpendCard
-            confirmRestore={confirmRestore}
-            key={payment.id}
-            openPayment={openPayment}
-            payment={payment}
-            showDate
-            state={state}
-          />
+        <section className="main-card hm-today">
+          <div className="hm-today-top">
+            <div>
+              <span>오늘 지출</span>
+              <strong>
+                {todayList.length > 0
+                  ? `오늘 ${todayList.length}건 · ${won(todayMine)}`
+                  : "오늘 결제 기록 없음"}
+              </strong>
+            </div>
+            <span className="hm-badge">정산 대기 {pendingSettlement?.count ?? 0}건</span>
+          </div>
+          <div className="hm-today-list">
+            {todayList.map((payment) => (
+              <TodayRow key={payment.id} open={openPayment} payment={payment} state={state} />
+            ))}
+            {recent.length > 0 && <p className="hm-recent">최근 결제</p>}
+            {recent.map((payment) => (
+              <TodayRow key={payment.id} open={openPayment} payment={payment} showDate state={state} />
+            ))}
+          </div>
+        </section>
+
+        {notices.map((notice) => (
+          <NoticeCard key={notice.key} notice={notice} />
         ))}
 
-        {todayList.length > 0 && (
-          <section className="hm-day-report">
-            <strong className="hm-found-title">오늘의 하루</strong>
-            <ul>
-              <li>
-                결제 {todayList.length}건 · 지출 {won(todayMine)}
-              </li>
-              <li>
-                가장 오래 머문 곳:{" "}
-                {longestStay ? `${longestStay.name} ${longestStay.from}~${longestStay.to}` : "기록 없음"}
-              </li>
-              <li>이동 중 결제 {movingCount}건</li>
-            </ul>
-          </section>
-        )}
+        <section className="main-card hm-story">
+          <div className="hm-story-head">
+            <strong>오늘 내 하루</strong>
+            <span className="hm-linky">
+              <Sparkles size={14} strokeWidth={1.6} /> Linky
+            </span>
+          </div>
+          <p>{story ? `“${story}”` : "기록 없음"}</p>
+        </section>
 
         <div className="hm-title-row">
           <h2>오늘의 동선</h2>
