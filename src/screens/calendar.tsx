@@ -404,7 +404,10 @@ function PayCard({
         : undefined
   const needsConfirm = pendingGroup || Boolean(restored)
   return (
-    <div className={cx("hm-spend", "pay-card", focus && "focus")} data-pay={payment.id}>
+    <div
+      className={cx("hm-spend", "pay-card", pendingGroup && "pending", focus && "focus")}
+      data-pay={payment.id}
+    >
       <Action className="hm-spend-main" onClick={() => openDetail(payment)}>
         <div>
           {/* 시각은 타임라인 왼쪽에 있어 카드에는 원본 가맹점명과 상태 칩만 둔다 */}
