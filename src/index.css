@@ -4821,7 +4821,7 @@ p {
 .cal2-month h1 {
   margin-right: 10px;
   font-size: 28px;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
@@ -4876,7 +4876,7 @@ p {
 
 .cal2-summary strong {
   font-size: 26px;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
@@ -4906,10 +4906,11 @@ p {
 .cal2-cell {
   height: 58px;
   margin: 1px;
-  padding: 6px 0 0 8px;
+  padding: 6px 0 0;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  text-align: center;
   gap: 2px;
   border: 1.5px solid transparent;
   border-radius: 12px;
@@ -4921,7 +4922,7 @@ p {
 
 .cal2-cell b {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .cal2-cell.today b {
@@ -4949,6 +4950,7 @@ p {
 .cal2-marks {
   min-height: 5px;
   display: flex;
+  justify-content: center;
   gap: 3px;
 }
 
@@ -4995,7 +4997,7 @@ p {
 
 .cal2-day h2 {
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
@@ -5023,7 +5025,7 @@ p {
   border-radius: 15px;
   background: var(--primary-soft);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -5047,7 +5049,7 @@ p {
 
 .cal2-day-total b {
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .cal2-day-total small {
@@ -5073,7 +5075,7 @@ p {
   background: #fff1f0;
   color: var(--expense-high);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .pay-tag {
@@ -5081,7 +5083,7 @@ p {
   color: var(--primary-text);
   font-size: 11px;
   font-style: normal;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .pay-price-row {
@@ -5120,8 +5122,14 @@ p {
 
 .pay-info .pay-split {
   color: var(--text);
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.02em;
+}
+
+/* 캘린더 결제 카드 글자 굵기 (홈과 공유하는 hm-spend 규칙은 그대로 둔다) */
+.pay-card .hm-spend-main strong,
+.pay-card .pill {
+  font-weight: 500;
 }
 
 .pay-card .pay-detail {
