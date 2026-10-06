@@ -4490,6 +4490,34 @@ p {
   gap: 6px;
 }
 
+/* 이날의 내 기록 한 줄: 일정 칩(남는 폭) + 사진·지도 아이콘 버튼 */
+.cal2-record-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cal2-record-row .cal2-chips {
+  flex: 1;
+}
+
+.cal2-icon-btn {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--background);
+  color: var(--text);
+}
+
+.cal2-icon-btn:active {
+  background: var(--surface);
+}
+
 .cal2-link {
   height: 36px;
   padding: 0;
