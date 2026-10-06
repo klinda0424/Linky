@@ -14,7 +14,7 @@ import {
   transferGuess,
 } from "@/lib/ledger"
 import { AlbumTab, EventReport, PhotoDetail } from "@/screens/album"
-import { CalendarHome, DaySheet } from "@/screens/calendar"
+import { CalendarHome, DayPanel } from "@/screens/calendar"
 import { HomePage } from "@/screens/home"
 import { ReportTab } from "@/screens/report"
 import { meeting, summarize } from "@/lib/settlement"
@@ -258,6 +258,40 @@ export function MainApp({
             setFocusPayment(undefined)
             setSheetDay(day)
           }}
+          detail={
+            <DayPanel
+              back={() => {
+                setSheetDay(undefined)
+                setFocusPayment(undefined)
+                if (returnToMonth) {
+                  setMapDay(returnToMonth)
+                  setMapPeriod("month")
+                  setReturnToMonth(undefined)
+                  setTab("map")
+                }
+              }}
+              canReturn={Boolean(returnToMonth)}
+              confirmRestore={confirmRestore}
+              day={sheetDay ?? TODAY}
+              focusPayment={focusPayment}
+              markPersonal={markPersonal}
+              openRecord={openRecord}
+              openSplit={setSplitting}
+              relink={relink}
+              relinkPhoto={relinkPhoto}
+              showMap={(day) => {
+                setSheetDay(undefined)
+                setMapDay(day)
+                setMapPeriod("day")
+                setReturnToMonth(undefined)
+                setTab("map")
+              }}
+              state={state}
+              unlink={unlink}
+              unlinkPhoto={unlinkPhoto}
+              verify={verify}
+            />
+          }
           openProfile={() => setView("profile")}
           openSearch={() => setView("search")}
           sheetDay={sheetDay}
@@ -499,44 +533,6 @@ export function MainApp({
         </>
       ) : (
         fullScreen()
-      )}
-      {view === "tabs" && tab === "calendar" && sheetDay && (
-        <DaySheet
-          close={() => {
-            setSheetDay(undefined)
-            setFocusPayment(undefined)
-            if (returnToMonth) {
-              setMapDay(returnToMonth)
-              setMapPeriod("month")
-              setReturnToMonth(undefined)
-              setTab("map")
-            }
-          }}
-          day={sheetDay}
-          focusPayment={focusPayment}
-          move={(day) => {
-            setFocusPayment(undefined)
-            setReturnToMonth(undefined)
-            setSheetDay(day)
-          }}
-          openRecord={openRecord}
-          markPersonal={markPersonal}
-          openSplit={setSplitting}
-          showMap={(day) => {
-            setSheetDay(undefined)
-            setMapDay(day)
-            setMapPeriod("day")
-            setReturnToMonth(undefined)
-            setTab("map")
-          }}
-          state={state}
-          unlink={unlink}
-          relink={relink}
-          relinkPhoto={relinkPhoto}
-          unlinkPhoto={unlinkPhoto}
-          verify={verify}
-          confirmRestore={confirmRestore}
-        />
       )}
       {recordPayment && (
         <AlbumPicker

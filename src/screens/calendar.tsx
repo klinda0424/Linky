@@ -1,49 +1,31 @@
-import { useEffect, useRef, useState, type TouchEvent } from "react"
-import {
-  Bus,
-  CalendarDays,
-  Camera,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  MapPin,
-  Package,
-  Plus,
-  Receipt,
-  Route,
-  ShoppingBag,
-  Ticket,
-  Users,
-  Utensils,
-} from "lucide-react"
+import { useEffect, useState, type ReactNode } from "react"
+import { CalendarDays, Camera, ChevronLeft, ChevronRight, Plus, Route } from "lucide-react"
 import { Action, cx } from "@/components/common"
 import { HeaderActions } from "@/components/layout"
 import {
-  type Category,
   type LedgerState,
   type Payment,
   type YMD,
   TODAY,
-  daysWithPayments,
   bigSpendDays,
+  categoryOf,
+  daysWithPayments,
   dayMine,
   dayTotal,
   eventsOn,
-  categoryOf,
   evidenceOf,
   groupBasis,
   isRestored,
-  keyOf,
   label,
-  monthCells,
+  man,
   monthSummary,
   monthsAvailable,
   narrativeLine,
   paymentsOn,
   photos,
   photosOn,
+  receivableOf,
   removedEvidenceOf,
-  restoreDaySummary,
   restoredOf,
   sameDay,
   splitReviewDays,
@@ -52,21 +34,36 @@ import {
   ymd,
 } from "@/lib/ledger"
 
-const weekdays = ["일", "월", "화", "수", "목", "금", "토"]
+const weekdays = ["월", "화", "수", "목", "금", "토", "일"]
 
-// ---------- 캘린더 (홈) ----------
+// 월요일 시작 달력 칸 (앞쪽 빈 칸은 null)
+function mondayCells(y: number, m: number): Array<number | null> {
+  const first = (new Date(y, m - 1, 1).getDay() + 6) % 7
+  const length = new Date(y, m, 0).getDate()
+  const cells: Array<number | null> = [
+    ...Array.from({ length: first }, () => null),
+    ...Array.from({ length }, (_, index) => index + 1),
+  ]
+  while (cells.length % 7 !== 0) cells.push(null)
+  return cells
+}
+
+// ---------- 캘린더 ----------
+// 월 요약 → 달력 → 선택한 날의 지출 카드(detail)가 한 화면에서 이어진다
 export function CalendarHome({
   state,
   sheetDay,
   openDay,
   openSearch,
   openProfile,
+  detail,
 }: {
   state: LedgerState
   sheetDay?: YMD
   openDay: (day: YMD) => void
   openSearch: () => void
   openProfile: () => void
+  detail: ReactNode
 }) {
   // 첫 화면은 오늘이 속한 달, 월 이동 화살표로 1~11월을 둘러본다
   const [index, setIndex] = useState(() =>
@@ -76,125 +73,113 @@ export function CalendarHome({
     ),
   )
   const { y, m } = monthsAvailable[index]
+  const selected = sheetDay ?? TODAY
   // 지도 핀에서 다른 달의 날짜를 열면 그 달로 이동
   useEffect(() => {
-    if (!sheetDay) return
     const found = monthsAvailable.findIndex(
-      (item) => item.y === sheetDay.y && item.m === sheetDay.m,
+      (item) => item.y === selected.y && item.m === selected.m,
     )
     if (found >= 0) setIndex(found)
-  }, [sheetDay])
+  }, [selected.y, selected.m])
+  // 달을 옮기면 그 달에서 가장 최근에 결제한 날(이번 달은 오늘)을 선택한다
+  const goMonth = (next: number) => {
+    const target = monthsAvailable[next]
+    setIndex(next)
+    if (target.y === TODAY.y && target.m === TODAY.m) return openDay(TODAY)
+    const paid = daysWithPayments.filter((day) => day.y === target.y && day.m === target.m)
+    openDay(paid[paid.length - 1] ?? ymd(target.y, target.m, 1))
+  }
   const summary = monthSummary(y, m, state)
-  // 같은 해 이전 달이 있으면 지난달 복원 일수를 함께 보여 준다
-  // 지난달 복원 일수는 일괄 복원 시점 기준이다. 이후 사용자가 직접 추가한 기록(added)은 빼서
-  // 10/12 캡처 입력 뒤에도 "지난달 18일"로 유지한다.
-  // 색 대신 표시: 지출이 큰 날은 금액을 빨간색으로, 나눔 검토가 필요한 날은 날짜 옆 점으로
   const bigDays = bigSpendDays(y, m, state)
   const reviewDays = splitReviewDays(y, m, state)
-  const lastMonth =
-    m > 1 ? restoreDaySummary(y, m - 1, { ...state, added: {} }) : undefined
+  const isThisMonth = y === TODAY.y && m === TODAY.m
   return (
     <>
-      {/* 1줄: 서비스 로고(누르는 요소 아님) + 검색 / 2줄: 연월 이동 */}
-      <div className="cal-brandbar">
-        <div className="brand cal-brand">
-          <span className="brand-mark">L</span>
-          <span>Linky</span>
-        </div>
-        <HeaderActions openProfile={openProfile} openSearch={openSearch} />
-      </div>
-      <div className="cal-top">
-        <div className="cal-month">
+      <div className="cal2-head">
+        <div className="cal2-month">
+          <h1>{m}월</h1>
           <Action
-            className="cal-arrow"
+            className="cal2-arrow"
             disabled={index === 0}
             label="이전 달"
-            onClick={() => setIndex(index - 1)}
+            onClick={() => goMonth(index - 1)}
           >
-            <ChevronLeft size={18} strokeWidth={1.6} />
+            <ChevronLeft size={20} strokeWidth={1.8} />
           </Action>
-          <strong>
-            {y}년 {m}월
-          </strong>
           <Action
-            className="cal-arrow"
+            className="cal2-arrow"
             disabled={index === monthsAvailable.length - 1}
             label="다음 달"
-            onClick={() => setIndex(index + 1)}
+            onClick={() => goMonth(index + 1)}
           >
-            <ChevronRight size={18} strokeWidth={1.6} />
+            <ChevronRight size={20} strokeWidth={1.8} />
           </Action>
         </div>
+        <HeaderActions accent openProfile={openProfile} openSearch={openSearch} />
       </div>
-      <div className="cal-body">
-        <div className="cal-summary">
-          <div>
-            <span>내 지출</span>
-            <strong className="cal-summary-main">{won(summary.mine)}</strong>
-            <small>결제 총액 {won(summary.total)}</small>
-          </div>
-          <div>
-            <span>복원</span>
-            <strong>
-              {summary.restoredDays}일 / {summary.paidDays}일
-            </strong>
-            {lastMonth && <small>지난달 {lastMonth.complete}일</small>}
-          </div>
-        </div>
-        <div className="cal-weekdays">
+      <div className="cal2-scroll">
+        <section className="cal2-summary">
+          <span>{isThisMonth ? "이번 달 지출" : `${m}월 지출`}</span>
+          <strong>{won(summary.mine)}</strong>
+        </section>
+        <div className="cal2-weekdays">
           {weekdays.map((day) => (
             <span key={day}>{day}</span>
           ))}
         </div>
-        <div className="cal-grid">
-          {monthCells(y, m).map((day, cellIndex) => {
-            if (day === null)
-              return <span className="cal-cell blank" key={`b${cellIndex}`} />
+        <div className="cal2-grid">
+          {mondayCells(y, m).map((day, cellIndex) => {
+            if (day === null) return <span className="cal2-cell blank" key={`b${cellIndex}`} />
             const date = ymd(y, m, day)
             // 셀에는 내 지출(확정한 분할만 차감)을 보여 준다
             const mine = dayMine(date, state)
+            const hasEvent = eventsOn(date, state).length > 0
             return (
               <Action
                 className={cx(
-                  "cal-cell",
+                  "cal2-cell",
+                  bigDays.has(day) && "big",
+                  sameDay(date, selected) && "picked",
                   sameDay(date, TODAY) && "today",
-                  sheetDay && sameDay(date, sheetDay) && "picked",
                 )}
                 key={day}
-                label={`${m}월 ${day}일${mine > 0 ? ` 내 지출 ${won(mine)}` : ""}${bigDays.has(day) ? ", 지출이 큰 날" : ""}${reviewDays.has(day) ? ", 나눔 검토 필요" : ""}`}
+                label={`${m}월 ${day}일${mine > 0 ? ` 내 지출 ${won(mine)}` : ""}${bigDays.has(day) ? ", 평소보다 지출 많은 날" : ""}${reviewDays.has(day) ? ", 정산 확인 필요" : ""}`}
                 onClick={() => openDay(date)}
               >
-                <b>
-                  {day}
-                  {reviewDays.has(day) && <span className="cal-review-dot" />}
-                </b>
-                {mine > 0 && (
-                  <i className={cx(bigDays.has(day) && "big")}>-{mine.toLocaleString("ko-KR")}</i>
-                )}
+                <b>{day}</b>
+                <small>{mine > 0 ? man(mine) : "—"}</small>
+                <span className="cal2-marks">
+                  {hasEvent && <i className="cal2-dot" />}
+                  {reviewDays.has(day) && <i className="cal2-dot review" />}
+                </span>
               </Action>
             )
           })}
         </div>
-        <div className="cal-legend">
+        <div className="cal2-legend">
           <span>
-            <i className="cal-legend-big">빨간 금액</i> 지출이 큰 날
+            <i className="cal2-swatch" /> 평소보다 지출 많은 날
           </span>
           <span>
-            <span className="cal-review-dot" /> 나눔 검토 필요
+            <i className="cal2-dot" /> 일정
+          </span>
+          <span>
+            <i className="cal2-dot review" /> 정산 확인
           </span>
         </div>
+        {detail}
       </div>
     </>
   )
 }
 
-// ---------- 날짜 바텀시트 ----------
-export function DaySheet({
+// ---------- 선택한 날의 지출 ----------
+export function DayPanel({
   day,
   state,
   focusPayment,
-  close,
-  move,
+  canReturn,
+  back,
   showMap,
   openRecord,
   openSplit,
@@ -210,8 +195,9 @@ export function DaySheet({
   state: LedgerState
   // 지도 핀에서 넘어온 결제: 해당 카드를 강조해 보여 준다
   focusPayment?: string
-  close: () => void
-  move: (day: YMD) => void
+  // 지도(월)에서 넘어왔을 때만 "지도로 돌아가기"를 보인다
+  canReturn: boolean
+  back: () => void
   showMap: (day: YMD) => void
   openRecord: (paymentId?: string) => void
   openSplit: (payment: Payment) => void
@@ -230,138 +216,80 @@ export function DaySheet({
     (photo) => !state.photoUnlinked.includes(photo.id),
   )
   const [activeFocus, setActiveFocus] = useState(focusPayment)
-  const scroller = useRef<HTMLDivElement>(null)
-  const touchStart = useRef<{ x: number; y: number } | undefined>(undefined)
-  const keys = daysWithPayments.map(keyOf)
-  const at = keys.indexOf(keyOf(day))
-  const prev = at > 0 ? daysWithPayments[at - 1] : undefined
-  const next = at >= 0 && at < keys.length - 1 ? daysWithPayments[at + 1] : undefined
-  // 날짜가 바뀌면 맨 위로, 지도에서 온 결제는 그 카드로 스크롤
+  // 지도에서 온 결제는 그 카드로 스크롤해 잠깐 강조한다
   useEffect(() => {
-    const box = scroller.current
-    if (!box) return
     setActiveFocus(focusPayment)
-    const target = focusPayment
-      ? box.querySelector<HTMLElement>(`[data-pay="${focusPayment}"]`)
-      : null
-    const paddingTop = Number.parseFloat(window.getComputedStyle(box).paddingTop) || 0
-    box.scrollTop = target
-      ? target.getBoundingClientRect().top -
-        box.getBoundingClientRect().top +
-        box.scrollTop -
-        paddingTop
-      : 0
     if (!focusPayment) return
+    document
+      .querySelector<HTMLElement>(`[data-pay="${focusPayment}"]`)
+      ?.scrollIntoView({ block: "center" })
     const timer = window.setTimeout(() => setActiveFocus(undefined), 1500)
     return () => window.clearTimeout(timer)
   }, [day, focusPayment])
-  const swipeEnd = (event: TouchEvent<HTMLDivElement>) => {
-    const start = touchStart.current
-    touchStart.current = undefined
-    if (!start) return
-    const dx = event.changedTouches[0].clientX - start.x
-    const dy = event.changedTouches[0].clientY - start.y
-    // 가로로 충분히 밀었고 세로 움직임이 작을 때만 날짜 이동
-    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      if (dx < 0 && next) move(next)
-      if (dx > 0 && prev) move(prev)
-    }
-  }
   return (
-    <div className="sheet-dim" onClick={close}>
-      <div
-        className="day-sheet"
-        onClick={(event) => event.stopPropagation()}
-        onTouchEnd={swipeEnd}
-        onTouchStart={(event) =>
-          (touchStart.current = {
-            x: event.touches[0].clientX,
-            y: event.touches[0].clientY,
-          })
-        }
-      >
-        <div className="sheet-grip" />
-        <div className="day-head">
-          <Action
-            className="day-arrow"
-            disabled={!prev}
-            label="이전 날짜"
-            onClick={() => prev && move(prev)}
-          >
-            <ChevronLeft size={19} strokeWidth={1.6} />
-          </Action>
-          <span>
-            {label(day)} {weekday(day)}요일
-          </span>
-          <Action
-            className="day-arrow"
-            disabled={!next}
-            label="다음 날짜"
-            onClick={() => next && move(next)}
-          >
-            <ChevronRight size={19} strokeWidth={1.6} />
-          </Action>
-        </div>
-        <div className="day-total">
-          <strong>{won(dayMine(day, state))}</strong>
-          <span>
-            {dayMine(day, state) !== dayTotal(day) && `결제 ${won(dayTotal(day))} · `}결제{" "}
-            {list.length}건 · 복원 {restored}건
-          </span>
-        </div>
-        <div className="day-chips">
-          <Action className="day-chip map" onClick={() => showMap(day)}>
-            <Route size={13} strokeWidth={1.8} /> 동선 보기
-          </Action>
+    <section className="cal2-day">
+      <h2>
+        {label(day)} ({weekday(day)})
+      </h2>
+      <div className="cal2-day-sub">
+        <div className="cal2-chips">
           {dayEvents.map((event) => (
-            <span className="day-chip" key={event.id}>
-              <CalendarDays size={13} strokeWidth={1.6} /> {event.title}
+            <span className="cal2-chip" key={event.id}>
+              <CalendarDays size={14} strokeWidth={1.7} /> {event.title} {event.start}
             </span>
           ))}
           {dayPhotos.length > 0 && (
-            <span className="day-chip">
-              <Camera size={13} strokeWidth={1.6} /> 사진 {dayPhotos.length}장
+            <span className="cal2-chip">
+              <Camera size={14} strokeWidth={1.7} /> 사진 {dayPhotos.length}장
             </span>
           )}
+          {list.length > 0 && (
+            <Action className="cal2-chip action" onClick={() => showMap(day)}>
+              <Route size={14} strokeWidth={1.7} /> 동선 보기
+            </Action>
+          )}
+          {canReturn && (
+            <Action className="cal2-chip action" onClick={back}>
+              <ChevronLeft size={14} strokeWidth={1.7} /> 지도로 돌아가기
+            </Action>
+          )}
           {dayEvents.length + dayPhotos.length === 0 && (
-            <span className="day-chip muted">이날 일정·사진 기록 없음</span>
+            <span className="cal2-chip muted">이날 일정·사진 기록 없음</span>
           )}
         </div>
-        <div className="day-scroll" ref={scroller}>
-          {list.map((payment) => (
-            <PayCard
-              focus={activeFocus === payment.id}
-              key={payment.id}
-              markPersonal={markPersonal}
-              openRecord={openRecord}
-              openSplit={openSplit}
-              payment={payment}
-              state={state}
-              unlink={unlink}
-              relink={relink}
-              relinkPhoto={relinkPhoto}
-              unlinkPhoto={unlinkPhoto}
-              verify={verify}
-              confirmRestore={confirmRestore}
-            />
-          ))}
-          <DayReport day={day} state={state} />
+        <div className="cal2-day-total">
+          <b>{won(dayMine(day, state))}</b>
+          <small>
+            {dayMine(day, state) !== dayTotal(day) && `결제 ${won(dayTotal(day))} · `}
+            {list.length}건 · 복원 {restored}건
+          </small>
         </div>
       </div>
-    </div>
+      {list.map((payment) => (
+        <PayCard
+          focus={activeFocus === payment.id}
+          key={payment.id}
+          markPersonal={markPersonal}
+          openRecord={openRecord}
+          openSplit={openSplit}
+          payment={payment}
+          state={state}
+          unlink={unlink}
+          relink={relink}
+          relinkPhoto={relinkPhoto}
+          unlinkPhoto={unlinkPhoto}
+          verify={verify}
+          confirmRestore={confirmRestore}
+        />
+      ))}
+      {list.length === 0 && <p className="hm-empty">결제 기록 없음</p>}
+      <DayReport day={day} state={state} />
+    </section>
   )
 }
 
-// ---------- 결제 행 ----------
-// 한 줄 요약(가맹점·금액, 시각·근거 아이콘) → 누르면 근거 확인·수정이 펼쳐진다
-const categoryIcon: Record<Category, typeof Utensils> = {
-  "식비·카페": Utensils,
-  쇼핑: ShoppingBag,
-  "문화·여가": Ticket,
-  "생활·기타": Package,
-  교통: Bus,
-}
-
+// ---------- 지출 카드 ----------
+// 원본(작은 글씨) → 복원 결과·가맹점 → 금액 → 점선 → 근거 한 줄 + 맞아요/수정
 function PayCard({
   payment,
   state,
@@ -389,172 +317,99 @@ function PayCard({
   verify: (paymentId: string) => void
   confirmRestore: (paymentId: string) => void
 }) {
-  // 행을 누르면 사진만 펼치고, "수정"을 눌러야 근거 편집이 열린다
-  const [open, setOpen] = useState(false)
+  // "수정"을 눌러야 근거 편집이 열린다
   const [editing, setEditing] = useState(false)
   const evidence = evidenceOf(payment, state)
+  const restored = restoredOf(payment, state)
   const people = payment.group
   const confirmed = state.splitConfirmed.includes(payment.id)
   const personal = (state.personal ?? []).includes(payment.id)
-  // 복원 결과(장소·이동)가 있는 결제: 원본 → 복원 결과와 근거를 펼쳐 보여 준다
-  const restored = restoredOf(payment, state)
+  const pendingGroup = Boolean(people) && !confirmed && !personal
   const verified = (state.verified ?? []).includes(payment.id) || Boolean(restored?.confirmed)
   const basis = groupBasis(payment, state)
   const removed = removedEvidenceOf(payment, state)
-  const location = evidence.find((item) => item.kind === "location")
-  const calendar = evidence.filter((item) => item.kind === "calendar")
-  const photo = evidence.find((item) => item.kind === "photo")
-  const added = evidence.filter((item) => item.kind === "added")
-  const photoIds = photo?.photoIds ?? []
   // 송금: 맞아요로 확정하기 전에는 분류 없는 이체, 확정하면 제안된 분류(식비)로 보인다
   const transfer = payment.kind === "transfer"
   const category = categoryOf(payment, state)
   const asTransfer = transfer && !category
-  const Icon = category ? categoryIcon[category] : Receipt
+  const photoIds = evidence.find((item) => item.kind === "photo")?.photoIds ?? []
+  const share = people ? Math.round(payment.amount / people.length) : payment.amount
+  const title = restored
+    ? `${restored.label}${restored.spot ? ` · ${restored.spot}` : ""}`
+    : transfer
+      ? `${payment.counterparty} 송금`
+      : payment.merchant
+  // 내 위치·일정·사진 근거 줄은 카드에 두지 않는다(수정을 누르면 근거 목록이 열린다).
+  // 정산·이체처럼 상태를 알려야 하는 안내만 남긴다.
+  const footText = pendingGroup
+    ? payment.deposits
+      ? `입금 ${payment.deposits.length}건이 들어왔어요`
+      : `${basis.source} ${basis.count}명 · 그룹 결제 같아요`
+    : asTransfer
+      ? "이체 · 가맹점 없음"
+      : transfer && category
+        ? `${category.split("·")[0]}로 재분류`
+        : undefined
+  const needsConfirm = pendingGroup || Boolean(restored)
   return (
-    <div className={cx("pay-row", focus && "focus", open && "open", Boolean(restored) && "restored")} data-pay={payment.id}>
-      <Action
-        className="pay-main"
-        onClick={() => {
-          setOpen(!open)
-          setEditing(false)
-        }}
-      >
-        <span className="pay-icon">
-          <Icon size={17} strokeWidth={1.7} />
-        </span>
-        <div className="pay-text">
-          <div className="pay-title">
-            <strong>
-              {restored?.label ?? (transfer ? `${payment.counterparty} 송금` : payment.merchant)}
-            </strong>
-            <time>{payment.time}</time>
-          </div>
-          <span className="pay-meta">
-            {location && (
-              <span>
-                <MapPin size={11} strokeWidth={1.8} />
-                {payment.place}
-              </span>
-            )}
-            {calendar.length > 0 && (
-              <span>
-                <CalendarDays size={11} strokeWidth={1.8} />
-                {calendar[0].text.replace("내 일정 · ", "").replace(/ \(.*\)$/, "")}
-              </span>
-            )}
-            {photoIds.length > 0 && (
-              <span>
-                <Camera size={11} strokeWidth={1.8} />
-                {photoIds.length}
-              </span>
-            )}
-            {added.length > 0 && (
-              <span>
-                <Plus size={11} strokeWidth={1.8} />
-                {added[0].text}
-              </span>
-            )}
-            {transfer && category && <span className="ok">{category.split("·")[0]}로 재분류</span>}
-            {asTransfer && <span className="none">이체 · 가맹점 없음</span>}
-            {evidence.length === 0 && !transfer && <span className="none">기록 없음</span>}
-            {verified && (
-              <span className="ok">
-                <Check size={11} strokeWidth={2.2} />
-                확인함
-              </span>
-            )}
+    <div className={cx("hm-spend", "pay-card", focus && "focus")} data-pay={payment.id}>
+      {pendingGroup && <span className="pay-chip">그룹 지출 같아요 · 정산 대기</span>}
+      <div className="hm-spend-main">
+        <div>
+          <span className="hm-spend-orig">
+            {restored ? restored.original : payment.time}
+            {personal && <em className="pay-tag">개인 지출</em>}
           </span>
+          <strong>{title}</strong>
         </div>
-        <div className="pay-amount">
-          {people && confirmed ? (
+        {photoIds.length > 0 && <i className="photo-thumb t0 hm-spend-thumb" />}
+      </div>
+      <div className="pay-price-row">
+        <b>
+          {pendingGroup ? (
+            `총 ${won(payment.amount)}`
+          ) : people && confirmed ? (
             <>
-              {/* 나눈 결제: 원래 결제 금액은 취소선, 내 몫을 굵게 */}
-              <s>{won(payment.amount)}</s>
-              <b className="mine">
-                <em>내 몫</em>
-                {won(Math.round(payment.amount / people.length))}
-              </b>
+              <s>{won(payment.amount)}</s>내 몫 {won(share)}
             </>
           ) : (
-            <b>{won(payment.amount)}</b>
+            won(payment.amount)
           )}
-          {personal && <small className="muted">개인 지출</small>}
-        </div>
-      </Action>
-      {people && !confirmed && !personal && (
-        <div className="pay-suggest">
-          <Users size={14} strokeWidth={1.8} />
-          <p>
-            {basis.source} {basis.count}명 · 그룹 결제 같아요
-          </p>
-          <Action className="pill primary" onClick={() => openSplit(payment)}>
-            맞아요
-          </Action>
-          <Action className="pill" onClick={() => markPersonal(payment.id)}>
-            아니요
-          </Action>
-        </div>
-      )}
-      {evidence.length === 0 && !open && !transfer && (
-        <Action className="pill add" onClick={() => openRecord(payment.id)}>
-          <Plus size={12} strokeWidth={2} /> 앨범에서 불러오기
-        </Action>
-      )}
-      {open && !editing && restored && (
-        <div className="pay-restore">
-          <div className="restore-original">
-            <span>원본</span>
-            <strong>{restored.original}</strong>
-            <b>{won(payment.amount)}</b>
-          </div>
-          <div className="restore-arrow" aria-hidden="true" />
-          <div className="restore-result">
-            <span>복원</span>
-            <strong>
-              {restored.label}
-              {restored.spot ? ` · ${restored.spot}` : ""}
-            </strong>
-          </div>
-          <ul className="restore-basis">
-            {restored.evidence.map((item) => (
-              <li key={item.key}>{item.text}</li>
-            ))}
-          </ul>
-          <div className="restore-actions">
-            <Action className="text-btn" onClick={() => setEditing(true)}>
-              수정
-            </Action>
+        </b>
+        <div className="hm-spend-actions">
+          {needsConfirm && (
             <Action
               className="pill primary"
-              disabled={verified}
-              onClick={() => confirmRestore(payment.id)}
+              disabled={!pendingGroup && verified}
+              onClick={() => (pendingGroup ? openSplit(payment) : confirmRestore(payment.id))}
             >
-              {verified ? "확인했어요" : "맞아요"}
+              {!pendingGroup && verified ? "확인했어요" : "맞아요"}
             </Action>
-          </div>
-        </div>
-      )}
-      {open && !editing && (
-        <div className="pay-photos">
-          {photoIds.length > 0 ? (
-            <div className="thumbs">
-              {photoIds.slice(0, 4).map((id, i) => (
-                <i className={`photo-thumb t${i % 5}`} key={id} />
-              ))}
-              {photoIds.length > 4 && <em>+{photoIds.length - 4}</em>}
-            </div>
-          ) : (
-            <span className="no-photo">사진 기록 없음</span>
           )}
-          {!restored && (
-            <Action className="text-btn" onClick={() => setEditing(true)}>
+          {!asTransfer && evidence.length > 0 && (
+            <Action className="pill" onClick={() => setEditing(!editing)}>
               수정
             </Action>
           )}
+          {!asTransfer && evidence.length === 0 && !transfer && (
+            <Action className="pill" onClick={() => openRecord(payment.id)}>
+              <Plus size={12} strokeWidth={2} /> 앨범에서 불러오기
+            </Action>
+          )}
+        </div>
+      </div>
+      {(pendingGroup || footText) && (
+        <div className="pay-info">
+          {pendingGroup && (
+            <p className="pay-split">
+              총 결제 {won(payment.amount)} → 내 몫 {won(share)} · 받을 돈{" "}
+              {won(receivableOf(payment))}
+            </p>
+          )}
+          {footText && <p>{footText}</p>}
         </div>
       )}
-      {open && editing && (
+      {editing && (
         <div className="pay-detail">
           {evidence.length === 0 && <p className="detail-note">연결된 근거가 없어요</p>}
           {evidence.map((item) =>
@@ -595,26 +450,31 @@ function PayCard({
             </div>
           ))}
           <div className="detail-actions">
+            {pendingGroup && (
+              <Action className="pill" onClick={() => markPersonal(payment.id)}>
+                개인 지출로 두기
+              </Action>
+            )}
             {people && confirmed && (
               <Action className="pill" onClick={() => openSplit(payment)}>
-                <Users size={12} strokeWidth={2} /> {people.length}명 나눔 보기
+                {people.length}명 나눔 보기
               </Action>
             )}
             <Action className="pill" onClick={() => openRecord(payment.id)}>
               <Plus size={12} strokeWidth={2} /> 앨범에서 불러오기
             </Action>
-            <Action
-              className="pill primary"
-              disabled={verified}
-              onClick={() => {
-                if (restored) confirmRestore(payment.id)
-                else verify(payment.id)
-                setEditing(false)
-                setOpen(false)
-              }}
-            >
-              {verified ? "확인했어요" : "맞아요"}
-            </Action>
+            {!restored && !pendingGroup && (
+              <Action
+                className="pill primary"
+                disabled={verified}
+                onClick={() => {
+                  verify(payment.id)
+                  setEditing(false)
+                }}
+              >
+                {verified ? "확인했어요" : "맞아요"}
+              </Action>
+            )}
           </div>
         </div>
       )}
