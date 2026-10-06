@@ -407,9 +407,9 @@ export function HomePage({
           {
             key: "settle",
             icon: Users,
-            // 대표 결제가 있으면 "OO의 12만원 지출, / 그룹 지출 같아요" 두 줄과 입금 근거를 보인다
+            // 대표 결제가 있으면 "OO의 12만원 지출, 그룹 지출 같아요" 한 줄과 입금 근거를 보인다
             title: meeting
-              ? `${meeting.merchant}의 ${man(meeting.amount)}원 지출,\n그룹 지출 같아요`
+              ? `${meeting.merchant}의 ${man(meeting.amount)}원 지출, 그룹 지출 같아요`
               : "그룹 결제가 감지됐어요",
             sub: meeting?.deposits
               ? `입금 ${meeting.deposits.length}건이 들어왔어요`
