@@ -1,3 +1,4 @@
+import { useState } from "react"
 import {
   Bus,
   ChevronLeft,
@@ -9,6 +10,7 @@ import {
   Ticket,
   Users,
   Utensils,
+  X,
 } from "lucide-react"
 import { Action, cx } from "@/components/common"
 import { HeaderActions } from "@/components/layout"
@@ -317,6 +319,8 @@ export function HomePage({
   foundTransfer?: { payment: Payment; guess: TransferGuess }
   openTransfer: () => void
 }) {
+  // 배너는 닫아도 홈을 다시 열면 다시 보인다 (정산 후보 자체는 그대로 남아 있다)
+  const [foundHidden, setFoundHidden] = useState(false)
   // 고른 날이 속한 주를 보여 준다. 화살표로 한 주씩 이동하고, 이번 주보다 뒤로는 가지 않는다
   const week = weekOf(day)
   const weeksAgo = Math.round(
@@ -340,20 +344,17 @@ export function HomePage({
   const story = dayStory(day, selectedList, selectedPhotos.length, state)
   const linkedPayment = (photo: Photo) =>
     selectedList.find((payment) => photosFor(payment, state).some((item) => item.id === photo.id))
+  // 송금 맥락은 화면 위에 떠 있는 얇은 배너로, 그룹 결제는 카드로 띄운다
+  const foundBanner =
+    isToday && foundTransfer
+      ? {
+          line1: `${foundTransfer.payment.counterparty} ${won(foundTransfer.payment.amount)} 송금`,
+          line2: `어제 ${foundTransfer.guess.place ?? "내"} 기록과 이어져요`,
+        }
+      : undefined
   // 감지된 것만 알림으로 띄운다: 송금 맥락, 그룹 결제 (복원 결과는 알림 없이 캘린더 카드에서 확인)
   // 오늘 받은 알림이라 다른 날짜를 골랐을 때는 보이지 않는다
   const notices: Notice[] = [
-    ...(isToday && foundTransfer
-      ? [
-          {
-            key: "found",
-            icon: Sparkles,
-            title: "링키가 찾았어요",
-            sub: `${foundTransfer.payment.counterparty} ${won(foundTransfer.payment.amount)} 송금, ${foundTransfer.guess.place ?? "내"} 기록과 이어져요`,
-            onClick: openTransfer,
-          },
-        ]
-      : []),
     ...(isToday && pendingSettlement
       ? [
           {
@@ -382,11 +383,22 @@ export function HomePage({
         <HeaderActions openProfile={openProfile} openSearch={openSearch} />
       </div>
       <div className="main-scroll hm-scroll">
-        <div className="hm-head">
-          <span>
-            {label(week[0])} — {label(week[6])}
-          </span>
-          <div>
+        {foundBanner && !foundHidden && (
+          <div className="hm-found">
+            <Action className="hm-found-main" onClick={openTransfer}>
+              <span className="hm-found-avatar">L</span>
+              <span className="hm-found-text">
+                <b>{foundBanner.line1}</b>
+                <small>{foundBanner.line2}</small>
+              </span>
+            </Action>
+            <Action className="hm-found-close" label="알림 닫기" onClick={() => setFoundHidden(true)}>
+              <X size={18} strokeWidth={1.6} />
+            </Action>
+          </div>
+        )}
+        <section className="hm-weekcard">
+          <div className="hm-head">
             <div className="hm-week-nav">
               <Action
                 className="hm-week-arrow"
@@ -403,29 +415,27 @@ export function HomePage({
                 </Action>
               )}
             </div>
-            <em>
-              {label(day)} {weekday(day)}요일
-            </em>
+            <em>{week[6].m}월</em>
           </div>
-        </div>
-        <div className="main-card hm-week">
-          {week.map((weekDay) => {
-            const future = keyOf(weekDay) > keyOf(TODAY)
-            const total = future ? 0 : dayMine(weekDay, state)
-            return (
-              <Action
-                className={cx("hm-day", sameDay(weekDay, day) && "today")}
-                key={keyOf(weekDay)}
-                label={`${label(weekDay)} 열기`}
-                onClick={() => selectDay(weekDay)}
-              >
-                <span>{weekNames[new Date(weekDay.y, weekDay.m - 1, weekDay.d).getDay()]}</span>
-                <strong>{weekDay.d}</strong>
-                <small>{total > 0 ? man(total) : "-"}</small>
-              </Action>
-            )
-          })}
-        </div>
+          <div className="hm-week">
+            {week.map((weekDay) => {
+              const future = keyOf(weekDay) > keyOf(TODAY)
+              const total = future ? 0 : dayMine(weekDay, state)
+              return (
+                <Action
+                  className={cx("hm-day", sameDay(weekDay, day) && "today")}
+                  key={keyOf(weekDay)}
+                  label={`${label(weekDay)} 열기`}
+                  onClick={() => selectDay(weekDay)}
+                >
+                  <span>{weekNames[new Date(weekDay.y, weekDay.m - 1, weekDay.d).getDay()]}</span>
+                  <strong>{weekDay.d}</strong>
+                  <small>{total > 0 ? man(total) : "-"}</small>
+                </Action>
+              )
+            })}
+          </div>
+        </section>
 
         <section className="main-card hm-today">
           <div className="hm-today-top">

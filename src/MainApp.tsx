@@ -70,6 +70,8 @@ export function MainApp({
   // 검색 결과 위에 여는 결제 상세. 검색 화면을 유지해 검색어·결과가 사라지지 않게 한다.
   const [searchPayment, setSearchPayment] = useState<Payment>()
   const [mapDay, setMapDay] = useState<YMD>()
+  // 지도·앨범은 탭이 아니라 홈·캘린더에서 여는 화면이라, 뒤로 가기와 하단 탭 강조에 진입한 탭을 쓴다
+  const [backTab, setBackTab] = useState<MainTab>("home")
   const [mapPeriod, setMapPeriod] = useState<"day" | "month">("day")
   const [returnToMonth, setReturnToMonth] = useState<YMD>()
   const [recordTarget, setRecordTarget] = useState<string>()
@@ -220,8 +222,12 @@ export function MainApp({
       return (
         <HomePage
           day={homeDay}
-          openAlbum={() => setTab("album")}
+          openAlbum={() => {
+            setBackTab("home")
+            setTab("album")
+          }}
           openMap={(day) => {
+            setBackTab("home")
             setMapDay(day)
             setMapPeriod("day")
             setTab("map")
@@ -295,6 +301,7 @@ export function MainApp({
               relinkPhoto={relinkPhoto}
               settlementPaymentId={meetingId}
               showMap={(day) => {
+                setBackTab("calendar")
                 setSheetDay(undefined)
                 setMapDay(day)
                 setMapPeriod("day")
@@ -316,6 +323,7 @@ export function MainApp({
     if (tab === "map")
       return (
         <MapTab
+          back={() => setTab(backTab)}
           initialDay={mapDay}
           initialPeriod={mapPeriod}
           key={mapDay ? `${mapPeriod}-${mapDay.y}-${mapDay.m}-${mapDay.d}` : "all"}
@@ -326,6 +334,7 @@ export function MainApp({
     if (tab === "album")
       return (
         <AlbumTab
+          back={() => setTab(backTab)}
           openEvent={(item) => {
             setEvent(item)
             setView("eventReport")
@@ -372,6 +381,7 @@ export function MainApp({
                   relink={relink}
                   relinkPhoto={relinkPhoto}
                   showMap={(day) => {
+                    setBackTab("calendar")
                     setSearchPayment(undefined)
                     setMapDay(day)
                     setMapPeriod("day")
@@ -587,7 +597,7 @@ export function MainApp({
             )}
           </div>
           <BottomTabs
-            active={tab}
+            active={tab === "map" || tab === "album" ? backTab : tab}
             change={(next) => {
               setSheetDay(undefined)
               setFocusPayment(undefined)

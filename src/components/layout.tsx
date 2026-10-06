@@ -29,9 +29,9 @@ export function MainHeader({
 
 // 하단 탭 3개: 캘린더 · 홈 · 리포트. 기록 입력은 탭이 아니라 캘린더의 시트로 연다.
 const tabs: Array<[MainTab, string, ReactNode]> = [
-  ["calendar", "캘린더", <CalendarDays size={21} strokeWidth={1.5} />],
-  ["home", "홈", <Home size={21} strokeWidth={1.5} />],
-  ["report", "리포트", <ChartNoAxesColumn size={21} strokeWidth={1.5} />],
+  ["calendar", "캘린더", <CalendarDays size={24} strokeWidth={1.5} />],
+  ["home", "홈", <Home size={24} strokeWidth={1.5} />],
+  ["report", "리포트", <ChartNoAxesColumn size={24} strokeWidth={1.5} />],
 ]
 
 // 상단 우측 아이콘: 검색 옆에 프로필 (회원 정보·연동·권한·알림)
