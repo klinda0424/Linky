@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { CalendarDays, ChevronRight, ImagePlus, MapPin } from "lucide-react"
+import { ImagePlus, Link2, MapPin, Plus } from "lucide-react"
 import { Action, cx } from "@/components/common"
 import { MainHeader } from "@/components/layout"
 import {
@@ -18,19 +18,13 @@ import {
   type Payment,
 } from "@/lib/ledger"
 
-// 받침이 있으면 "이었어요", 없으면 "였어요"
-const hasBatchim = (text: string) => {
-  const code = text.charCodeAt(text.length - 1)
-  return code >= 0xac00 && code <= 0xd7a3 && (code - 0xac00) % 28 !== 0
-}
-
 const minutes = (time: string) => {
   const [h, m] = time.split(":").map(Number)
   return h * 60 + m
 }
 
 // ---------- 지출 내역 상세 (홈 오늘 지출에서 진입) ----------
-// 원본 → 복원 결과, 결제 장소, 연결된 기록, 복원 근거, 맞아요/수정
+// 금액·복원 이름, 결제 장소, 연결된 기록, 맞아요/수정(하단 고정)
 export function PaymentDetail({
   payment,
   state,
@@ -59,6 +53,8 @@ export function PaymentDetail({
   const evidence = evidenceOf(payment, state)
   const mine = shareOf(payment, state)
   const confirmed = Boolean(restored?.confirmed)
+  const originalName =
+    payment.kind === "transfer" ? `${payment.counterparty} 송금` : payment.merchant
 
   // 결제 장소: 복원된 지점이 있으면 그 지점, 없으면 결제 당시 내 위치
   const spot = restored
@@ -89,54 +85,20 @@ export function PaymentDetail({
     : undefined
   const hasLocation = evidence.some((item) => item.kind === "location")
 
-  // 복원 근거 (사실만): 어떤 기록이 어떻게 맞았는지
-  const reasons: string[] = []
-  if (restored?.kind === "transit") {
-    reasons.push("결제 시각이 체류 구간 밖(이동 중)이에요")
-    if (lastStay)
-      reasons.push(`직전 체류지는 ${lastStay.name}(${lastStay.from}~${lastStay.to})예요`)
-    reasons.push(`${payment.transit?.from} 인근을 탑승 지점으로 봤어요`)
-  } else if (restored) {
-    if (payment.place) reasons.push(`결제 당시 내 위치가 ${payment.place}${hasBatchim(payment.place) ? "이었어요" : "였어요"}`)
-    reasons.push(`가맹점명과 같은 곳으로 ${restored.label}을 찾았어요`)
-    if (photoItem?.photoIds?.length)
-      reasons.push(`결제 시각 ±30분 안에 찍은 사진 ${photoItem.photoIds.length}장이 있어요`)
-    if (event) reasons.push(`그 시간에 '${event.title}' 일정이 있어요`)
-  }
-
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="지출 내역" />
-      <div className="pd-scroll">
+      <div className={cx("pd-scroll", Boolean(restored) && "has-bar")}>
         <div className="pd-amount">
-          <strong>{won(mine)}</strong>
-          <span>
-            {label(payment.date)}({weekday(payment.date)}) {payment.time}
-          </span>
-        </div>
-
-        <section className="pd-origin">
-          <div className="pd-origin-top">
-            <div>
-              <small>{restored ? "원본" : "가맹점"}</small>
-              <p>{payment.kind === "transfer" ? `${payment.counterparty} 송금` : payment.merchant}</p>
-            </div>
-            <span className={cx("pd-badge", !restored && evidence.length === 0 && "none")}>
-              {restored ? (confirmed ? "확인함" : "복원됨") : evidence.length > 0 ? `근거 ${evidence.length}개` : "기록 없음"}
-            </span>
+          {restored && <s className="pd-origin-name">{originalName}</s>}
+          <div className="pd-amount-row">
+            <strong>{won(mine)}</strong>
+            <span>{restored ? restored.label : originalName}</span>
           </div>
-          {restored && (
-            <>
-              <div className="pd-link">
-                <i />
-              </div>
-              <div>
-                <small>복원</small>
-                <strong>{restored.label}</strong>
-              </div>
-            </>
-          )}
-        </section>
+          <time>
+            {label(payment.date)}({weekday(payment.date)}) {payment.time}
+          </time>
+        </div>
 
         <h2 className="pd-title">결제 장소</h2>
         {spot ? (
@@ -157,63 +119,44 @@ export function PaymentDetail({
           <p className="pd-empty">기록 없음</p>
         )}
 
-        <h2 className="pd-title">연결된 기록</h2>
+        <div className="pd-title-row">
+          <h2 className="pd-title">
+            <Link2 size={16} strokeWidth={2} /> 링키
+          </h2>
+          <Action className="pd-add" onClick={() => openRecord(payment.id)}>
+            <ImagePlus size={14} strokeWidth={1.8} /> 앨범 <Plus size={13} strokeWidth={2} />
+          </Action>
+        </div>
         {photo || event || hasLocation ? (
           <div className="pd-records">
             {photo && (
-              <div className="pd-record photo">
-                <i className="photo-thumb t0" />
+              <div className="pd-record">
                 <small>사진</small>
-                <strong>{photo.time}</strong>
+                <i className="photo-thumb t0" />
+                <span>{photo.time}</span>
               </div>
             )}
             {event && (
               <div className="pd-record">
-                <CalendarDays size={20} strokeWidth={1.6} />
                 <small>일정</small>
-                <strong>{event.title}</strong>
-                <strong>{event.start}</strong>
+                <span>
+                  {event.title} {event.start}
+                </span>
               </div>
             )}
             {hasLocation && (
               <div className="pd-record">
-                <MapPin size={20} strokeWidth={1.6} />
                 <small>위치</small>
-                <strong>{lastStay ? "이동 중" : payment.place}</strong>
-                {lastStay && (
-                  <strong>
-                    {lastStay.name} {lastStay.from}~{lastStay.to}
-                  </strong>
-                )}
+                <span>
+                  {lastStay
+                    ? `이동 중 · ${lastStay.name} ${lastStay.from}~${lastStay.to}`
+                    : payment.place}
+                </span>
               </div>
             )}
           </div>
         ) : (
           <p className="pd-empty">기록 없음</p>
-        )}
-
-        {restored && reasons.length > 0 && (
-          <section className="pd-reasons">
-            <strong>이렇게 복원했어요</strong>
-            <ul>
-              {reasons.map((reason) => (
-                <li key={reason}>{reason}</li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {restored && (
-          <div className={cx("pd-actions", confirmed && "single")}>
-            {!confirmed && (
-              <Action className="pd-confirm" onClick={() => confirmRestore(payment.id)}>
-                맞아요
-              </Action>
-            )}
-            <Action className="pd-edit" onClick={() => setEditing(!editing)}>
-              수정
-            </Action>
-          </div>
         )}
 
         {editing && (
@@ -258,18 +201,21 @@ export function PaymentDetail({
             ))}
           </div>
         )}
-
-        <Action className="pd-album" onClick={() => openRecord(payment.id)}>
-          <span className="pd-album-icon">
-            <ImagePlus size={20} strokeWidth={1.6} />
-          </span>
-          <div>
-            <strong>앨범에서 불러오기</strong>
-            <small>자동 매칭이 놓친 사진을 직접 연결</small>
-          </div>
-          <ChevronRight size={18} strokeWidth={1.5} />
-        </Action>
       </div>
+      {restored && (
+        <div className="pd-bar">
+          <div className={cx("pd-actions", confirmed && "single")}>
+            {!confirmed && (
+              <Action className="pd-confirm" onClick={() => confirmRestore(payment.id)}>
+                맞아요
+              </Action>
+            )}
+            <Action className="pd-edit" onClick={() => setEditing(!editing)}>
+              수정
+            </Action>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

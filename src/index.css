@@ -4710,108 +4710,6 @@ p {
   overflow-y: auto;
 }
 
-.pd-amount {
-  margin: 8px 0 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.pd-amount strong {
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.pd-amount span {
-  color: var(--sub);
-  font-size: 13px;
-}
-
-.pd-origin {
-  padding: 8px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  background: var(--surface);
-}
-
-.pd-origin small {
-  color: var(--sub);
-  font-size: 13px;
-}
-
-.pd-origin p {
-  margin-top: 2px;
-  color: #5b5b62;
-  font-size: 14px;
-}
-
-.pd-origin strong {
-  display: block;
-  margin-top: 2px;
-  font-size: 16px;
-  font-weight: 800;
-}
-
-.pd-origin-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.pd-badge {
-  padding: 7px 12px;
-  flex: none;
-  border-radius: 14px;
-  background: var(--primary-soft);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.pd-badge.none {
-  background: var(--background);
-  color: var(--sub);
-}
-
-.pd-link {
-  height: 6px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.pd-link i {
-  width: 7px;
-  height: 7px;
-  flex: none;
-  border-radius: 50%;
-  background: var(--text);
-}
-
-.pd-link::after {
-  content: "";
-  flex: 1;
-  border-top: 1px dashed #cfcfd4;
-}
-
-.pd-title {
-  margin: 10px 0 4px;
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.pd-empty {
-  padding: 4px 2px;
-  color: var(--disabled);
-  font-size: 14px;
-}
-
 .pd-place {
   display: flex;
   align-items: stretch;
@@ -4900,93 +4798,8 @@ p {
   font-size: 12px;
 }
 
-.pd-records {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.pd-record {
-  min-height: 0;
-  padding: 8px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-}
-
-.pd-record svg {
-  display: none;
-}
-
-.pd-record small {
-  color: var(--sub);
-  font-size: 12px;
-}
-
-.pd-record strong {
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.25;
-  word-break: keep-all;
-}
-
-.pd-record.photo {
-  padding: 0 0 8px;
-}
-
-.pd-record.photo .photo-thumb {
-  height: 36px;
-  margin-bottom: 4px;
-  display: block;
-}
-
-.pd-record.photo small,
-.pd-record.photo strong {
-  padding: 0 12px;
-}
-
-.pd-reasons {
-  margin-top: 8px;
-  padding: 10px 14px;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-}
-
-.pd-reasons > strong {
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.pd-reasons ul {
-  margin: 8px 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  list-style: none;
-}
-
-.pd-reasons li {
-  color: #5b5b62;
-  font-size: 13px;
-  line-height: 1.35;
-}
-
-.pd-reasons li::before {
-  content: "";
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin: 0 12px 2px 2px;
-  border-radius: 50%;
-  background: var(--text);
-}
-
 .pd-actions {
-  margin-top: 10px;
+  margin-top: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
@@ -5016,48 +4829,136 @@ p {
   border: 1px solid var(--border);
 }
 
-.pd-album {
-  width: 100%;
-  margin-top: 8px;
-  padding: 8px 14px;
+/* 금액 영역: 원본은 취소선 회색, 아래에 금액과 복원 이름을 좌측 정렬 */
+.pd-amount {
+  margin: 20px 0 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.pd-origin-name {
+  color: #666670;
+  font-size: 14px;
+  text-decoration: line-through;
+}
+
+.pd-amount-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.pd-amount-row strong {
+  flex: none;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.pd-amount-row span {
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+  word-break: keep-all;
+}
+
+.pd-amount time {
+  color: #666670;
+  font-size: 13px;
+}
+
+.pd-title-row {
+  margin: 22px 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pd-title {
+  margin: 22px 0 8px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.pd-title-row .pd-title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 앨범에서 불러오기: 작은 버튼 */
+.pd-add {
+  height: 32px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.pd-empty {
+  padding: 4px 2px;
+  color: #666670;
+  font-size: 14px;
+}
+
+/* 연결된 기록: 가로 한 줄, 굵기를 줄인다 */
+.pd-records {
+  display: flex;
+  flex-direction: column;
+}
+
+.pd-record {
+  min-height: 44px;
   display: flex;
   align-items: center;
   gap: 12px;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  text-align: left;
-}
-
-.pd-album-icon {
-  width: 38px;
-  height: 38px;
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: var(--surface);
-  color: #6b6b72;
-}
-
-.pd-album > div {
-  min-width: 0;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.pd-album strong {
+  border-bottom: 1px solid var(--border);
   font-size: 14px;
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  font-weight: 400;
 }
 
-.pd-album small {
-  color: var(--sub);
+.pd-record small {
+  width: 32px;
+  flex: none;
+  color: #666670;
   font-size: 13px;
+}
+
+.pd-record span {
+  min-width: 0;
+  word-break: keep-all;
+}
+
+.pd-record .photo-thumb {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 6px;
+}
+
+/* 맞아요·수정: 화면 하단에 고정 */
+.pd-bar {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  padding: 10px var(--page-padding) 22px;
+  border-top: 1px solid var(--border);
+  background: var(--background);
+}
+
+.pd-scroll.has-bar {
+  padding-bottom: 96px;
 }
 
 .pd-editing {
@@ -5475,7 +5376,6 @@ p {
 .hm-today-row small,
 .pay-info p,
 .tf-record p,
-.pd-reasons li,
 .cal2-chip {
   word-break: keep-all;
 }
