@@ -74,7 +74,7 @@ export const PLACES: Record<string, Pt> = {
   광화문: { x: 34, y: 20 },
   합정: { x: 14, y: 36 },
   용산: { x: 40, y: 44 },
-  압구정로데오: { x: 62, y: 62 },
+  압구정로데오: { x: 78, y: 56 },
   연남동: { x: 22, y: 30 },
 }
 export const zoneNames = Object.keys(PLACES)
@@ -246,6 +246,8 @@ export type LedgerState = {
   restoreConfirmed: string[]
   // 송금 맥락 제안을 "맞아요"로 확정한 송금 (확정 전에는 이체로 둔다)
   transferMatched: string[]
+  // 송금 맥락 제안에서 "아니에요"를 눌러 이체로 둔 송금
+  transferDeclined?: string[]
 }
 export const initialLedger: LedgerState = {
   sources: { location: true, calendar: true, photos: true },

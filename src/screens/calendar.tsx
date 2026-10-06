@@ -11,13 +11,13 @@ import {
   Plus,
   Receipt,
   Route,
-  Search,
   ShoppingBag,
   Ticket,
   Users,
   Utensils,
 } from "lucide-react"
 import { Action, cx } from "@/components/common"
+import { HeaderActions } from "@/components/layout"
 import {
   type Category,
   type LedgerState,
@@ -29,6 +29,7 @@ import {
   dayMine,
   dayTotal,
   eventsOn,
+  categoryOf,
   evidenceOf,
   groupBasis,
   isRestored,
@@ -59,11 +60,13 @@ export function CalendarHome({
   sheetDay,
   openDay,
   openSearch,
+  openProfile,
 }: {
   state: LedgerState
   sheetDay?: YMD
   openDay: (day: YMD) => void
   openSearch: () => void
+  openProfile: () => void
 }) {
   // 첫 화면은 오늘이 속한 달, 월 이동 화살표로 1~11월을 둘러본다
   const [index, setIndex] = useState(() =>
@@ -98,9 +101,7 @@ export function CalendarHome({
           <span className="brand-mark">L</span>
           <span>Linky</span>
         </div>
-        <Action className="cal-icon" label="검색" onClick={openSearch}>
-          <Search size={20} strokeWidth={1.6} />
-        </Action>
+        <HeaderActions openProfile={openProfile} openSearch={openSearch} />
       </div>
       <div className="cal-top">
         <div className="cal-month">
@@ -405,7 +406,11 @@ function PayCard({
   const photo = evidence.find((item) => item.kind === "photo")
   const added = evidence.filter((item) => item.kind === "added")
   const photoIds = photo?.photoIds ?? []
-  const Icon = payment.category ? categoryIcon[payment.category] : Receipt
+  // 송금: 맞아요로 확정하기 전에는 분류 없는 이체, 확정하면 제안된 분류(식비)로 보인다
+  const transfer = payment.kind === "transfer"
+  const category = categoryOf(payment, state)
+  const asTransfer = transfer && !category
+  const Icon = category ? categoryIcon[category] : Receipt
   return (
     <div className={cx("pay-row", focus && "focus", open && "open", Boolean(restored) && "restored")} data-pay={payment.id}>
       <Action
@@ -420,7 +425,9 @@ function PayCard({
         </span>
         <div className="pay-text">
           <div className="pay-title">
-            <strong>{restored?.label ?? payment.merchant}</strong>
+            <strong>
+              {restored?.label ?? (transfer ? `${payment.counterparty} 송금` : payment.merchant)}
+            </strong>
             <time>{payment.time}</time>
           </div>
           <span className="pay-meta">
@@ -448,7 +455,9 @@ function PayCard({
                 {added[0].text}
               </span>
             )}
-            {evidence.length === 0 && <span className="none">기록 없음</span>}
+            {transfer && category && <span className="ok">{category.split("·")[0]}로 재분류</span>}
+            {asTransfer && <span className="none">이체 · 가맹점 없음</span>}
+            {evidence.length === 0 && !transfer && <span className="none">기록 없음</span>}
             {verified && (
               <span className="ok">
                 <Check size={11} strokeWidth={2.2} />
@@ -487,7 +496,7 @@ function PayCard({
           </Action>
         </div>
       )}
-      {evidence.length === 0 && !open && (
+      {evidence.length === 0 && !open && !transfer && (
         <Action className="pill add" onClick={() => openRecord(payment.id)}>
           <Plus size={12} strokeWidth={2} /> 앨범에서 불러오기
         </Action>

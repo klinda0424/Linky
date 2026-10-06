@@ -605,7 +605,7 @@ p {
   left: 0;
   z-index: 5;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   align-items: center;
   border-top: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.98);
@@ -1829,7 +1829,6 @@ p {
 .cal-icon {
   width: 36px;
   height: 36px;
-  margin-right: -8px;
   justify-self: end;
   display: flex;
   align-items: center;
@@ -4202,4 +4201,585 @@ p {
   display: block;
   width: 56px;
   height: 56px;
+}
+
+/* ---------- 링키가 찾았어요 · 송금 맥락 확인 ---------- */
+.found-alert strong::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--primary-strong);
+  vertical-align: middle;
+}
+
+.transfer-scroll {
+  height: calc(100% - 120px);
+  padding: 24px 20px 80px;
+  overflow-y: auto;
+}
+
+.transfer-origin {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.transfer-origin span,
+.transfer-origin small {
+  color: var(--sub);
+  font-size: 12px;
+}
+
+.transfer-origin strong {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.transfer-question {
+  margin: 22px 0 6px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
+.transfer-lead {
+  color: var(--sub);
+  font-size: 13px;
+}
+
+.transfer-basis {
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+}
+
+.transfer-basis li {
+  padding: 12px;
+  display: flex;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.transfer-basis .basis-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--primary-soft);
+  color: var(--primary-text);
+}
+
+.transfer-basis p {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.transfer-basis .thumbs {
+  margin-top: 8px;
+}
+
+.transfer-basis .thumbs .photo-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+}
+
+.transfer-result {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* 홈 오늘의 사진: 사진과 이어진 결제 */
+.home-photo-links {
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+}
+
+.home-photo-links li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+}
+
+.home-photo-links em {
+  color: var(--primary-text);
+  font-size: 12px;
+  font-style: normal;
+}
+
+/* 상단 우측 아이콘 묶음 (검색 · 프로필) */
+.header-actions {
+  margin-right: -8px;
+  display: flex;
+  align-items: center;
+}
+
+.report-profile {
+  position: absolute;
+  top: 10px;
+  right: calc(var(--page-padding) - 8px);
+  z-index: 2;
+}
+
+/* ---------- 홈 개편 (시안 기준) ---------- */
+.hm-scroll {
+  padding-top: 8px;
+}
+
+.hm-scroll h2 {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* 링키가 찾았어요 */
+.hm-found {
+  margin-bottom: 20px;
+  padding: 18px 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid var(--primary-border);
+  border-radius: 20px;
+  background: var(--primary-soft);
+}
+
+.hm-found-body {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.hm-found-title {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.hm-found-title::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--primary-strong);
+  vertical-align: middle;
+}
+
+.hm-found-body p {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  word-break: keep-all;
+}
+
+.hm-found-amount {
+  padding: 10px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px dashed var(--primary-border);
+  border-bottom: 1px dashed var(--primary-border);
+}
+
+.hm-found-amount span {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.hm-found-amount b {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.hm-found-body small {
+  color: var(--sub);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.hm-found-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.hm-found-actions .pill {
+  height: 38px;
+  padding: 0 20px;
+  border-radius: 19px;
+  font-size: 14px;
+}
+
+.hm-found-link {
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* 이번 주 */
+.hm-head {
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hm-head > span {
+  color: var(--sub);
+  font-size: 13px;
+}
+
+.hm-head > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.hm-head em {
+  color: var(--sub);
+  font-size: 13px;
+  font-style: normal;
+}
+
+.hm-week {
+  padding: 12px 6px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.hm-day {
+  min-height: 78px;
+  padding-top: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--sub);
+  font-size: 12px;
+}
+
+.hm-day strong {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.hm-day.today strong {
+  background: var(--primary);
+  color: var(--on-primary);
+  font-weight: 700;
+}
+
+.hm-day small {
+  color: var(--sub);
+  font-size: 11px;
+}
+
+/* 섹션 제목 줄 */
+.hm-title-row {
+  margin: 24px 0 12px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.hm-title-row > b {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.hm-empty {
+  padding: 8px 2px;
+  color: var(--disabled);
+  font-size: 14px;
+}
+
+.hm-recent {
+  margin: 4px 0 8px;
+  color: var(--sub);
+  font-size: 13px;
+}
+
+/* 오늘 지출 카드 */
+.hm-spend {
+  margin-bottom: 10px;
+  padding: 16px;
+  border-radius: 18px;
+  background: var(--surface);
+}
+
+.hm-spend-main {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+}
+
+.hm-spend-main > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hm-spend-orig {
+  color: var(--sub);
+  font-size: 13px;
+}
+
+.hm-spend-main strong {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.hm-spend-main b {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.hm-spend-main b s {
+  margin-right: 6px;
+  color: var(--disabled);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.hm-spend-thumb {
+  width: 76px;
+  height: 68px;
+  flex: none;
+  border-radius: 12px;
+}
+
+.hm-spend-foot {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed #d7d7db;
+}
+
+.hm-spend-foot p {
+  color: var(--sub);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.hm-spend-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.hm-spend-actions .pill {
+  height: 32px;
+  padding: 0 16px;
+}
+
+/* 오늘의 하루 */
+.hm-day-report {
+  margin-top: 14px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--background);
+}
+
+.hm-day-report ul {
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  font-size: 15px;
+}
+
+.hm-day-report li::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin: 0 10px 2px 0;
+  border-radius: 50%;
+  background: var(--text);
+}
+
+/* 오늘의 동선 미니 지도 */
+.hm-route {
+  width: 100%;
+  height: 190px;
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: 20px;
+  background: var(--surface);
+  text-align: left;
+}
+
+.hm-route::before,
+.hm-route::after {
+  content: "";
+  position: absolute;
+  background: #e4e4e7;
+}
+
+.hm-route::before {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+}
+
+.hm-route::after {
+  top: 55%;
+  right: 0;
+  left: 0;
+  height: 2px;
+}
+
+.hm-route-date {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 2;
+  padding: 6px 12px;
+  border-radius: 14px;
+  background: var(--background);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.hm-route svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hm-route path {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+  vector-effect: non-scaling-stroke;
+}
+
+.hm-stop {
+  position: absolute;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+}
+
+.hm-stop i {
+  width: 14px;
+  height: 14px;
+  display: block;
+  border: 3px solid var(--background);
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 0 1px var(--text);
+}
+
+.hm-stop em {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  padding: 4px 9px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 12px;
+  background: var(--background);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.hm-stop em small {
+  color: var(--sub);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* 오늘의 사진: 가로 스크롤 */
+.hm-photos {
+  margin: 0 calc(var(--page-padding) * -1);
+  padding: 0 var(--page-padding) 8px;
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.hm-photos::-webkit-scrollbar {
+  display: none;
+}
+
+.hm-photo {
+  width: 140px;
+  height: 140px;
+  position: relative;
+  flex: none;
+  border-radius: 18px;
+}
+
+.hm-photo span {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  left: 8px;
+  padding: 5px 9px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--background);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

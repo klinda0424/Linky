@@ -1,16 +1,18 @@
-// 하단 탭은 캘린더·홈·리포트·프로필 4개. 지도·앨범은 탭이 아니라 홈 카드·날짜 시트에서 여는 화면이다.
-export type MainTab = "calendar" | "home" | "report" | "profile" | "map" | "album"
+// 하단 탭은 캘린더·홈·리포트 3개. 프로필은 탭이 아니라 우측 상단 아이콘으로 여는 화면이다. 지도·앨범은 탭이 아니라 홈 카드·날짜 시트에서 여는 화면이다.
+export type MainTab = "calendar" | "home" | "report" | "map" | "album"
 
 // 탭 위에 쌓이는 전체 화면
 export type MainView =
   | "tabs"
   | "search"
+  | "profile"
   | "photo"
   | "eventReport"
   | "profileInfo"
   | "connections"
   | "privacy"
   | "notifications"
+  | "transfer"
   | "settlementList"
   | "settlement"
   | "settlementTable"

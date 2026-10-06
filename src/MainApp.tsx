@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react"
+import { UserRound } from "lucide-react"
+import { Action } from "@/components/common"
 import { BottomTabs } from "@/components/layout"
 import {
   type CalEvent,
@@ -9,12 +11,13 @@ import {
   TODAY,
   initialLedger,
   payments,
+  transferGuess,
 } from "@/lib/ledger"
 import { AlbumTab, EventReport, PhotoDetail } from "@/screens/album"
 import { CalendarHome, DaySheet } from "@/screens/calendar"
 import { HomePage } from "@/screens/home"
 import { ReportTab } from "@/screens/report"
-import { summarize } from "@/lib/settlement"
+import { meeting, summarize } from "@/lib/settlement"
 import { MapTab } from "@/screens/map"
 import {
   ConnectionSettings,
@@ -25,6 +28,7 @@ import {
 } from "@/screens/profile"
 import { AlbumPicker, addedPhotoText } from "@/screens/record"
 import { SearchScreen } from "@/screens/search"
+import { TransferConfirm } from "@/screens/transfer"
 import {
   GroupSplitSheet,
   SettlementConfirm,
@@ -66,6 +70,8 @@ export function MainApp({
   const [returnToMonth, setReturnToMonth] = useState<YMD>()
   const [recordTarget, setRecordTarget] = useState<string>()
   const [splitting, setSplitting] = useState<Payment>()
+  // 링키가 찾았어요: 확인 중인 송금
+  const [transferId, setTransferId] = useState<string>()
   const [photo, setPhoto] = useState<Photo>()
   const [event, setEvent] = useState<CalEvent>()
   const [excluded, setExcluded] = useState<string[]>([])
@@ -89,7 +95,34 @@ export function MainApp({
     }),
     [ledger, permissions],
   )
+  // 그룹 결제 확인의 "아니요, 개인 지출"이 가리키는 결제
+  const meetingId = meeting?.id
   const toTabs = () => setView("tabs")
+  // 맥락을 찾았지만 아직 맞아요/아니에요를 누르지 않은 송금 (홈 알림)
+  const foundTransfer = payments.find(
+    (item) =>
+      item.kind === "transfer" &&
+      !state.transferMatched.includes(item.id) &&
+      !(state.transferDeclined ?? []).includes(item.id) &&
+      transferGuess(item, state) !== null,
+  )
+  const foundGuess = foundTransfer ? transferGuess(foundTransfer, state) : null
+  const transferPayment = payments.find((item) => item.id === transferId)
+  const confirmTransfer = (payment: Payment) => {
+    setLedger((value) => ({
+      ...value,
+      transferMatched: [...value.transferMatched, payment.id],
+    }))
+    // 재분류된 결과를 지출 내역(날짜 시트)에서 바로 보여 준다
+    openPayment(payment)
+  }
+  const declineTransfer = (payment: Payment) => {
+    setLedger((value) => ({
+      ...value,
+      transferDeclined: [...(value.transferDeclined ?? []), payment.id],
+    }))
+    toTabs()
+  }
   const recordPayment = payments.find((item) => item.id === recordTarget)
 
   const openPayment = (payment: Payment, monthContext?: YMD) => {
@@ -190,8 +223,20 @@ export function MainApp({
             setInboxFromHome(true)
             setView("settlement")
           }}
+          foundTransfer={
+            foundTransfer && foundGuess
+              ? { payment: foundTransfer, guess: foundGuess }
+              : undefined
+          }
+          confirmRestore={confirmRestore}
+          confirmTransfer={confirmTransfer}
+          declineTransfer={declineTransfer}
+          openTransfer={() => {
+            setTransferId(foundTransfer?.id)
+            setView("transfer")
+          }}
           pendingSettlement={
-            settled
+            settled || Boolean(meetingId && (state.personal ?? []).includes(meetingId))
               ? undefined
               : (() => {
                   const pending = summarize(excluded)
@@ -201,6 +246,7 @@ export function MainApp({
                 })()
           }
           openPayment={(payment) => openPayment(payment)}
+          openProfile={() => setView("profile")}
           openSearch={() => setView("search")}
           state={state}
         />
@@ -212,6 +258,7 @@ export function MainApp({
             setFocusPayment(undefined)
             setSheetDay(day)
           }}
+          openProfile={() => setView("profile")}
           openSearch={() => setView("search")}
           sheetDay={sheetDay}
           state={state}
@@ -248,15 +295,7 @@ export function MainApp({
           state={state}
         />
       )
-    return (
-      <MyPage
-        name={profile.nickname || "소연"}
-        openConnections={() => setView("connections")}
-        openInfo={() => setView("profileInfo")}
-        openNotifications={() => setView("notifications")}
-        openPrivacy={() => setView("privacy")}
-      />
-    )
+    return null
   }
 
   const fullScreen = () => {
@@ -293,13 +332,24 @@ export function MainApp({
             state={state}
           />
         ) : null
+      case "profile":
+        return (
+          <MyPage
+            back={toTabs}
+            name={profile.nickname || "소연"}
+            openConnections={() => setView("connections")}
+            openInfo={() => setView("profileInfo")}
+            openNotifications={() => setView("notifications")}
+            openPrivacy={() => setView("privacy")}
+          />
+        )
       case "profileInfo":
         return (
           <ProfileInfoSettings
-            back={toTabs}
+            back={() => setView("profile")}
             save={(value) => {
               setProfile(value)
-              toTabs()
+              setView("profile")
             }}
             value={profile}
           />
@@ -307,7 +357,7 @@ export function MainApp({
       case "connections":
         return (
           <ConnectionSettings
-            back={toTabs}
+            back={() => setView("profile")}
             toggle={(key) =>
               setPermissions((value) => ({ ...value, [key]: !value[key] }))
             }
@@ -317,7 +367,7 @@ export function MainApp({
       case "privacy":
         return (
           <PrivacySettings
-            back={toTabs}
+            back={() => setView("profile")}
             toggle={(key) =>
               setPermissions((value) => ({ ...value, [key]: !value[key] }))
             }
@@ -327,13 +377,23 @@ export function MainApp({
       case "notifications":
         return (
           <NotificationSettings
-            back={toTabs}
+            back={() => setView("profile")}
             toggle={(key) =>
               setNotifications((value) => ({ ...value, [key]: !value[key] }))
             }
             values={notifications}
           />
         )
+      case "transfer":
+        return transferPayment ? (
+          <TransferConfirm
+            back={toTabs}
+            confirm={() => confirmTransfer(transferPayment)}
+            decline={() => declineTransfer(transferPayment)}
+            payment={transferPayment}
+            state={state}
+          />
+        ) : null
       case "settlementList":
         return (
           <SettlementList
@@ -351,7 +411,16 @@ export function MainApp({
           <SettlementInbox
             back={() => (inboxFromHome ? toTabs() : setView("settlementList"))}
             excluded={excluded}
+            notGroup={
+              meetingId
+                ? () => {
+                    markPersonal(meetingId)
+                    toTabs()
+                  }
+                : undefined
+            }
             openTable={() => setView("settlementTable")}
+            state={state}
           />
         )
       case "settlementTable":
@@ -405,7 +474,18 @@ export function MainApp({
     <>
       {view === "tabs" ? (
         <>
-          <div className="main-page">{tabScreen()}</div>
+          <div className="main-page">
+            {tabScreen()}
+            {tab === "report" && (
+              <Action
+                className="cal-icon report-profile"
+                label="프로필"
+                onClick={() => setView("profile")}
+              >
+                <UserRound size={20} strokeWidth={1.6} />
+              </Action>
+            )}
+          </div>
           <BottomTabs
             active={tab}
             change={(next) => {
