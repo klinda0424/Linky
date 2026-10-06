@@ -4567,21 +4567,22 @@ p {
 }
 
 .hm-spend-main strong {
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
   line-height: 1.35;
+  word-break: keep-all;
 }
 
 .hm-spend-main b {
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 400;
 }
 
 .hm-spend-main b s {
   margin-right: 6px;
   color: var(--disabled);
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 400;
 }
 
 .hm-spend-thumb {
