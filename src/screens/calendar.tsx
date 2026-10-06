@@ -11,7 +11,6 @@ import {
   categoryOf,
   daysWithPayments,
   dayMine,
-  dayTotal,
   eventsOn,
   evidenceOf,
   groupBasis,
@@ -190,6 +189,7 @@ export function DayPanel({
   canReturn,
   back,
   showMap,
+  openAlbum,
   openDetail,
   openRecord,
   openSplit,
@@ -211,6 +211,8 @@ export function DayPanel({
   canReturn: boolean
   back: () => void
   showMap: (day: YMD) => void
+  // 사진 아이콘 → 앨범. 없으면 사진 버튼을 숨긴다
+  openAlbum?: () => void
   // 지출 카드를 누르면 별도 "지출 내역" 화면으로 간다
   openDetail: (payment: Payment) => void
   openRecord: (paymentId?: string) => void
@@ -227,7 +229,6 @@ export function DayPanel({
   openSettlement?: () => void
 }) {
   const list = paymentsOn(day)
-  const restored = list.filter((payment) => isRestored(payment, state)).length
   const dayEvents = eventsOn(day, state)
   const dayPhotos = photosOn(day, state).filter(
     (photo) => !state.photoUnlinked.includes(photo.id),
@@ -252,47 +253,40 @@ export function DayPanel({
           </h2>
           <b className="cal2-day-amount">{won(dayMine(day, state))}</b>
         </div>
-        {/* 이날의 내 기록: 결제의 근거가 되는 내 일정·사진. 아래 링크로 이날 동선 지도를 연다 */}
+        {/* 이날의 내 기록: 일정 칩 + 사진(앨범)·동선 지도 아이콘 버튼 */}
         <div className="cal2-records">
-          <div className="cal2-records-label">
-            <span>이날의 내 기록</span>
-            <small>
-              {dayMine(day, state) !== dayTotal(day) && `결제 ${won(dayTotal(day))} · `}
-              {list.length}건 · 복원 {restored}건
-            </small>
-          </div>
-          <div className="cal2-chips">
-            {dayEvents.map((event) => (
-              <span className="cal2-chip" key={event.id}>
-                <CalendarDays size={14} strokeWidth={1.7} />
-                <em>일정</em>
-                {event.title} · {event.start}
-              </span>
-            ))}
-            {dayPhotos.length > 0 && (
-              <span className="cal2-chip">
-                <Camera size={14} strokeWidth={1.7} />
-                <em>사진</em>
-                {dayPhotos.length}장
-              </span>
+          <span className="cal2-records-label">이날의 내 기록</span>
+          <div className="cal2-record-row">
+            <div className="cal2-chips">
+              {dayEvents.map((event) => (
+                <span className="cal2-chip" key={event.id}>
+                  <CalendarDays size={14} strokeWidth={1.7} />
+                  <em>일정</em>
+                  {event.title} · {event.start}
+                </span>
+              ))}
+              {dayEvents.length === 0 && <span className="cal2-chip muted">일정 기록 없음</span>}
+            </div>
+            {dayPhotos.length > 0 && openAlbum && (
+              <Action
+                className="cal2-icon-btn"
+                label={`이날 사진 ${dayPhotos.length}장 앨범에서 보기`}
+                onClick={openAlbum}
+              >
+                <Camera size={16} strokeWidth={1.7} />
+              </Action>
             )}
-            {dayEvents.length + dayPhotos.length === 0 && (
-              <span className="cal2-chip muted">일정·사진 기록 없음</span>
+            {list.length > 0 && (
+              <Action className="cal2-icon-btn" label="이날 동선 지도로 보기" onClick={() => showMap(day)}>
+                <Route size={16} strokeWidth={1.7} />
+              </Action>
             )}
           </div>
-          {(list.length > 0 || canReturn) && (
+          {canReturn && (
             <div className="cal2-links">
-              {list.length > 0 && (
-                <Action className="cal2-link" onClick={() => showMap(day)}>
-                  <Route size={15} strokeWidth={1.7} /> 이날 동선 지도로 보기
-                  <ChevronRight size={15} strokeWidth={1.7} />
-                </Action>
-              )}
-              {canReturn && (
-                <Action className="cal2-link" onClick={back}>
-                  <ChevronLeft size={15} strokeWidth={1.7} /> 지도로 돌아가기
-                </Action>
-              )}
+              <Action className="cal2-link" onClick={back}>
+                <ChevronLeft size={15} strokeWidth={1.7} /> 지도로 돌아가기
+              </Action>
             </div>
           )}
         </div>

@@ -300,6 +300,10 @@ export function MainApp({
               relink={relink}
               relinkPhoto={relinkPhoto}
               settlementPaymentId={meetingId}
+              openAlbum={() => {
+                setBackTab("calendar")
+                setTab("album")
+              }}
               showMap={(day) => {
                 setBackTab("calendar")
                 setSheetDay(undefined)
