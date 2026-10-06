@@ -5,7 +5,7 @@ import {
   monthlyReport,
   nextWeekPreview,
   patternReport,
-  praise,
+  weeklyChange,
   weeklyReport,
 } from "@/lib/report"
 
@@ -78,8 +78,8 @@ function Facts({ lines }: { lines: (string | undefined)[] }) {
   )
 }
 
-// ---------- 리포트 탭: 주간 · 내 지출 패턴 · 다음 주 예고 · 칭찬 · 월간 · 정산 내역 ----------
-// 카드마다 한 줄 요약 문장 → 근거 줄. 판단 없는 사실만 쓰고, 조절 제안은 다음 주 예고에서만, 데이터가 없으면 "기록 없음".
+// ---------- 리포트 탭: 주간 · 내 지출 패턴 · 다음 주 예고 · 지난주와 달라진 점 · 월간 · 정산 내역 ----------
+// 카드마다 한 줄 요약 문장 → 근거 줄. 판단 없이 확인된 사실만 쓰고, 데이터가 없으면 "기록 없음".
 export function ReportTab({
   state,
   openSettlement,
@@ -90,7 +90,7 @@ export function ReportTab({
   const weekly = weeklyReport(state)
   const pattern = patternReport(state)
   const preview = nextWeekPreview(state)
-  const dropped = praise(state)
+  const changed = weeklyChange(state)
   const monthly = monthlyReport(state)
   const topDay = weekly.daily.reduce((best, day) => (day.value > best.value ? day : best), weekly.daily[0])
   return (
@@ -107,22 +107,17 @@ export function ReportTab({
           {preview ? (
             <>
               <p className="rpt-head">
-                다음 주 약속이 <b>{preview.eventCount}건</b> 잡혀 있어요.
-                {preview.foodAverage !== undefined && (
-                  <>
-                    {" "}이런 주엔 보통 식비·카페로 <b>{won(preview.foodAverage)}</b> 나갔어요.
-                  </>
-                )}
+                다음 주 일정이 <b>{preview.events.length}건</b> 있어요.
               </p>
               <Facts
-                lines={[
-                  preview.foodAverage === undefined ? "비슷한 주의 식비 기록 없음" : undefined,
-                  `참고로 이번 주 식비·카페는 ${won(preview.thisWeekFood)}이에요`,
-                ]}
+                lines={preview.events.flatMap((event) => [
+                  `${label(event.date)} ${event.start} · ${event.title}`,
+                  event.repeatedFact,
+                ])}
               />
             </>
           ) : (
-            <p className="report-line">다음 주 일정 기록 없음</p>
+            <p className="report-line">기록 없음</p>
           )}
         </section>
 
@@ -202,11 +197,11 @@ export function ReportTab({
 
         <section className="main-card">
           <div className="block-heading">
-            <strong>칭찬</strong>
+            <strong>지난주와 달라진 점</strong>
           </div>
-          {dropped ? (
+          {changed ? (
             <p className="rpt-head">
-              지난주보다 {dropped.category} 지출이 <b>{won(dropped.diff)}</b> 줄었어요.
+              지난주보다 {changed.category} 지출이 <b>{won(changed.diff)}</b> 줄었어요.
             </p>
           ) : (
             <p className="report-line">기록 없음</p>
