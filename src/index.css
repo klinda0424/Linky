@@ -5506,5 +5506,8 @@ p {
 /* 리포트 카드 제목: 라임 형광펜 */
 .block-heading > strong.rpt-hl {
   padding: 0 3px;
-  background: linear-gradient(transparent 55%, var(--primary) 55%);
+  background: linear-gradient(
+    transparent 55%,
+    color-mix(in srgb, var(--primary) 70%, transparent) 55%
+  );
 }
