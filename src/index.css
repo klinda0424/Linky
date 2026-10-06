@@ -6148,6 +6148,8 @@ p {
   font-size: var(--fs-item-title);
   line-height: var(--lh-item-title);
   font-weight: var(--fw-item-title);
+  /* 제목 안의 줄바꿈(\n)을 그대로 보여 준다 */
+  white-space: pre-line;
 }
 
 .hm-notice small {
