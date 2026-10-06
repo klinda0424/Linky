@@ -351,11 +351,11 @@ function PayCard({
   const needsConfirm = pendingGroup || Boolean(restored)
   return (
     <div className={cx("hm-spend", "pay-card", focus && "focus")} data-pay={payment.id}>
-      {pendingGroup && <span className="pay-chip">정산 대기</span>}
       <div className="hm-spend-main">
         <div>
           <span className="hm-spend-orig">
             {restored ? `${payment.time} · ${restored.original}` : payment.time}
+            {pendingGroup && <em className="pay-chip">정산 대기</em>}
             {personal && <em className="pay-tag">개인 지출</em>}
           </span>
           <strong>{title}</strong>
@@ -399,10 +399,16 @@ function PayCard({
       {(pendingGroup || footText) && (
         <div className="pay-info">
           {pendingGroup && (
-            <p className="pay-split">
-              총 결제 {won(payment.amount)} → 내 몫 {won(share)} · 받을 돈{" "}
-              {won(receivableOf(payment))}
-            </p>
+            <dl className="pay-split">
+              <div>
+                <dt>내 몫 ({people?.length}명 중 1명)</dt>
+                <dd>{won(share)}</dd>
+              </div>
+              <div>
+                <dt>받을 돈</dt>
+                <dd>{won(receivableOf(payment))}</dd>
+              </div>
+            </dl>
           )}
           {footText && <p>{footText}</p>}
         </div>

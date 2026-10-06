@@ -5056,15 +5056,16 @@ p {
 }
 
 .pay-chip {
-  margin-bottom: 8px;
-  padding: 4px 10px;
+  margin-left: 6px;
+  padding: 1px 6px;
   display: inline-block;
-  border: 1px solid var(--expense-high);
-  border-radius: 14px;
-  background: #fff1f0;
+  border-radius: 6px;
+  background: var(--pending-light);
   color: var(--expense-high);
-  font-size: 12px;
+  font-size: 11px;
+  font-style: normal;
   font-weight: 600;
+  vertical-align: 1px;
 }
 
 .pay-tag {
@@ -5084,8 +5085,10 @@ p {
 }
 
 .pay-price-row b {
-  font-size: 14px;
-  font-weight: 400;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
 .pay-price-row b s {
@@ -5109,10 +5112,28 @@ p {
   line-height: 1.4;
 }
 
+/* 그룹 결제: 내 몫·받을 돈을 한 줄씩 (라벨 왼쪽, 금액 오른쪽) */
 .pay-info .pay-split {
-  color: var(--text);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pay-split > div {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.pay-split dt {
+  color: var(--sub);
+}
+
+.pay-split dd {
+  margin: 0;
   font-weight: 600;
-  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
 /* 캘린더 결제 카드 글자 굵기 (홈과 공유하는 hm-spend 규칙은 그대로 둔다) */
