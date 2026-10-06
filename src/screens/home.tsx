@@ -146,13 +146,16 @@ const periodOf = (time: string) => {
   return hour < 12 ? "오전" : hour < 17 ? "낮" : hour < 21 ? "저녁" : "밤"
 }
 
+// 후불교통은 하루 동안 탄 버스·지하철 요금이 합쳐져 청구된다 (결제 시각은 마지막 승차 무렵).
+// 그래서 특정 시각의 이동으로 쓰지 않고 하루 합산 요금으로 따로 적는다.
+const isDailyTransit = (payment: Payment) => /후불교통/.test(payment.merchant)
+
 // 결제 한 건을 "무엇을 했는지"로 쓴다. 가맹점명이 반복되는 "결제를 했고"를 피한다.
 function paymentStep(payment: Payment, state: LedgerState) {
   const restored = restoredOf(payment, state)
   if (payment.transit) return { text: `${payment.transit.from} 인근에서 택시를`, verb: "탔" }
   if (restored) return { text: `${restored.label}에`, verb: "다녀왔" }
   if (payment.kind === "transfer") return { text: `${payment.counterparty}에게`, verb: "송금했" }
-  if (/티머니|후불교통/.test(payment.merchant)) return { text: "대중교통을", verb: "탔" }
   if (/점$/.test(payment.merchant)) return { text: `${payment.merchant}에`, verb: "들렀" }
   return { text: `${payment.merchant}에서 결제를`, verb: "했" }
 }
@@ -169,19 +172,28 @@ function dayStory(day: YMD, list: Payment[], photoCount: number, state: LedgerSt
     })),
     // 일정 시간대에 한 결제는 일정이 이미 설명하므로 따로 적지 않는다
     ...list
-      .filter((payment) => eventsFor(payment, state).length === 0)
+      .filter((payment) => !isDailyTransit(payment) && eventsFor(payment, state).length === 0)
       .map((payment) => ({ time: payment.time, ...paymentStep(payment, state) })),
   ]
     .sort((a, b) => a.time.localeCompare(b.time))
     .slice(0, 4)
+  // 한 문장에 "~고"는 두 번까지: 세 가지씩 끊어 문장을 나눈다
   let previous = ""
-  const parts = items.map((item, index) => {
+  const sentences: string[] = []
+  items.forEach((item, index) => {
     const period = periodOf(item.time)
     const prefix = period !== previous ? `${period}에는 ` : ""
     previous = period
-    return `${prefix}${item.text} ${item.verb}${index < items.length - 1 ? "고" : "어요"}`
+    const last = index === items.length - 1 || index % 3 === 2
+    const clause = `${prefix}${item.text} ${item.verb}${last ? "어요." : "고,"}`
+    if (index % 3 === 0) sentences.push(clause)
+    else sentences[sentences.length - 1] += ` ${clause}`
   })
-  if (parts.length === 0) return ""
+  const transitFare = list
+    .filter(isDailyTransit)
+    .reduce((sum, payment) => sum + shareOf(payment, state), 0)
+  if (transitFare > 0) sentences.push(`대중교통 요금은 하루 합쳐 ${won(transitFare)}이에요.`)
+  if (sentences.length === 0) return ""
 
   // 머문 곳과 결제 지역이 모두 한 곳이면 그 지역을 먼저 말하고, 이번 주에 몇 번째인지 덧붙인다
   const zones = new Set([...dayStays.map((stay) => stay.zone), ...list.map((payment) => payment.zone)])
@@ -194,7 +206,7 @@ function dayStory(day: YMD, list: Payment[], photoCount: number, state: LedgerSt
     lead = `${dayWord}은 ${zone}에 주로 계셨군요.${visitedDays > 1 ? ` 이번 주 ${zone}에 간 날은 ${visitedDays}일째예요.` : ""} `
   }
   const photos = photoCount > 0 ? ` ${dayWord} 남긴 사진은 ${photoCount}장이에요.` : ""
-  return `${lead}${parts.join(", ")}.${photos}`
+  return `${lead}${sentences.join(" ")}${photos}`
 }
 
 // ---------- 오늘의 동선: 체류 구간과 결제 위치를 시간순으로 잇는 미니 지도 ----------
