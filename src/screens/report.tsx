@@ -14,7 +14,7 @@ import { reportDemoFacts } from "@/mock/report"
 
 type ReportView = "weekly" | "monthly"
 
-function Columns({ items }: { items: { label: string; value: number; today?: boolean }[] }) {
+function Columns({ items }: { items: { label: string; dateLabel: string; value: number; today?: boolean }[] }) {
   const max = Math.max(...items.map((item) => item.value), 1)
   const top = items.findIndex((item) => item.value === max)
   return (
@@ -29,6 +29,7 @@ function Columns({ items }: { items: { label: string; value: number; today?: boo
             />
           </span>
           <b>{item.label}</b>
+          <small>{item.dateLabel}</small>
         </div>
       ))}
     </div>
@@ -173,6 +174,7 @@ export function ReportTab({ state, openSettlement }: { state: LedgerState; openS
                     <Columns
                       items={weekly.daily.map((day) => ({
                         label: day.weekday,
+                        dateLabel: `${day.date.m}/${day.date.d}`,
                         value: day.value,
                         today: day.today,
                       }))}
