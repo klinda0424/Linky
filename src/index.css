@@ -3486,6 +3486,33 @@ p {
   justify-content: space-between;
 }
 
+/* 주 이동: < 이번 주 / < 지난주 > */
+.hm-week-nav {
+  margin-left: -8px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.hm-week-arrow {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--text);
+}
+
+.hm-week-arrow:active {
+  background: var(--surface);
+}
+
+.hm-week-arrow[aria-disabled="true"],
+.hm-week-arrow.disabled {
+  color: var(--disabled);
+}
+
 .hm-head em {
   color: var(--sub);
   font-size: 13px;
