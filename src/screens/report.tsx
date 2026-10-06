@@ -135,26 +135,20 @@ export function ReportTab({ state, openSettlement }: { state: LedgerState; openS
                   <strong>다음 주 예고</strong>
                 </div>
                 {preview ? (
-                  <>
-                    <div className="rpt-preview-count">
-                      <span>일정</span>
-                      <b>{preview.events.length}건</b>
-                    </div>
-                    <div className="rpt-preview-events">
-                      {preview.events.map((event) => (
-                        <div key={`${event.date.y}-${event.date.m}-${event.date.d}-${event.start}`}>
-                          <p>{`${label(event.date)} ${event.start} · ${event.title}`}</p>
-                          {event.title.includes("지은") ? (
-                            <small>
-                              전에 지은이랑 약속에선 평균 {won(reportDemoFacts.jieunAppointmentAverage)} 정도의 지출이 있었어요.
-                            </small>
-                          ) : event.repeatedFact ? (
-                            <small>{event.repeatedFact}</small>
-                          ) : null}
-                        </div>
-                      ))}
-                    </div>
-                  </>
+                  <div className="rpt-preview-events">
+                    {preview.events.map((event) => (
+                      <div key={`${event.date.y}-${event.date.m}-${event.date.d}-${event.start}`}>
+                        <p>{`${label(event.date)} ${event.start} · ${event.title}`}</p>
+                        {event.title.includes("지은") ? (
+                          <small>
+                            전에 지은이랑 약속에선 평균 {won(reportDemoFacts.jieunAppointmentAverage)} 정도의 지출이 있었어요.
+                          </small>
+                        ) : event.repeatedFact ? (
+                          <small>{event.repeatedFact}</small>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
                 ) : (
                   <p className="report-line">기록 없음</p>
                 )}
