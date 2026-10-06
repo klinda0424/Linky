@@ -5739,7 +5739,6 @@ p {
 .tf-no {
   background: var(--surface);
   color: var(--text);
-  font-weight: var(--fw-body);
 }
 
 .tf-empty {
