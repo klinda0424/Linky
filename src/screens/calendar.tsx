@@ -227,60 +227,86 @@ export function DayPanel({
   }, [day, focusPayment])
   return (
     <section className="cal2-day">
-      <h2>
-        {label(day)} ({weekday(day)})
-      </h2>
-      <div className="cal2-day-sub">
-        <div className="cal2-chips">
-          {dayEvents.map((event) => (
-            <span className="cal2-chip" key={event.id}>
-              <CalendarDays size={14} strokeWidth={1.7} /> {event.title} {event.start}
-            </span>
-          ))}
-          {dayPhotos.length > 0 && (
-            <span className="cal2-chip">
-              <Camera size={14} strokeWidth={1.7} /> 사진 {dayPhotos.length}장
-            </span>
-          )}
-          {list.length > 0 && (
-            <Action className="cal2-chip action" onClick={() => showMap(day)}>
-              <Route size={14} strokeWidth={1.7} /> 동선 보기
-            </Action>
-          )}
-          {canReturn && (
-            <Action className="cal2-chip action" onClick={back}>
-              <ChevronLeft size={14} strokeWidth={1.7} /> 지도로 돌아가기
-            </Action>
-          )}
-          {dayEvents.length + dayPhotos.length === 0 && (
-            <span className="cal2-chip muted">이날 일정·사진 기록 없음</span>
-          )}
-        </div>
-        <div className="cal2-day-total">
-          <b>{won(dayMine(day, state))}</b>
+      <div className="cal2-day-head">
+        <h2>
+          {label(day)} ({weekday(day)})
+        </h2>
+        <b className="cal2-day-amount">{won(dayMine(day, state))}</b>
+      </div>
+      {/* 이날의 내 기록: 결제의 근거가 되는 내 일정·사진. 아래 링크로 이날 동선 지도를 연다 */}
+      <div className="cal2-records">
+        <div className="cal2-records-label">
+          <span>이날의 내 기록</span>
           <small>
             {dayMine(day, state) !== dayTotal(day) && `결제 ${won(dayTotal(day))} · `}
             {list.length}건 · 복원 {restored}건
           </small>
         </div>
+        <div className="cal2-chips">
+          {dayEvents.map((event) => (
+            <span className="cal2-chip" key={event.id}>
+              <CalendarDays size={14} strokeWidth={1.7} />
+              <em>일정</em>
+              {event.title} · {event.start}
+            </span>
+          ))}
+          {dayPhotos.length > 0 && (
+            <span className="cal2-chip">
+              <Camera size={14} strokeWidth={1.7} />
+              <em>사진</em>
+              {dayPhotos.length}장
+            </span>
+          )}
+          {dayEvents.length + dayPhotos.length === 0 && (
+            <span className="cal2-chip muted">일정·사진 기록 없음</span>
+          )}
+        </div>
+        {(list.length > 0 || canReturn) && (
+          <div className="cal2-links">
+            {list.length > 0 && (
+              <Action className="cal2-link" onClick={() => showMap(day)}>
+                <Route size={15} strokeWidth={1.7} /> 이날 동선 지도로 보기
+                <ChevronRight size={15} strokeWidth={1.7} />
+              </Action>
+            )}
+            {canReturn && (
+              <Action className="cal2-link" onClick={back}>
+                <ChevronLeft size={15} strokeWidth={1.7} /> 지도로 돌아가기
+              </Action>
+            )}
+          </div>
+        )}
       </div>
-      {list.map((payment) => (
-        <PayCard
-          focus={activeFocus === payment.id}
-          key={payment.id}
-          markPersonal={markPersonal}
-          openRecord={openRecord}
-          openSplit={openSplit}
-          payment={payment}
-          state={state}
-          unlink={unlink}
-          relink={relink}
-          relinkPhoto={relinkPhoto}
-          unlinkPhoto={unlinkPhoto}
-          verify={verify}
-          confirmRestore={confirmRestore}
-        />
-      ))}
+      {/* 시간순 타임라인: 왼쪽 점·시각·세로선(근거가 있으면 라임 점, 없으면 빈 점), 오른쪽 결제 카드 */}
+      {list.length > 0 && (
+        <ol className="pay-timeline">
+          {list.map((payment) => {
+            const done = isRestored(payment, state)
+            return (
+              <li className={cx("pay-tl-item", done && "done")} key={payment.id}>
+                <div className="pay-tl-rail">
+                  <i className="pay-tl-dot" aria-label={done ? "근거 있음" : "기록 없음"} />
+                  <time>{payment.time}</time>
+                </div>
+                <PayCard
+                  focus={activeFocus === payment.id}
+                  markPersonal={markPersonal}
+                  openRecord={openRecord}
+                  openSplit={openSplit}
+                  payment={payment}
+                  state={state}
+                  unlink={unlink}
+                  relink={relink}
+                  relinkPhoto={relinkPhoto}
+                  unlinkPhoto={unlinkPhoto}
+                  verify={verify}
+                  confirmRestore={confirmRestore}
+                />
+              </li>
+            )
+          })}
+        </ol>
+      )}
       {list.length === 0 && <p className="hm-empty">결제 기록 없음</p>}
     </section>
   )
@@ -351,13 +377,16 @@ function PayCard({
   const needsConfirm = pendingGroup || Boolean(restored)
   return (
     <div className={cx("hm-spend", "pay-card", focus && "focus")} data-pay={payment.id}>
-      {pendingGroup && <span className="pay-chip">정산 대기</span>}
       <div className="hm-spend-main">
         <div>
-          <span className="hm-spend-orig">
-            {restored ? `${payment.time} · ${restored.original}` : payment.time}
-            {personal && <em className="pay-tag">개인 지출</em>}
-          </span>
+          {/* 시각은 타임라인 왼쪽에 있어 카드에는 원본 가맹점명과 상태 칩만 둔다 */}
+          {(restored || pendingGroup || personal) && (
+            <span className="hm-spend-orig">
+              {restored && <span>{restored.original}</span>}
+              {pendingGroup && <em className="pay-chip">정산 대기</em>}
+              {personal && <em className="pay-tag">개인 지출</em>}
+            </span>
+          )}
           <strong>{title}</strong>
         </div>
         {photoIds.length > 0 && <i className="photo-thumb t0 hm-spend-thumb" />}
@@ -399,10 +428,16 @@ function PayCard({
       {(pendingGroup || footText) && (
         <div className="pay-info">
           {pendingGroup && (
-            <p className="pay-split">
-              총 결제 {won(payment.amount)} → 내 몫 {won(share)} · 받을 돈{" "}
-              {won(receivableOf(payment))}
-            </p>
+            <dl className="pay-split">
+              <div>
+                <dt>내 몫 ({people?.length}명 중 1명)</dt>
+                <dd>{won(share)}</dd>
+              </div>
+              <div>
+                <dt>받을 돈</dt>
+                <dd>{won(receivableOf(payment))}</dd>
+              </div>
+            </dl>
           )}
           {footText && <p>{footText}</p>}
         </div>
