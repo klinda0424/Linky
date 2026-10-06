@@ -608,7 +608,8 @@ p {
   grid-template-columns: repeat(3, 1fr);
   align-items: center;
   border-top: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.98);
+  /* 뒤 본문이 비쳐 탭 글자와 겹치지 않도록 불투명하게 */
+  background: #fff;
 }
 
 .bottom-tab {
@@ -618,8 +619,9 @@ p {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  color: var(--disabled);
-  font-size: 11px;
+  /* 비활성 탭도 읽히도록 대비를 높인다 (흰 배경 기준 5:1 이상) */
+  color: #666670;
+  font-size: 12px;
 }
 
 .bottom-tab.active {
@@ -3655,9 +3657,10 @@ p {
 }
 
 .hm-spend-actions .pill {
-  height: 26px;
-  padding: 0 10px;
-  font-size: 12px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 18px;
+  font-size: 13px;
 }
 
 /* 지출 카드의 맞아요: 연한 라임 배경 */
@@ -3943,7 +3946,7 @@ p {
 
 .cal2-cell small {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
 }
 
