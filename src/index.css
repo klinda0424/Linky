@@ -5055,7 +5055,7 @@ p {
   position: relative;
 }
 
-/* 날짜 상세 결제 타임라인: 시각 | 점·세로선 | 카드 */
+/* 날짜 상세 결제 타임라인: 점·세로선 | 카드 (시각은 카드 안 첫 줄) */
 .pay-timeline {
   margin: 0;
   padding: 0;
@@ -5065,7 +5065,7 @@ p {
 .pay-tl-item {
   position: relative;
   display: grid;
-  grid-template-columns: 38px 16px minmax(0, 1fr);
+  grid-template-columns: 14px minmax(0, 1fr);
   align-items: start;
 }
 
@@ -5075,29 +5075,22 @@ p {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 45.5px;
+  left: 4px;
   width: 1px;
   background: var(--border);
 }
 
 .pay-tl-item:first-child::before {
-  top: 18px;
+  top: 20px;
 }
 
 .pay-tl-item:last-child::before {
   bottom: auto;
-  height: 18px;
+  height: 20px;
 }
 
 .pay-tl-item:only-child::before {
   display: none;
-}
-
-.pay-tl-time {
-  padding-top: 11px;
-  color: var(--sub);
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
 }
 
 .pay-tl-dot {
@@ -5105,7 +5098,7 @@ p {
   z-index: 1;
   width: 9px;
   height: 9px;
-  margin: 14px 0 0 3px;
+  margin: 16px 0 0;
   border: 1.5px solid var(--disabled);
   border-radius: 50%;
   background: var(--background);
@@ -5118,7 +5111,7 @@ p {
 }
 
 .pay-tl-item .pay-card {
-  margin-left: 4px;
+  margin-left: 6px;
 }
 
 .pay-chip {
