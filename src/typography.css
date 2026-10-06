@@ -1,26 +1,27 @@
 /* 타이포 토큰 (홈 화면 기준). 홈 이후 화면은 이 토큰으로 순차 교체한다.
    Pretendard, 자간 -0.02em, 숫자는 tabular-nums.
-   규칙: 700은 합계·금액에만, 600은 제목류에만, 나머지는 400~500. */
+   시안(Figma Make) 실측 기준: 핵심 합계 28/700, 섹션·카드 제목 18/600, 행 제목 16/500, 금액 16/600, 본문 14, 라벨 13, 캡션 12.
+   규칙: 700은 핵심 합계에만, 600은 제목·금액에만, 나머지는 400~500. */
 :root {
   --text-body: #6b6f76;
   --text-mute: #8b8f97;
   --lime-card: #f4fadf;
 
-  --fs-headline: 24px;
-  --lh-headline: 30px;
+  --fs-headline: 28px;
+  --lh-headline: 34px;
   --fw-headline: 700;
 
-  --fs-title: 20px;
-  --lh-title: 28px;
+  --fs-title: 18px;
+  --lh-title: 26px;
   --fw-title: 600;
 
-  --fs-item-title: 15px;
+  --fs-item-title: 16px;
   --lh-item-title: 22px;
-  --fw-item-title: 600;
+  --fw-item-title: 500;
 
   --fs-item-amount: 16px;
   --lh-item-amount: 22px;
-  --fw-item-amount: 700;
+  --fw-item-amount: 600;
 
   --fs-body: 14px;
   --lh-body: 20px;
@@ -36,10 +37,10 @@
 
   --fs-tag: 12px;
   --lh-tag: 16px;
-  --fw-tag: 600;
+  --fw-tag: 500;
 
-  --fs-tab: 11px;
-  --lh-tab: 14px;
+  --fs-tab: 12px;
+  --lh-tab: 16px;
   --fw-tab: 400;
   --fw-tab-active: 600;
 }

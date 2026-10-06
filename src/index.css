@@ -5454,9 +5454,9 @@ p {
 
 .hm-day strong {
   color: var(--text);
-  font-size: 16px;
-  line-height: 22px;
-  font-weight: 500;
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+  font-weight: var(--fw-item-title);
 }
 
 .hm-day small {
@@ -5468,12 +5468,12 @@ p {
 
 /* 선택일: 날짜와 금액을 600으로 */
 .hm-day.today strong {
-  font-weight: 600;
+  font-weight: var(--fw-title);
 }
 
 .hm-day.today small {
   color: var(--text);
-  font-weight: 600;
+  font-weight: var(--fw-title);
 }
 
 /* 링키 카드: 연라임 면, 테두리 없음, 카드 전체가 확인 화면으로 가는 버튼 */
@@ -5720,6 +5720,8 @@ p {
 .hm-link-pill {
   background: var(--background);
   color: #1a1a1a;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
   font-weight: var(--fw-item-title);
 }
 
