@@ -413,7 +413,7 @@ p {
 
 .label-row small {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 400;
 }
 
@@ -765,8 +765,8 @@ p {
 
 .profile-top p {
   margin-top: 4px;
-  color: var(--sub);
-  font-size: 12px;
+  color: #666670;
+  font-size: 13px;
 }
 
 .profile-list {
@@ -800,9 +800,9 @@ p {
 }
 
 .profile-settings-content {
-  height: calc(100% - 130px);
-  padding-top: 22px;
-  padding-bottom: 86px;
+  height: calc(100% - 56px);
+  padding-top: 16px;
+  padding-bottom: 24px;
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -833,7 +833,7 @@ p {
   border-radius: 10px;
   background: var(--primary-soft);
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.45;
 }
 
@@ -1237,7 +1237,7 @@ p {
 
 .table-total span {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .table-total strong {
@@ -1282,7 +1282,7 @@ p {
 
 .people-settlement div span {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .warning-banner {
@@ -1299,12 +1299,14 @@ p {
 
 .warning-banner p {
   color: var(--text);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.45;
 }
 
 .warning-banner .action {
-  font-size: 11px;
+  margin: -10px -8px -10px 0;
+  padding: 10px 8px;
+  font-size: 12px;
   font-weight: 600;
   text-decoration: underline;
 }
@@ -1324,7 +1326,7 @@ p {
 .edit-banner span {
   max-width: 205px;
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.45;
 }
 
@@ -1377,7 +1379,7 @@ p {
 .edit-row div span,
 .edit-row small {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .edit-row p {
@@ -1409,7 +1411,7 @@ p {
   gap: 8px;
   border-radius: 12px;
   background: var(--primary-soft);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.45;
 }
 
@@ -1423,7 +1425,7 @@ p {
 .receive-card > span,
 .receive-card > p {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .receive-card > strong {
@@ -1449,7 +1451,7 @@ p {
 
 .receive-card div span {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .receive-card div strong {
@@ -1486,7 +1488,7 @@ p {
 .deposit-waiting {
   padding: 4px 6px;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -1587,11 +1589,14 @@ p {
 }
 
 .search-example-chip {
-  padding: 8px 10px;
+  min-height: 40px;
+  padding: 10px 14px;
+  display: inline-flex;
+  align-items: center;
   border: 1px solid var(--border);
-  border-radius: 9px;
+  border-radius: 12px;
   background: var(--background);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 @keyframes sheet-up {
@@ -1685,7 +1690,7 @@ p {
 
 .arc-stats span {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .arc-stats strong {
@@ -1740,7 +1745,7 @@ p {
 
 .arc-rows span {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.4;
 }
 
@@ -1754,7 +1759,7 @@ p {
 
 .arc-rows small {
   color: var(--sub);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 400;
 }
 
@@ -1822,18 +1827,21 @@ p {
 }
 
 .search-photos .photo-thumb {
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
+  flex: none;
   border-radius: 8px;
 }
 
 .search-photos span {
-  color: var(--sub);
+  margin-left: 2px;
+  color: #666670;
   font-size: 13px;
+  white-space: nowrap;
 }
 
-.search-map {
-  height: 170px;
+.map-canvas.search-map {
+  height: 200px;
   margin-top: 10px;
   background: var(--surface);
 }
@@ -1846,7 +1854,7 @@ p {
 
 .search-map-note {
   margin-top: 6px;
-  color: var(--sub);
+  color: #666670;
   font-size: 12px;
 }
 
@@ -2175,7 +2183,7 @@ p {
   left: 50%;
   transform: translateX(-50%);
   color: var(--text);
-  font-size: 11px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 600;
   white-space: nowrap;
@@ -2601,7 +2609,7 @@ p {
   position: absolute;
   right: 6px;
   bottom: 4px;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .photo-detail {
@@ -2717,6 +2725,17 @@ p {
 
 .search-content .section-title {
   margin-top: 20px;
+}
+
+/* 검색어 지우기(×)를 누르기 쉽게 */
+.focused-search > .action {
+  width: 36px;
+  height: 36px;
+  margin-right: -8px;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
 }
 
 .search-examples,
@@ -4525,7 +4544,7 @@ p {
 .rpt-col em {
   height: 14px;
   color: var(--text);
-  font-size: 11px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 500;
   white-space: nowrap;
@@ -4636,7 +4655,7 @@ p {
 .rpt-facts li {
   padding-left: 14px;
   position: relative;
-  color: var(--sub);
+  color: #4a4a52;
   font-size: 13px;
   line-height: 1.5;
   word-break: keep-all;
