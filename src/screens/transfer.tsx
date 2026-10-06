@@ -6,6 +6,7 @@ import {
   label,
   photos,
   transferGuess,
+  weekday,
   type TransferGuess,
   won,
   type LedgerState,
@@ -44,7 +45,8 @@ export function transferEvidenceLine(guess: TransferGuess) {
 }
 
 // ---------- 링키가 찾았어요 · 송금 맥락 제안 (F2-6) ----------
-// 대화형: 상단 요약 고정 → 링키의 질문 → 근거 → 하단 고정 [아니에요][맞아요]
+// 대화형: 상단 맥락 카드(언제·누구에게·얼마, 왜 묻는지) → 링키의 질문 → 근거
+// → 하단 고정 [아니에요][맞아요]와 누르면 어떻게 기록되는지 한 줄
 export function TransferConfirm({
   payment,
   state,
@@ -76,53 +78,62 @@ export function TransferConfirm({
   return (
     <div className="main-page sub-page">
       <MainHeader back={back} title="링키가 찾았어요" />
-      <div className="tf-summary">
-        <strong>{payment.counterparty}</strong>
-        <b>{won(payment.amount)}</b>
-        <span>
-          · 이체 · {payment.date.m}/{payment.date.d} {payment.time}
-        </span>
-      </div>
-      <div className="tf-chat">
-        {guess ? (
-          <>
-            <div className="tf-row">
-              <span className="tf-avatar">L</span>
-              <div className="tf-bubble">
-                <p>
-                  {name}님과 먹은 {subject ?? "식사"}값이 맞나요?
-                </p>
+      <div className="tf-scroll">
+        {/* 맥락: 다른 화면에 다녀와도 무엇을 묻는 화면인지 바로 알 수 있게 */}
+        <section className="tf-context">
+          <span>
+            {label(payment.date)} ({weekday(payment.date)}) {payment.time} · 계좌 이체
+          </span>
+          <p>
+            <strong>{payment.counterparty}</strong>님에게 보낸 <b>{won(payment.amount)}</b>
+          </p>
+          <small>가게 이름이 없는 송금이라 어디에 쓴 돈인지 비어 있어요. 그날 내 기록을 찾아봤어요.</small>
+        </section>
+        <div className="tf-chat">
+          {guess ? (
+            <>
+              <div className="tf-row">
+                <span className="tf-avatar">L</span>
+                <div className="tf-bubble">
+                  <p>
+                    {name}님과 먹은 {subject ?? "식사"}값이 맞나요?
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="tf-row">
-              <span className="tf-avatar hidden" />
-              <div className="tf-bubble tf-evidence">
-                {photoText && (
-                  <p>
-                    <ImageIcon size={16} strokeWidth={1.6} />
-                    {photoText}
-                  </p>
-                )}
-                {event && (
-                  <p>
-                    <CalendarDays size={16} strokeWidth={1.6} />'{event.title}' · {event.start}
-                  </p>
-                )}
-                {placeText && (
-                  <p>
-                    <MapPin size={16} strokeWidth={1.6} />
-                    {placeText}
-                  </p>
-                )}
+              <div className="tf-row">
+                <span className="tf-avatar hidden" />
+                <div className="tf-bubble tf-evidence">
+                  {photoText && (
+                    <p>
+                      <ImageIcon size={16} strokeWidth={1.6} />
+                      {photoText}
+                    </p>
+                  )}
+                  {event && (
+                    <p>
+                      <CalendarDays size={16} strokeWidth={1.6} />'{event.title}' · {event.start}
+                    </p>
+                  )}
+                  {placeText && (
+                    <p>
+                      <MapPin size={16} strokeWidth={1.6} />
+                      {placeText}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          </>
-        ) : (
-          <p className="tf-empty">기록 없음</p>
-        )}
+            </>
+          ) : (
+            <p className="tf-empty">기록 없음</p>
+          )}
+        </div>
       </div>
       {guess && (
         <div className="tf-bar">
+          <p className="tf-result">
+            맞아요 → {guess.category.split("·")[0]} {won(payment.amount)}으로 기록돼요 · 아니에요 → 이체로
+            그대로 둬요
+          </p>
           <Action className="tf-no" onClick={decline}>
             아니에요
           </Action>

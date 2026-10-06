@@ -5737,8 +5737,65 @@ p {
   font-weight: var(--fw-label);
 }
 
+/* 헤더 아래 ~ 하단 버튼 바 위를 스크롤 영역으로 */
+.tf-scroll {
+  position: absolute;
+  top: 56px;
+  right: 0;
+  bottom: 107px;
+  left: 0;
+  overflow-y: auto;
+}
+
+/* 맥락 카드: 언제·누구에게·얼마 + 왜 묻는지 */
+.tf-context {
+  margin: 20px var(--page-padding) 0;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+}
+
+.tf-context span {
+  color: var(--text-mute);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+}
+
+.tf-context p {
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+  font-weight: var(--fw-item-title);
+}
+
+.tf-context p b {
+  font-size: var(--fs-title);
+  line-height: var(--lh-title);
+  font-weight: var(--fw-headline);
+}
+
+.tf-context small {
+  margin-top: 2px;
+  color: var(--text-body);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+  word-break: keep-all;
+}
+
+/* 하단 바 첫 줄: 누르면 어떻게 기록되는지 */
+.tf-result {
+  grid-column: 1 / -1;
+  margin-bottom: 2px;
+  color: var(--text-mute);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+  text-align: center;
+  word-break: keep-all;
+}
+
 .tf-chat {
-  height: calc(100% - 100px - 84px);
   padding: 20px var(--page-padding);
   display: flex;
   flex-direction: column;
@@ -6189,14 +6246,16 @@ p {
   color: #1a1a1a;
 }
 
+/* 주 이동: < 제목 > 양쪽 간격을 똑같이 6px (화살표 칸 = 아이콘 폭) */
 .hm-week-arrow {
-  width: 24px;
+  width: 20px;
   height: 32px;
-  justify-content: flex-start;
+  justify-content: center;
 }
 
 .hm-week-nav {
   margin-left: 0;
+  gap: 6px;
 }
 
 /* 오늘 지출: 정산 대기 뱃지는 둥근 연라임 pill */
@@ -6264,11 +6323,30 @@ p {
 }
 
 /* 오늘의 사진: 위 이미지 + 아래 라벨 띠 */
+/* 오늘의 사진: 좌우 스크롤, 사진 한 장씩 왼쪽에 딱 맞게 멈춘다 */
+.hm-photos {
+  margin: 0 -21px;
+  padding: 0 21px 8px;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 0 21px;
+  cursor: grab;
+  user-select: none;
+}
+
+.hm-photos:active {
+  cursor: grabbing;
+}
+
+.hm-photos.dragging {
+  scroll-snap-type: none;
+}
+
 .hm-photo {
   width: 220px;
   height: auto;
   display: flex;
   flex: none;
+  scroll-snap-align: start;
   flex-direction: column;
   overflow: hidden;
   border-radius: 20px;

@@ -11,6 +11,7 @@ import {
   Users,
   Utensils,
 } from "lucide-react"
+import { useRef, type MouseEvent, type PointerEvent } from "react"
 import { Action, cx } from "@/components/common"
 import { HeaderActions } from "@/components/layout"
 import { meeting } from "@/lib/settlement"
@@ -108,11 +109,8 @@ function TodayRow({
     : payment.kind === "transfer"
       ? `${payment.counterparty} 송금`
       : payment.merchant
-  const sub = [
-    showDate ? label(payment.date) : undefined,
-    payment.time,
-    restored ? restored.original : category,
-  ]
+  // 아래 줄에는 시각만 둔다 (원래 가맹점명·분류는 쓰지 않는다)
+  const sub = [showDate ? label(payment.date) : undefined, payment.time]
     .filter(Boolean)
     .join(" · ")
   return (
@@ -302,6 +300,45 @@ function RouteMap({ day, stops, onOpen }: { day: YMD; stops: Stop[]; onOpen: () 
   )
 }
 
+// 가로 목록을 마우스로 끌어서 넘긴다 (터치는 기본 스크롤). 끈 직후의 클릭은 사진 열기로 치지 않는다.
+// 앱 축척(zoom) 안에서도 손가락·마우스 이동 거리와 목록 이동 거리가 같도록 환산한다.
+function useDragScroll() {
+  const drag = useRef<{ el: HTMLDivElement; x: number; left: number; scale: number; moved: boolean }>(
+    undefined,
+  )
+  // 실제로 끌었으면 손을 뗀 뒤 잠깐 동안의 클릭은 무시한다
+  const suppressUntil = useRef(0)
+  const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== "mouse") return
+    const el = event.currentTarget
+    const scale = el.offsetWidth ? el.getBoundingClientRect().width / el.offsetWidth : 1
+    drag.current = { el, x: event.clientX, left: el.scrollLeft, scale, moved: false }
+    // 끄는 동안에는 스냅을 꺼서 손을 따라 부드럽게 움직이게 한다
+    el.classList.add("dragging")
+  }
+  const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    const d = drag.current
+    if (!d) return
+    const dx = (event.clientX - d.x) / d.scale
+    if (Math.abs(dx) > 4) d.moved = true
+    event.currentTarget.scrollLeft = d.left - dx
+  }
+  const end = () => {
+    const d = drag.current
+    if (!d) return
+    d.el.classList.remove("dragging")
+    if (d.moved) suppressUntil.current = Date.now() + 300
+    drag.current = undefined
+  }
+  const onClickCapture = (event: MouseEvent<HTMLDivElement>) => {
+    if (Date.now() < suppressUntil.current) {
+      event.stopPropagation()
+      event.preventDefault()
+    }
+  }
+  return { onPointerDown, onPointerMove, onPointerUp: end, onPointerLeave: end, onClickCapture }
+}
+
 // ---------- 홈: 이번 주 · 오늘 지출 · 감지 알림 · 오늘의 하루 · 동선 · 사진 ----------
 export function HomePage({
   day,
@@ -336,6 +373,7 @@ export function HomePage({
 }) {
   // 고른 날이 속한 주를 보여 준다. 화살표로 한 주씩 이동하고, 이번 주보다 뒤로는 가지 않는다
   const week = weekOf(day)
+  const photoDrag = useDragScroll()
   const weeksAgo = Math.round(
     (toDate(weekOf(TODAY)[0]).getTime() - toDate(week[0]).getTime()) / (7 * DAY_MS),
   )
@@ -505,7 +543,7 @@ export function HomePage({
         {selectedPhotos.length === 0 ? (
           <p className="hm-empty">기록 없음</p>
         ) : (
-          <div className="hm-photos">
+          <div className="hm-photos" {...photoDrag}>
             {selectedPhotos.map((photo, index) => {
               const paid = linkedPayment(photo)
               return (
