@@ -2521,26 +2521,6 @@ p {
   gap: 6px;
 }
 
-/* ---------- 하루 리포트 ---------- */
-.day-report {
-  margin-top: 18px;
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: var(--surface);
-}
-
-.day-report > span {
-  color: var(--sub);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.day-report > p {
-  margin-top: 4px;
-  font-size: 15px;
-  line-height: 1.6;
-}
-
 .report-numbers > div {
   padding: 5px 0;
   display: flex;
