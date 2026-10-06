@@ -121,51 +121,58 @@ export function CalendarHome({
           <span>{isThisMonth ? "이번 달 지출" : `${m}월 지출`}</span>
           <strong>{won(summary.mine)}</strong>
         </section>
-        <div className="cal2-weekdays">
-          {weekdays.map((day) => (
-            <span key={day}>{day}</span>
-          ))}
-        </div>
-        <div className="cal2-grid">
-          {mondayCells(y, m).map((day, cellIndex) => {
-            if (day === null) return <span className="cal2-cell blank" key={`b${cellIndex}`} />
-            const date = ymd(y, m, day)
-            // 셀에는 내 지출(확정한 분할만 차감)을 보여 준다
-            const mine = dayMine(date, state)
-            const hasEvent = eventsOn(date, state).length > 0
-            return (
-              <Action
-                className={cx(
-                  "cal2-cell",
-                  bigDays.has(day) && "big",
-                  sameDay(date, selected) && "picked",
-                  sameDay(date, TODAY) && "today",
-                )}
-                key={day}
-                label={`${m}월 ${day}일${mine > 0 ? ` 내 지출 ${won(mine)}` : ""}${bigDays.has(day) ? ", 평소보다 지출 많은 날" : ""}${reviewDays.has(day) ? ", 정산 확인 필요" : ""}`}
-                onClick={() => openDay(date)}
-              >
-                <b>{day}</b>
-                <small>{mine > 0 ? man(mine) : "—"}</small>
-                <span className="cal2-marks">
-                  {hasEvent && <i className="cal2-dot" />}
-                  {reviewDays.has(day) && <i className="cal2-dot review" />}
-                </span>
-              </Action>
-            )
-          })}
-        </div>
-        <div className="cal2-legend">
-          <span>
-            <i className="cal2-swatch" /> 평소보다 지출 많은 날
-          </span>
-          <span>
-            <i className="cal2-dot" /> 일정
-          </span>
-          <span>
-            <i className="cal2-dot review" /> 정산 확인
-          </span>
-        </div>
+        {/* 달력 카드: 제목 줄 · 요일 · 날짜 칸 · 범례를 한 카드에 담는다 */}
+        <section className="cal2-board">
+          <div className="cal2-board-head">
+            <strong>{m}월 지출 기록</strong>
+            <span>날짜별 내 지출</span>
+          </div>
+          <div className="cal2-weekdays">
+            {weekdays.map((day) => (
+              <span key={day}>{day}</span>
+            ))}
+          </div>
+          <div className="cal2-grid">
+            {mondayCells(y, m).map((day, cellIndex) => {
+              if (day === null) return <span className="cal2-cell blank" key={`b${cellIndex}`} />
+              const date = ymd(y, m, day)
+              // 셀에는 내 지출(확정한 분할만 차감)을 보여 준다
+              const mine = dayMine(date, state)
+              const hasEvent = eventsOn(date, state).length > 0
+              return (
+                <Action
+                  className={cx(
+                    "cal2-cell",
+                    bigDays.has(day) && "big",
+                    sameDay(date, selected) && "picked",
+                    sameDay(date, TODAY) && "today",
+                  )}
+                  key={day}
+                  label={`${m}월 ${day}일${mine > 0 ? ` 내 지출 ${won(mine)}` : ""}${bigDays.has(day) ? ", 평소보다 지출 많은 날" : ""}${reviewDays.has(day) ? ", 정산 확인 필요" : ""}`}
+                  onClick={() => openDay(date)}
+                >
+                  <b>{day}</b>
+                  <small>{mine > 0 ? man(mine) : "—"}</small>
+                  <span className="cal2-marks">
+                    {hasEvent && <i className="cal2-dot" />}
+                    {reviewDays.has(day) && <i className="cal2-dot review" />}
+                  </span>
+                </Action>
+              )
+            })}
+          </div>
+          <div className="cal2-legend">
+            <span>
+              <i className="cal2-swatch" /> 평소보다 지출 많은 날
+            </span>
+            <span>
+              <i className="cal2-dot" /> 일정
+            </span>
+            <span>
+              <i className="cal2-dot review" /> 정산 확인
+            </span>
+          </div>
+        </section>
         {detail}
       </div>
     </>
@@ -235,57 +242,59 @@ export function DayPanel({
   }, [day, focusPayment])
   return (
     <section className="cal2-day">
-      <div className="cal2-day-head">
-        <h2>
-          {label(day)} ({weekday(day)})
-        </h2>
-        <b className="cal2-day-amount">{won(dayMine(day, state))}</b>
-      </div>
-      {/* 이날의 내 기록: 결제의 근거가 되는 내 일정·사진. 아래 링크로 이날 동선 지도를 연다 */}
-      <div className="cal2-records">
-        <div className="cal2-records-label">
-          <span>이날의 내 기록</span>
-          <small>
-            {dayMine(day, state) !== dayTotal(day) && `결제 ${won(dayTotal(day))} · `}
-            {list.length}건 · 복원 {restored}건
-          </small>
+      <div className="cal2-day-card">
+        <div className="cal2-day-head">
+          <h2>
+            {label(day)} ({weekday(day)})
+          </h2>
+          <b className="cal2-day-amount">{won(dayMine(day, state))}</b>
         </div>
-        <div className="cal2-chips">
-          {dayEvents.map((event) => (
-            <span className="cal2-chip" key={event.id}>
-              <CalendarDays size={14} strokeWidth={1.7} />
-              <em>일정</em>
-              {event.title} · {event.start}
-            </span>
-          ))}
-          {dayPhotos.length > 0 && (
-            <span className="cal2-chip">
-              <Camera size={14} strokeWidth={1.7} />
-              <em>사진</em>
-              {dayPhotos.length}장
-            </span>
-          )}
-          {dayEvents.length + dayPhotos.length === 0 && (
-            <span className="cal2-chip muted">일정·사진 기록 없음</span>
-          )}
-        </div>
-        {(list.length > 0 || canReturn) && (
-          <div className="cal2-links">
-            {list.length > 0 && (
-              <Action className="cal2-link" onClick={() => showMap(day)}>
-                <Route size={15} strokeWidth={1.7} /> 이날 동선 지도로 보기
-                <ChevronRight size={15} strokeWidth={1.7} />
-              </Action>
+        {/* 이날의 내 기록: 결제의 근거가 되는 내 일정·사진. 아래 링크로 이날 동선 지도를 연다 */}
+        <div className="cal2-records">
+          <div className="cal2-records-label">
+            <span>이날의 내 기록</span>
+            <small>
+              {dayMine(day, state) !== dayTotal(day) && `결제 ${won(dayTotal(day))} · `}
+              {list.length}건 · 복원 {restored}건
+            </small>
+          </div>
+          <div className="cal2-chips">
+            {dayEvents.map((event) => (
+              <span className="cal2-chip" key={event.id}>
+                <CalendarDays size={14} strokeWidth={1.7} />
+                <em>일정</em>
+                {event.title} · {event.start}
+              </span>
+            ))}
+            {dayPhotos.length > 0 && (
+              <span className="cal2-chip">
+                <Camera size={14} strokeWidth={1.7} />
+                <em>사진</em>
+                {dayPhotos.length}장
+              </span>
             )}
-            {canReturn && (
-              <Action className="cal2-link" onClick={back}>
-                <ChevronLeft size={15} strokeWidth={1.7} /> 지도로 돌아가기
-              </Action>
+            {dayEvents.length + dayPhotos.length === 0 && (
+              <span className="cal2-chip muted">일정·사진 기록 없음</span>
             )}
           </div>
-        )}
+          {(list.length > 0 || canReturn) && (
+            <div className="cal2-links">
+              {list.length > 0 && (
+                <Action className="cal2-link" onClick={() => showMap(day)}>
+                  <Route size={15} strokeWidth={1.7} /> 이날 동선 지도로 보기
+                  <ChevronRight size={15} strokeWidth={1.7} />
+                </Action>
+              )}
+              {canReturn && (
+                <Action className="cal2-link" onClick={back}>
+                  <ChevronLeft size={15} strokeWidth={1.7} /> 지도로 돌아가기
+                </Action>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-      {/* 시간순 타임라인: 왼쪽 점·시각·세로선(근거가 있으면 라임 점, 없으면 빈 점), 오른쪽 결제 카드 */}
+      {/* 시간순 타임라인: 왼쪽 시각·점·세로선(근거가 있으면 채운 점, 없으면 빈 점), 오른쪽 결제 카드 */}
       {list.length > 0 && (
         <ol className="pay-timeline">
           {list.map((payment) => {
@@ -293,8 +302,8 @@ export function DayPanel({
             return (
               <li className={cx("pay-tl-item", done && "done")} key={payment.id}>
                 <div className="pay-tl-rail">
-                  <i className="pay-tl-dot" aria-label={done ? "근거 있음" : "기록 없음"} />
                   <time>{payment.time}</time>
+                  <i className="pay-tl-dot" aria-label={done ? "근거 있음" : "기록 없음"} />
                 </div>
                 <PayCard
                   focus={activeFocus === payment.id}
