@@ -7,7 +7,7 @@ const d = (m: number, day: number) => ({ y: 2026, m, d: day })
 export const SCENARIO = {
   persona: { name: "김소연", monthlyBudget: 1200000 },
   today: { y: 2026, m: 10, d: 31 },
-  // 온보딩 분석 문구: "기억 안 나던 지출 N건을 채웠어요"
+  // 쓰지 않음: 온보딩의 "N건을 채웠어요" 문구는 시연 범위에서 제외했다 (2026-10-06 결정)
   onboardingFilled: 23,
   taxi: { id: "sc-taxi", time: "11:35", merchant: "카카오모빌리티", amount: 12400, boardingSpot: "압구정로데오역 2번출구" },
   photoism: {

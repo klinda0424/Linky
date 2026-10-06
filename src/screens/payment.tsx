@@ -18,6 +18,12 @@ import {
   type Payment,
 } from "@/lib/ledger"
 
+// 받침이 있으면 "이었어요", 없으면 "였어요"
+const hasBatchim = (text: string) => {
+  const code = text.charCodeAt(text.length - 1)
+  return code >= 0xac00 && code <= 0xd7a3 && (code - 0xac00) % 28 !== 0
+}
+
 const minutes = (time: string) => {
   const [h, m] = time.split(":").map(Number)
   return h * 60 + m
@@ -91,7 +97,7 @@ export function PaymentDetail({
       reasons.push(`직전 체류지는 ${lastStay.name}(${lastStay.from}~${lastStay.to})예요`)
     reasons.push(`${payment.transit?.from} 인근을 탑승 지점으로 봤어요`)
   } else if (restored) {
-    if (payment.place) reasons.push(`결제 당시 내 위치가 ${payment.place}였어요`)
+    if (payment.place) reasons.push(`결제 당시 내 위치가 ${payment.place}${hasBatchim(payment.place) ? "이었어요" : "였어요"}`)
     reasons.push(`가맹점명과 같은 곳으로 ${restored.label}을 찾았어요`)
     if (photoItem?.photoIds?.length)
       reasons.push(`결제 시각 ±30분 안에 찍은 사진 ${photoItem.photoIds.length}장이 있어요`)
