@@ -298,8 +298,8 @@ export function ReportTab({
             </>
           ) : (
             <>
-              {/* 내 지출 패턴: 파란 인사이트 카드 — 핵심 숫자 + 평일/주말 막대·2열 숫자 + 요일 막대 */}
-              <section className="rp-card rpt-pattern-card rpt-insight-card">
+              {/* 내 지출 패턴: 흰 카드 — 핵심 숫자 + 평일/주말 막대·2열 숫자 + 요일 막대 */}
+              <section className="rp-card rpt-pattern-card">
                 <div className="rp-card-head">
                   <strong>내 지출 패턴</strong>
                   <span>{pattern ? `${pattern.month}월` : `${monthly.month}월`}</span>

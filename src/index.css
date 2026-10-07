@@ -7616,11 +7616,6 @@ p {
   padding: 14px 18px;
 }
 
-.report-zoom.monthly .rpt-insight-card {
-  border: 0;
-  background: var(--blue);
-}
-
 .report-zoom.monthly .rp-card-head {
   margin-bottom: 8px;
 }
