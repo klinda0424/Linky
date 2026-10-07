@@ -25,6 +25,7 @@ export function GroupSuggestSheet({
   notGroup,
   editPeople,
   openHistory,
+  toSettlement,
 }: {
   payment: Payment
   state: LedgerState
@@ -36,6 +37,8 @@ export function GroupSuggestSheet({
   editPeople: () => void
   // 반영 결과의 "내역" → 정산 내역
   openHistory?: () => void
+  // 홈 정산 알림에서 연 시트: "맞아요, 정산할게요"를 누르면 이 시트를 닫고 그룹 결제 확인 화면으로 이어 간다
+  toSettlement?: () => void
 }) {
   const [done, setDone] = useState(false)
   const event = eventsFor(payment, state).find((item) => item.people?.length)
@@ -127,6 +130,10 @@ export function GroupSuggestSheet({
               <Action
                 className="gs-yes"
                 onClick={() => {
+                  if (toSettlement) {
+                    toSettlement()
+                    return
+                  }
                   confirm()
                   setDone(true)
                 }}
