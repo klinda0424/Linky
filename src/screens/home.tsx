@@ -511,13 +511,13 @@ export function HomePage({
           <NoticeCard key={notice.key} notice={notice} />
         ))}
 
+        <div className="hm-title-row hm-story-title">
+          <h2>{isToday ? "오늘 내 하루" : `${label(day)}의 하루`}</h2>
+          <span className="hm-linky">
+            <Sparkles size={14} strokeWidth={1.6} /> Linky
+          </span>
+        </div>
         <section className="main-card hm-story">
-          <div className="hm-story-head">
-            <strong>{isToday ? "오늘 내 하루" : `${label(day)}의 하루`}</strong>
-            <span className="hm-linky">
-              <Sparkles size={14} strokeWidth={1.6} /> Linky
-            </span>
-          </div>
           <p>{story || "기록 없음"}</p>
         </section>
 
