@@ -7222,6 +7222,23 @@ p {
   background: var(--blue);
 }
 
+/* 하늘색 위에서는 라임이 묻히므로 흰색(평일·보통 요일)과 검정(주말·가장 많이 쓴 요일)으로 대비를 준다 */
+.rp-sky .rp-split i,
+.rp-sky .rp-split-legend i,
+.rp-sky .rp-wd span i {
+  background: var(--background);
+}
+
+.rp-sky .rp-split i.weekend,
+.rp-sky .rp-split-legend i.weekend,
+.rp-sky .rp-wd.top span i {
+  background: var(--text);
+}
+
+.rp-sky .rp-split-legend {
+  color: var(--text);
+}
+
 /* 내 지출 패턴: 핵심 숫자 + 평일/주말 막대 + 요일 막대 */
 .rp-hero {
   display: flex;
