@@ -7199,21 +7199,9 @@ p {
   line-height: var(--lh-caption);
 }
 
-/* 링키 말풍선: 왼쪽 열(날짜 아래)에 링키 로고, 오른쪽 열 전체에 말풍선 */
-.rp-say-avatar {
-  width: 28px;
-  height: 28px;
-  justify-self: center;
-  align-self: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9px;
-  background: var(--primary);
-  color: var(--on-primary);
-}
-
+/* 링키 말풍선: 오른쪽 열(일정 이름과 같은 선)에서 카드 끝까지 */
 .rp-say {
+  grid-column: 2;
   padding: 10px 14px;
   border-radius: 4px 14px 14px 14px;
   background: var(--surface);
