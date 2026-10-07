@@ -171,24 +171,22 @@ export function ReportTab({ state, openSettlement }: { state: LedgerState; openS
                 {preview && preview.events.length > 0 ? (
                   <div className="rp-events">
                     {preview.events.map((event) => (
+                      // 2열 격자: [날짜 | 일정] / [링키 | 말풍선] — 오른쪽 내용은 한 선에서 시작해 카드 끝까지
                       <div className="rp-event" key={`${event.date.y}-${event.date.m}-${event.date.d}-${event.start}`}>
-                        <div className="rp-event-row">
-                          <div className="rp-date">
-                            <b>{event.date.d}</b>
-                            <small>{weekday(event.date)}</small>
-                          </div>
-                          <div className="rp-event-text">
-                            <strong>{event.title}</strong>
-                            <small>{event.start}</small>
-                          </div>
+                        <div className="rp-date">
+                          <b>{event.date.d}</b>
+                          <small>{weekday(event.date)}</small>
+                        </div>
+                        <div className="rp-event-text">
+                          <strong>{event.title}</strong>
+                          <small>{event.start}</small>
                         </div>
                         {(event.title.includes("지은") || event.repeatedFact) && (
-                          // 링키가 내 기록에서 찾은 사실을 말풍선으로 알려 준다 (날짜 블록 아래에서 시작)
-                          <div className="rp-say">
+                          <>
                             <span className="rp-say-avatar" aria-label="Linky">
-                              <Link2 size={13} strokeWidth={2.2} />
+                              <Link2 size={15} strokeWidth={2.2} />
                             </span>
-                            <p>
+                            <p className="rp-say">
                               {event.title.includes("지은") ? (
                                 <>
                                   지난 지은이랑 약속에선 평균 <b>{won(reportDemoFacts.jieunAppointmentAverage)}</b>을
@@ -198,7 +196,7 @@ export function ReportTab({ state, openSettlement }: { state: LedgerState; openS
                                 event.repeatedFact
                               )}
                             </p>
-                          </div>
+                          </>
                         )}
                       </div>
                     ))}

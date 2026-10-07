@@ -7143,15 +7143,11 @@ p {
 
 .rp-event {
   padding: 12px 0;
-  display: flex;
-  flex-direction: column;
-  border-top: 1px solid var(--border);
-}
-
-.rp-event-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
   align-items: center;
-  gap: 14px;
+  gap: 10px 14px;
+  border-top: 1px solid var(--border);
 }
 
 .rp-event:first-child {
@@ -7203,28 +7199,22 @@ p {
   line-height: var(--lh-caption);
 }
 
-/* 링키 말풍선: 링키가 찾았어요 화면과 같은 로고·말풍선 모양 */
-.rp-say {
-  margin-top: 10px;
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-}
-
+/* 링키 말풍선: 왼쪽 열(날짜 아래)에 링키 로고, 오른쪽 열 전체에 말풍선 */
 .rp-say-avatar {
-  width: 22px;
-  height: 22px;
-  flex: none;
+  width: 28px;
+  height: 28px;
+  justify-self: center;
+  align-self: center;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 7px;
+  border-radius: 9px;
   background: var(--primary);
   color: var(--on-primary);
 }
 
-.rp-say p {
-  padding: 8px 12px;
+.rp-say {
+  padding: 10px 14px;
   border-radius: 4px 14px 14px 14px;
   background: var(--surface);
   color: var(--text-body);
@@ -7233,7 +7223,7 @@ p {
   word-break: keep-all;
 }
 
-.rp-say p b {
+.rp-say b {
   color: var(--text);
   font-weight: var(--fw-title);
 }
