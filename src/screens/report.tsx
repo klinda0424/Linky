@@ -240,8 +240,8 @@ export function ReportTab({ state, openSettlement }: { state: LedgerState; openS
             </>
           ) : (
             <>
-              {/* 내 지출 패턴: 핵심 숫자 + 평일/주말 막대 하나 + 요일별 작은 막대 (하늘색 카드) */}
-              <section className="rp-card rp-sky">
+              {/* 내 지출 패턴: 홈과 같은 흰 카드 — 핵심 숫자 + 평일/주말 막대·2열 숫자 + 요일 막대 */}
+              <section className="rp-card">
                 <div className="rp-card-head">
                   <strong>내 지출 패턴</strong>
                   <span>{pattern ? `${pattern.month}월` : `${monthly.month}월`}</span>
@@ -256,19 +256,28 @@ export function ReportTab({ state, openSettlement }: { state: LedgerState; openS
                       <i style={{ flexGrow: 100 - pattern.weekendPercent }} />
                       <i className="weekend" style={{ flexGrow: pattern.weekendPercent }} />
                     </div>
-                    <div className="rp-split-legend">
-                      <span>
-                        <i /> 평일 {100 - pattern.weekendPercent}% · 하루 {man(pattern.weekdayAverage)}원
-                      </span>
-                      <span>
-                        <i className="weekend" /> 주말 {pattern.weekendPercent}% · 하루 {man(pattern.weekendAverage)}원
-                      </span>
+                    <div className="rp-split-stats">
+                      <div>
+                        <span>
+                          <i /> 평일
+                        </span>
+                        <b>{100 - pattern.weekendPercent}%</b>
+                        <small>하루 평균 {man(pattern.weekdayAverage)}원</small>
+                      </div>
+                      <div>
+                        <span>
+                          <i className="weekend" /> 주말
+                        </span>
+                        <b>{pattern.weekendPercent}%</b>
+                        <small>하루 평균 {man(pattern.weekendAverage)}원</small>
+                      </div>
                     </div>
                     <div className="rp-weekdays">
                       {(() => {
                         const max = Math.max(...pattern.byWeekday.map((day) => day.value), 1)
                         return pattern.byWeekday.map((day) => (
                           <div className={cx("rp-wd", day.weekday === pattern.topWeekday && "top")} key={day.weekday}>
+                            <em>{day.weekday === pattern.topWeekday ? man(day.value) : ""}</em>
                             <span>
                               <i style={{ height: `${Math.max(14, (day.value / max) * 100)}%` }} />
                             </span>

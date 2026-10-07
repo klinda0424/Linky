@@ -7216,28 +7216,7 @@ p {
   font-weight: var(--fw-title);
 }
 
-/* 하늘색 카드 (내 지출 패턴) */
-.report-zoom .rp-card.rp-sky {
-  border-color: transparent;
-  background: var(--blue);
-}
 
-/* 하늘색 위에서는 라임이 묻히므로 흰색(평일·보통 요일)과 검정(주말·가장 많이 쓴 요일)으로 대비를 준다 */
-.rp-sky .rp-split i,
-.rp-sky .rp-split-legend i,
-.rp-sky .rp-wd span i {
-  background: var(--background);
-}
-
-.rp-sky .rp-split i.weekend,
-.rp-sky .rp-split-legend i.weekend,
-.rp-sky .rp-wd.top span i {
-  background: var(--text);
-}
-
-.rp-sky .rp-split-legend {
-  color: var(--text);
-}
 
 /* 내 지출 패턴: 핵심 숫자 + 평일/주말 막대 + 요일 막대 */
 .rp-hero {
@@ -7259,14 +7238,14 @@ p {
 }
 
 .rp-split {
-  height: 10px;
-  margin-top: 12px;
+  height: 12px;
+  margin-top: 14px;
   display: flex;
   gap: 3px;
 }
 
 .rp-split i {
-  border-radius: 5px;
+  border-radius: 6px;
   background: var(--primary-border);
 }
 
@@ -7274,35 +7253,55 @@ p {
   background: var(--primary);
 }
 
-.rp-split-legend {
-  margin-top: 8px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 14px;
-  color: var(--text-body);
-  font-size: var(--fs-label);
-  line-height: var(--lh-label);
+/* 막대 아래 2열 숫자: 평일 · 주말 */
+.rp-split-stats {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
-.rp-split-legend span {
+.rp-split-stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rp-split-stats span {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  color: var(--text-mute);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
 }
 
-.rp-split-legend i {
+.rp-split-stats i {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: var(--primary-border);
 }
 
-.rp-split-legend i.weekend {
+.rp-split-stats i.weekend {
   background: var(--primary);
 }
 
+.rp-split-stats b {
+  font-size: var(--fs-item-amount);
+  line-height: var(--lh-item-amount);
+  font-weight: var(--fw-item-amount);
+}
+
+.rp-split-stats small {
+  color: var(--text-body);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+}
+
+/* 요일 막대: 보통은 연한 라임, 가장 많이 쓴 요일은 라임 + 위에 금액 */
 .rp-weekdays {
-  height: 64px;
+  height: 96px;
   margin-top: 16px;
   padding-top: 14px;
   display: grid;
@@ -7318,8 +7317,17 @@ p {
   gap: 4px;
 }
 
+.rp-wd em {
+  height: 16px;
+  color: var(--text);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+  font-weight: var(--fw-title);
+  font-style: normal;
+}
+
 .rp-wd span {
-  width: 14px;
+  width: 18px;
   flex: 1;
   display: flex;
   align-items: flex-end;
@@ -7327,7 +7335,7 @@ p {
 
 .rp-wd span i {
   width: 100%;
-  border-radius: 4px;
+  border-radius: 5px;
   background: var(--primary-border);
 }
 
