@@ -76,6 +76,8 @@ export function MainApp({
   const [mapSheetClosing, setMapSheetClosing] = useState(false)
   const [albumSheetOpen, setAlbumSheetOpen] = useState(false)
   const [albumSheetClosing, setAlbumSheetClosing] = useState(false)
+  // 캘린더 날짜에서 연 앨범: 그날 사진을 맨 위에 먼저 보여 준다
+  const [albumDay, setAlbumDay] = useState<YMD>()
   // 지도·앨범은 탭이 아니라 홈·캘린더에서 여는 화면이라, 뒤로 가기와 하단 탭 강조에 진입한 탭을 쓴다
   const [backTab, setBackTab] = useState<MainTab>("home")
   const [mapPeriod, setMapPeriod] = useState<"day" | "week" | "month">("day")
@@ -249,6 +251,7 @@ export function MainApp({
         <HomePage
           day={homeDay}
           openAlbum={() => {
+            setAlbumDay(undefined)
             setAlbumSheetClosing(false)
             setAlbumSheetOpen(true)
           }}
@@ -337,7 +340,8 @@ export function MainApp({
               relink={relink}
               relinkPhoto={relinkPhoto}
               settlementPaymentId={meetingId}
-              openAlbum={() => {
+              openAlbum={(day) => {
+                setAlbumDay(day)
                 setAlbumSheetClosing(false)
                 setAlbumSheetOpen(true)
               }}
@@ -708,6 +712,7 @@ export function MainApp({
             <div className="sheet-grip" />
             <AlbumTab
               back={closeAlbumSheet}
+              focusDay={albumDay}
               openEvent={(item) => {
                 setEvent(item)
                 setView("eventReport")

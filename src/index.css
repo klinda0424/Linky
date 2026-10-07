@@ -7764,3 +7764,18 @@ p {
   justify-content: flex-end;
 }
 
+
+/* 캘린더 날짜에서 연 앨범: 그날 사진(3열) → 구분선 → 일정별 사진 */
+.album-day {
+  margin-bottom: 18px;
+}
+
+.album-divider {
+  margin: 0 0 14px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  color: var(--text-mute);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+  font-weight: var(--fw-label);
+}
