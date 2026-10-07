@@ -84,6 +84,8 @@ export function MainApp({
   const [returnToMonth, setReturnToMonth] = useState<YMD>()
   const [recordTarget, setRecordTarget] = useState<string>()
   const [splitting, setSplitting] = useState<Payment>()
+  // 홈 정산 알림에서 연 시트인지: 맞아요를 누르면 그룹 결제 확인 화면으로 이어진다
+  const [splitFromHome, setSplitFromHome] = useState(false)
   // 링키가 찾았어요: 확인 중인 송금
   const [transferId, setTransferId] = useState<string>()
   // 지출 내역 상세: 홈 오늘 지출에서 연 결제
@@ -264,6 +266,12 @@ export function MainApp({
             setView("photo")
           }}
           openSettlement={() => {
+            // 정산 알림을 누르면 그룹 지출 제안 시트가 먼저 올라오고, 맞아요를 누르면 그룹 결제 확인 화면으로 간다
+            if (meeting) {
+              setSplitFromHome(true)
+              setSplitting(meeting)
+              return
+            }
             setInboxFromHome(true)
             setView("settlement")
           }}
@@ -325,7 +333,10 @@ export function MainApp({
                 setInboxFromHome(true)
                 setView("settlement")
               }}
-              openSplit={setSplitting}
+              openSplit={(payment) => {
+                setSplitFromHome(false)
+                setSplitting(payment)
+              }}
               relink={relink}
               relinkPhoto={relinkPhoto}
               settlementPaymentId={meetingId}
@@ -416,7 +427,10 @@ export function MainApp({
                   markPersonal={markPersonal}
                   openDetail={openDetail}
                   openRecord={openRecord}
-                  openSplit={setSplitting}
+                  openSplit={(payment) => {
+                    setSplitFromHome(false)
+                    setSplitting(payment)
+                  }}
                   relink={relink}
                   relinkPhoto={relinkPhoto}
                   showMap={(day) => {
@@ -616,7 +630,7 @@ export function MainApp({
             finish={() => {
               setSettled(true)
               setInboxFromHome(false)
-              setTab("report")
+              // 탭은 정산을 시작한 곳(홈·캘린더·리포트)에 그대로 둔다. 정산 내역에서 뒤로 가면 시작한 화면으로 돌아간다
               setView("settlementList")
             }}
           />
@@ -744,6 +758,16 @@ export function MainApp({
           }}
           payment={splitting}
           state={state}
+          toSettlement={
+            splitFromHome
+              ? () => {
+                  setSplitting(undefined)
+                  setSplitFromHome(false)
+                  setInboxFromHome(true)
+                  setView("settlement")
+                }
+              : undefined
+          }
         />
       )}
     </div>
