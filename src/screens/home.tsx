@@ -515,10 +515,10 @@ export function HomePage({
           <h2>{isToday ? "오늘 내 하루" : `${label(day)}의 하루`}</h2>
         </div>
         <section className="hm-story">
-          <div className="hm-story-foot">
-            <Sparkles size={14} strokeWidth={1.8} /> Linky가 정리했어요
-          </div>
           <p className="hm-story-text">{story || "기록 없음"}</p>
+          <div className="hm-story-foot">
+            <Sparkles size={14} strokeWidth={1.6} /> Linky가 정리했어요
+          </div>
         </section>
 
         <div className="hm-title-row">
