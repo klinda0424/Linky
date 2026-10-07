@@ -253,13 +253,14 @@ export function DayPanel({
   }, [day, focusPayment])
   return (
     <section className="cal2-day">
+      {/* 날짜·이날 합계는 카드 밖, 카드 안에는 이날의 내 기록만 */}
+      <div className="cal2-day-head">
+        <h2>
+          {label(day)} ({weekday(day)})
+        </h2>
+        <b className="cal2-day-amount">{won(dayMine(day, state))}</b>
+      </div>
       <div className="cal2-day-card">
-        <div className="cal2-day-head">
-          <h2>
-            {label(day)} ({weekday(day)})
-          </h2>
-          <b className="cal2-day-amount">{won(dayMine(day, state))}</b>
-        </div>
         {/* 이날의 내 기록: 일정 칩 + 사진(앨범)·동선 지도 아이콘 버튼 */}
         <div className="cal2-records">
           <span className="cal2-records-label">이날의 내 기록</span>

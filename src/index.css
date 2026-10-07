@@ -4443,12 +4443,15 @@ p {
 /* 날짜 상세 위쪽 회색 카드: 날짜·금액 줄 | 구분선 | 이날의 내 기록 */
 .cal2-day-card {
   margin-bottom: 20px;
-  padding: 20px 20px 12px;
+  padding: 16px 20px 12px;
   border-radius: 20px;
   background: var(--surface);
 }
 
+/* 카드 밖 날짜 줄: 카드와 같은 좌우 안쪽 선에 맞춘다 */
 .cal2-day-head {
+  margin-bottom: 12px;
+  padding: 0 4px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -4472,9 +4475,7 @@ p {
 
 /* 이날의 내 기록: 라벨 + 기록 칩 + 동선 지도 링크 */
 .cal2-records {
-  margin: 16px 0 0;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
