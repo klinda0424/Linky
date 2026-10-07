@@ -3,12 +3,8 @@
 // 근거가 없으면 "기록 없음"으로 비워 둔다. 캘린더·지도·앨범·검색이 모두 이 한 곳의 값을 쓴다.
 
 import { historyPayments, verifyHistory, verifySeptember } from "@/mock/history"
-import {
-  novemberEvents,
-  novemberPayments,
-  novemberPhotos,
-  verifyNovember,
-} from "@/mock/november"
+// 11월은 오늘(10/31) 이후라 일정(다음 주 예고 등)만 쓰고, 결제·사진은 쓰지 않는다
+import { novemberEvents } from "@/mock/november"
 import {
   octoberConfirmedSplitIds,
   octoberEvents,
@@ -171,7 +167,6 @@ export const photos: Photo[] = [
   { id: "ph7", date: d(9, 19), time: "12:50", zone: "합정", title: "한정식 집" },
   { id: "ph10", date: d(9, 27), time: "15:00", zone: "용산", title: "한강" },
   ...octoberPhotos,
-  ...novemberPhotos,
   ...scenarioPhotos,
 ]
 
@@ -220,7 +215,6 @@ export const payments: Payment[] = [
   pay("p27", d(9, 29), "12:05", "본도시락 선릉점", 6900, "선릉"),
   pay("p28", d(9, 29), "18:45", "스타벅스 선릉점", 6200, "선릉", "선릉"),
   ...octoberPayments,
-  ...novemberPayments,
   ...scenarioPayments,
 ]
 
@@ -751,7 +745,6 @@ export function restoreSummary(y: number, m: number, state: LedgerState) {
 if (import.meta.env.DEV) {
   try {
     verifyScenario(payments)
-    verifyNovember((day) => dayStatus(ymd(2026, 11, day), initialLedger))
     verifyHistory()
     verifySeptember(monthSummary(2026, 9, initialLedger).total)
   } catch (error) {
