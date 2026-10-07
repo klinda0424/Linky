@@ -7064,3 +7064,17 @@ p {
   font-size: var(--fs-body);
   text-align: center;
 }
+
+/* 정산 내역 헤더: 왼쪽 위에 뒤로 가기 + 홈 (가운데 제목이 치우치지 않게 오른쪽 칸도 같은 폭) */
+.main-subheader.st-head {
+  grid-template-columns: 76px 1fr 76px;
+}
+
+.st-head-left {
+  display: flex;
+  align-items: center;
+}
+
+.st-head-left .st-home {
+  margin-left: -4px;
+}

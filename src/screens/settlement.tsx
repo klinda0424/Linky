@@ -1,5 +1,7 @@
 import {
   ArrowDown,
+  ArrowLeft,
+  Home,
   Check,
   ChevronRight,
   Info,
@@ -38,11 +40,14 @@ import {
 // 마이페이지 > 정산 내역
 export function SettlementList({
   back,
+  goHome,
   open,
   completed,
   state,
 }: {
   back: () => void
+  // 홈 알림에서 시작한 정산 흐름이 끝나면 홈으로 바로 돌아간다
+  goHome?: () => void
   open: () => void
   completed: boolean
   // 있으면 인원 분할을 확정한 그룹 결제를 함께 보여 준다
@@ -56,7 +61,23 @@ export function SettlementList({
     : []
   return (
     <div className="main-page sub-page">
-      <MainHeader back={back} title="정산 내역" />
+      {goHome ? (
+        // 왼쪽 위: 뒤로 가기 + 홈
+        <div className="main-subheader st-head">
+          <div className="st-head-left">
+            <Action className="main-back" onClick={back} label="뒤로 가기">
+              <ArrowLeft size={20} strokeWidth={1.6} />
+            </Action>
+            <Action className="main-back st-home" onClick={goHome} label="홈으로">
+              <Home size={20} strokeWidth={1.6} />
+            </Action>
+          </div>
+          <p>정산 내역</p>
+          <span />
+        </div>
+      ) : (
+        <MainHeader back={back} title="정산 내역" />
+      )}
       <div className="settlement-scroll">
         <p className="section-title settlement-list-title">그룹 지출 정산</p>
         <Action className="main-card settlement-history" onClick={open}>
