@@ -7432,3 +7432,17 @@ p {
   font-weight: var(--fw-title);
 }
 
+/* 오늘 내 하루: 제목과 Linky 칩은 카드 밖, 카드 안은 본문만 */
+.hm-story-title {
+  align-items: center;
+}
+
+.hm-story {
+  margin-top: 0;
+  padding: 20px;
+}
+
+.hm-story p {
+  margin-top: 0;
+}
+
