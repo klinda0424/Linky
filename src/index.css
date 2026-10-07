@@ -6834,12 +6834,13 @@ p {
   font-weight: var(--fw-body);
 }
 
+/* 지표 값: 본문 크기 + 약간 굵게 (라벨과 같은 크기, 굵기로만 구분) */
 .rpt-metrics dd {
   margin: 0;
   text-align: right;
-  font-size: var(--fs-item-title);
-  line-height: var(--lh-item-title);
-  font-weight: var(--fw-item-title);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: var(--fw-title);
 }
 
 .rpt-metrics .decreased dd {
@@ -7460,3 +7461,75 @@ p {
   margin-top: 0;
 }
 
+
+/* 리포트 지표 줄 중 이동할 수 있는 줄: 같은 모양에 오른쪽 화살표 */
+.rpt-metrics > .rpt-metric-link {
+  width: 100%;
+  cursor: pointer;
+}
+
+.rpt-metric-link dd {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.rpt-metric-link dd svg {
+  margin-right: -4px;
+  color: var(--text-mute);
+}
+
+.rpt-metric-link:active {
+  background: var(--surface);
+}
+
+/* 월 동선 지도: 결제 횟수 / 결제 금액 기준 전환 */
+.map-metric {
+  margin-bottom: 10px;
+}
+
+.map-month-places .section-title small {
+  margin-left: 6px;
+  color: var(--text-mute);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+  font-weight: var(--fw-caption);
+}
+
+/* 월 동선 지도: 결제 금액 기준은 하늘색. 원 색은 값이 클수록 진하게(최대 = 기본색), 작을수록 연하게 */
+.map-scroll {
+  --map-sky: #9cc3f7;
+  --map-sky-text: #2f68c4;
+}
+
+.map-place-bubble {
+  --place-color: var(--primary);
+  background: color-mix(in srgb, var(--place-color) var(--place-mix, 100%), var(--background));
+}
+
+.map-place-bubble.amount {
+  --place-color: var(--map-sky);
+}
+
+/* 원 안 숫자: 가장 작은 원에도 여유 있게 들어가는 크기 */
+.map-place-bubble strong {
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+  font-weight: var(--fw-title);
+  letter-spacing: -0.03em;
+}
+
+.map-place-bubble.amount strong {
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+}
+
+/* 결제 금액 칩이 켜지면 하늘색 */
+.filter-chip.selected.sky {
+  background: var(--blue);
+  color: var(--map-sky-text);
+}
+
+.map-legend i.pay.sky {
+  background: var(--map-sky);
+}

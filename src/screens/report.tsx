@@ -92,15 +92,30 @@ function PeriodNav({
   )
 }
 
-function MetricRows({ rows }: { rows: Array<[string, string | undefined, string?]> }) {
+function MetricRows({
+  rows,
+}: {
+  // [이름, 값, 클래스, 누르면 이동] — 이동할 곳이 있는 줄만 버튼이 된다
+  rows: Array<[string, string | undefined, string?, (() => void)?]>
+}) {
   return (
     <dl className="rpt-metrics">
-      {rows.map(([name, value, className]) => (
-        <div className={className} key={name}>
-          <dt>{name}</dt>
-          <dd>{value || "기록 없음"}</dd>
-        </div>
-      ))}
+      {rows.map(([name, value, className, onClick]) =>
+        onClick && value ? (
+          <Action className={cx("rpt-metric-link", className)} key={name} onClick={onClick}>
+            <dt>{name}</dt>
+            <dd>
+              {value}
+              <ChevronRight size={15} strokeWidth={1.8} />
+            </dd>
+          </Action>
+        ) : (
+          <div className={className} key={name}>
+            <dt>{name}</dt>
+            <dd>{value || "기록 없음"}</dd>
+          </div>
+        ),
+      )}
     </dl>
   )
 }
@@ -110,7 +125,19 @@ const moveMonth = (date: YMD, amount: number) => {
   return ymd(moved.getFullYear(), moved.getMonth() + 1, 1)
 }
 
-export function ReportTab({ state, openSettlement }: { state: LedgerState; openSettlement: () => void }) {
+export function ReportTab({
+  state,
+  openSettlement,
+  openDay,
+  openWeekMap,
+}: {
+  state: LedgerState
+  openSettlement: () => void
+  // 가장 많이 쓴 날 → 캘린더 그 날짜
+  openDay?: (date: YMD) => void
+  // 가장 많이 쓴 곳 → 그 주의 동선 지도
+  openWeekMap?: (date: YMD) => void
+}) {
   const [view, setView] = useState<ReportView>("weekly")
   const [weekAnchor, setWeekAnchor] = useState<YMD>(TODAY)
   const [monthAnchor, setMonthAnchor] = useState<YMD>(ymd(TODAY.y, TODAY.m, 1))
@@ -229,8 +256,18 @@ export function ReportTab({ state, openSettlement }: { state: LedgerState; openS
                     <MetricRows
                       rows={[
                         ["결제 건수", `${weekly.count}건`],
-                        ["가장 많이 쓴 날", `${topDay.weekday}요일 · ${won(topDay.value)}`],
-                        ["가장 많이 쓴 곳", weekly.places[0] ? `${weekly.places[0][0]} · ${won(weekly.places[0][1])}` : undefined],
+                        [
+                          "가장 많이 쓴 날",
+                          `${topDay.weekday}요일 · ${won(topDay.value)}`,
+                          undefined,
+                          openDay && topDay.value > 0 ? () => openDay(topDay.date) : undefined,
+                        ],
+                        [
+                          "가장 많이 쓴 곳",
+                          weekly.places[0] ? `${weekly.places[0][0]} · ${won(weekly.places[0][1])}` : undefined,
+                          undefined,
+                          openWeekMap && weekly.places[0] ? () => openWeekMap(weekly.from) : undefined,
+                        ],
                       ]}
                     />
                   </>

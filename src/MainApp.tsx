@@ -66,6 +66,8 @@ export function MainApp({
   const [ledger, setLedger] = useState<LedgerState>(initialLedger)
   // 날짜 시트: 캘린더 탭 위에 열린다. 지도 핀·검색에서 넘어오면 해당 결제를 강조한다.
   const [sheetDay, setSheetDay] = useState<YMD>()
+  // 리포트에서 날짜로 이동할 때마다 늘려서 캘린더가 그 날 상세까지 스크롤하게 한다
+  const [calendarScrollKey, setCalendarScrollKey] = useState(0)
   const [focusPayment, setFocusPayment] = useState<string>()
   // 검색 결과 위에 여는 결제 상세. 검색 화면을 유지해 검색어·결과가 사라지지 않게 한다.
   const [searchPayment, setSearchPayment] = useState<Payment>()
@@ -76,7 +78,7 @@ export function MainApp({
   const [albumSheetClosing, setAlbumSheetClosing] = useState(false)
   // 지도·앨범은 탭이 아니라 홈·캘린더에서 여는 화면이라, 뒤로 가기와 하단 탭 강조에 진입한 탭을 쓴다
   const [backTab, setBackTab] = useState<MainTab>("home")
-  const [mapPeriod, setMapPeriod] = useState<"day" | "month">("day")
+  const [mapPeriod, setMapPeriod] = useState<"day" | "week" | "month">("day")
   const [returnToMonth, setReturnToMonth] = useState<YMD>()
   const [recordTarget, setRecordTarget] = useState<string>()
   const [splitting, setSplitting] = useState<Payment>()
@@ -291,6 +293,8 @@ export function MainApp({
     if (tab === "calendar")
       return (
         <CalendarHome
+          onScrolledToDay={() => setCalendarScrollKey(0)}
+          scrollToDayKey={calendarScrollKey}
           openDay={(day) => {
             setFocusPayment(undefined)
             setSheetDay(day)
@@ -373,7 +377,21 @@ export function MainApp({
     if (tab === "report")
       return (
         <ReportTab
+          openDay={(day) => {
+            // 가장 많이 쓴 날 → 캘린더에서 그 날짜를 연다
+            setFocusPayment(undefined)
+            setSheetDay(day)
+            setCalendarScrollKey((key) => key + 1)
+            setTab("calendar")
+          }}
           openSettlement={() => setView("settlementList")}
+          openWeekMap={(day) => {
+            // 가장 많이 쓴 곳 → 그 주의 동선 지도 (시트)
+            setMapDay(day)
+            setMapPeriod("week")
+            setMapSheetClosing(false)
+            setMapSheetOpen(true)
+          }}
           state={state}
         />
       )

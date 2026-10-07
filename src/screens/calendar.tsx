@@ -55,6 +55,8 @@ export function CalendarHome({
   openSearch,
   openProfile,
   detail,
+  scrollToDayKey,
+  onScrolledToDay,
 }: {
   state: LedgerState
   sheetDay?: YMD
@@ -62,6 +64,10 @@ export function CalendarHome({
   openSearch: () => void
   openProfile: () => void
   detail: ReactNode
+  // 값이 바뀌면 선택한 날의 상세(날짜 블록)가 화면 맨 위에 오도록 부드럽게 내린다 (리포트 → 가장 많이 쓴 날)
+  scrollToDayKey?: number
+  // 한 번 내린 뒤 알린다 (다음에 탭으로 들어올 때는 다시 내리지 않게)
+  onScrolledToDay?: () => void
 }) {
   // 첫 화면은 오늘이 속한 달, 월 이동 화살표로 1~11월을 둘러본다
   const [index, setIndex] = useState(() =>
@@ -71,6 +77,15 @@ export function CalendarHome({
     ),
   )
   const { y, m } = monthsAvailable[index]
+  useEffect(() => {
+    if (!scrollToDayKey) return
+    // 달력이 그려진 뒤 날짜 상세 블록으로 스크롤
+    const timer = window.setTimeout(() => {
+      document.querySelector(".cal2-day")?.scrollIntoView({ behavior: "smooth", block: "start" })
+      onScrolledToDay?.()
+    }, 120)
+    return () => window.clearTimeout(timer)
+  }, [scrollToDayKey])
   const selected = sheetDay ?? TODAY
   // 지도 핀에서 다른 달의 날짜를 열면 그 달로 이동
   useEffect(() => {
