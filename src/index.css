@@ -6680,10 +6680,11 @@ p {
   font-weight: var(--fw-body);
 }
 
+/* 핵심 금액: 홈 "오늘 지출" 합계와 같은 크기 (22px → 화면 18.7) */
 .rpt-total > b {
   margin-top: 5px;
-  font-size: 30px;
-  line-height: 36px;
+  font-size: 22px;
+  line-height: 28px;
   font-weight: var(--fw-headline);
   letter-spacing: -0.03em;
 }
@@ -6717,8 +6718,8 @@ p {
 
 .rpt-report-card .rpt-col em {
   color: var(--text-mute);
-  font-size: 11px;
-  line-height: 14px;
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
 }
 
 .rpt-report-card .rpt-col.today b {
@@ -6728,8 +6729,8 @@ p {
 
 .rpt-report-card .rpt-col small {
   color: var(--text-mute);
-  font-size: 10px;
-  line-height: 12px;
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
   font-weight: var(--fw-caption);
 }
 
