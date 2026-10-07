@@ -532,6 +532,10 @@ export function MainApp({
           <SettlementList
             back={toTabs}
             completed={settled}
+            goHome={() => {
+              setTab("home")
+              toTabs()
+            }}
             open={() => {
               setInboxFromHome(false)
               setView("settlement")
