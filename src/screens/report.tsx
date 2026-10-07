@@ -1,7 +1,20 @@
-import { ChevronLeft, ChevronRight, TrendingDown } from "lucide-react"
+import { ChevronLeft, ChevronRight, TrendingDown, X } from "lucide-react"
 import { useState } from "react"
 import { Action, cx } from "@/components/common"
-import { TODAY, label, man, weekday, won, ymd, type LedgerState, type YMD } from "@/lib/ledger"
+import {
+  TODAY,
+  categoryOf,
+  eventsOn,
+  label,
+  man,
+  paymentsOn,
+  shareOf,
+  weekday,
+  won,
+  ymd,
+  type LedgerState,
+  type YMD,
+} from "@/lib/ledger"
 import {
   addDays,
   monthlyReport,
@@ -128,19 +141,18 @@ const moveMonth = (date: YMD, amount: number) => {
 export function ReportTab({
   state,
   openSettlement,
-  openDay,
   openWeekMap,
 }: {
   state: LedgerState
   openSettlement: () => void
-  // 가장 많이 쓴 날 → 캘린더 그 날짜
-  openDay?: (date: YMD) => void
   // 가장 많이 쓴 곳 → 그 주의 동선 지도
   openWeekMap?: (date: YMD) => void
 }) {
   const [view, setView] = useState<ReportView>("weekly")
   const [weekAnchor, setWeekAnchor] = useState<YMD>(TODAY)
   const [monthAnchor, setMonthAnchor] = useState<YMD>(ymd(TODAY.y, TODAY.m, 1))
+  const [topDaySheetOpen, setTopDaySheetOpen] = useState(false)
+  const [topDaySheetClosing, setTopDaySheetClosing] = useState(false)
   const weekly = weeklyReport(state, weekAnchor)
   // 이번 주에서는 다음(미래) 주로 넘어가지 않는다.
   const thisWeek = weeklyReport(state, TODAY)
@@ -157,6 +169,15 @@ export function ReportTab({
   const preview = nextWeekPreview(state)
   const previewTo = preview ? addDays(preview.from, 6) : undefined
   const topDay = weekly.daily.reduce((best, day) => (day.value > best.value ? day : best), weekly.daily[0])
+  const topDayPayments = paymentsOn(topDay.date)
+  const topDayEvents = eventsOn(topDay.date, state)
+  const closeTopDaySheet = () => {
+    setTopDaySheetClosing(true)
+    window.setTimeout(() => {
+      setTopDaySheetOpen(false)
+      setTopDaySheetClosing(false)
+    }, 220)
+  }
 
   return (
     <>
@@ -167,7 +188,7 @@ export function ReportTab({
         </Action>
       </div>
       <div className="report-scroll">
-        <div className="report-zoom">
+        <div className={cx("report-zoom", view === "monthly" && "monthly")}>
           <ReportSwitch change={setView} value={view} />
 
           {view === "weekly" ? (
@@ -260,7 +281,7 @@ export function ReportTab({
                           "가장 많이 쓴 날",
                           `${topDay.weekday}요일 · ${won(topDay.value)}`,
                           undefined,
-                          openDay && topDay.value > 0 ? () => openDay(topDay.date) : undefined,
+                          topDay.value > 0 ? () => setTopDaySheetOpen(true) : undefined,
                         ],
                         [
                           "가장 많이 쓴 곳",
@@ -277,8 +298,8 @@ export function ReportTab({
             </>
           ) : (
             <>
-              {/* 내 지출 패턴: 홈과 같은 흰 카드 — 핵심 숫자 + 평일/주말 막대·2열 숫자 + 요일 막대 */}
-              <section className="rp-card">
+              {/* 내 지출 패턴: 흰 카드 — 핵심 숫자 + 평일/주말 막대·2열 숫자 + 요일 막대 */}
+              <section className="rp-card rpt-pattern-card">
                 <div className="rp-card-head">
                   <strong>내 지출 패턴</strong>
                   <span>{pattern ? `${pattern.month}월` : `${monthly.month}월`}</span>
@@ -374,6 +395,68 @@ export function ReportTab({
           )}
         </div>
       </div>
+      {topDaySheetOpen && (
+        <div
+          className={cx("media-sheet-dim", topDaySheetClosing && "closing")}
+          onClick={closeTopDaySheet}
+        >
+          <section
+            aria-label="가장 많이 쓴 날 상세"
+            aria-modal="true"
+            className="media-sheet rpt-day-sheet"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+          >
+            <div className="sheet-grip" />
+            <header className="rpt-day-sheet-head">
+              <div>
+                <span>가장 많이 쓴 날</span>
+                <strong>
+                  {label(topDay.date)} ({weekday(topDay.date)})
+                </strong>
+              </div>
+              <Action className="rpt-day-sheet-close" label="닫기" onClick={closeTopDaySheet}>
+                <X size={20} strokeWidth={1.7} />
+              </Action>
+            </header>
+            <div className="rpt-day-sheet-scroll">
+              <div className="rpt-day-sheet-total">
+                <span>이날 지출</span>
+                <b>{won(topDay.value)}</b>
+                <small>{topDayPayments.length}건 결제했어요</small>
+              </div>
+              {topDayEvents.length > 0 && (
+                <section className="rpt-day-sheet-section">
+                  <strong>일정</strong>
+                  {topDayEvents.map((event) => (
+                    <p key={event.id}>
+                      {event.title} · {event.start}
+                    </p>
+                  ))}
+                </section>
+              )}
+              <section className="rpt-day-sheet-section">
+                <strong>결제 내역</strong>
+                <div className="rpt-day-payments">
+                  {topDayPayments.map((payment) => (
+                    <div key={payment.id}>
+                      <time>{payment.time}</time>
+                      <p>
+                        <b>{payment.restored?.label ?? payment.merchant}</b>
+                        <small>
+                          {[categoryOf(payment, state), payment.place].filter(Boolean).join(" · ") ||
+                            "기록 없음"}
+                        </small>
+                      </p>
+                      <strong>{won(shareOf(payment, state))}</strong>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+          </section>
+        </div>
+      )}
     </>
   )
 }
