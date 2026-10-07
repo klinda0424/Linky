@@ -4608,9 +4608,9 @@ p {
   overflow: visible;
 }
 
-/* 날짜 요약 카드: 아주 연한 그림자 */
-.cal2-day-card {
-  box-shadow: 0 1px 6px rgba(17, 17, 17, 0.04);
+/* 일정 칩: 아주 연한 그림자 */
+.cal2-record-row .cal2-chip {
+  box-shadow: 0 1px 4px rgba(17, 17, 17, 0.06);
 }
 
 .cal2-record-row .cal2-chip {
