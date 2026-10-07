@@ -619,7 +619,7 @@ export function MainApp({
             finish={() => {
               setSettled(true)
               setInboxFromHome(false)
-              setTab("report")
+              // 탭은 정산을 시작한 곳(홈·캘린더·리포트)에 그대로 둔다. 정산 내역에서 뒤로 가면 시작한 화면으로 돌아간다
               setView("settlementList")
             }}
           />
