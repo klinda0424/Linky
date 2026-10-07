@@ -32,6 +32,8 @@ export const octoberEvents: CalEvent[] = [
   { id: "e8", title: "대학 동기 모임", date: d(4), start: "19:00", end: "22:00", zone: "합정", people: ["지은", "민지", "수진"] },
   { id: "e9", title: "전시 보기", date: d(10), start: "14:00", end: "16:30", zone: "성수" },
   { id: "e10", title: "지은·민지 성수", date: d(12), start: "12:00", end: "14:00", zone: "성수", people: ["지은", "민지"] },
+  { id: "e-o17a", title: "서울숲 아트클래스", date: d(17), start: "13:30", end: "15:30", zone: "서울숲" },
+  { id: "e-o17b", title: "성수 저녁", date: d(17), start: "19:30", end: "21:00", zone: "성수" },
   { id: "e11", title: "영화 보기", date: d(18), start: "15:00", end: "17:30", zone: "용산" },
   { id: "e12", title: "가족 외식", date: d(24), start: "18:00", end: "20:30", zone: "합정" },
 ]
@@ -41,19 +43,32 @@ export const octoberPhotos: Photo[] = [
   { id: "ph12", date: d(4), time: "20:35", zone: "합정", title: "합정" },
   { id: "ph13", date: d(10), time: "14:20", zone: "성수", title: "디뮤지엄" },
   // 10/12: 점심 3장, 15:20 결제 근처 2장 (이 중 서울숲 사진은 잘못 붙은 사진 → 수정 시연용)
-  { id: "ph14", date: d(12), time: "12:35", zone: "성수", title: "성수 점심" },
-  { id: "ph15", date: d(12), time: "12:55", zone: "성수", title: "성수 점심" },
-  { id: "ph16", date: d(12), time: "13:15", zone: "성수", title: "성수 점심" },
-  { id: "ph17", date: d(12), time: "15:05", zone: "성수", title: "마르디 성수" },
+  { id: "ph14", date: d(12), time: "12:35", zone: "성수", title: "성수 점심", content: "한식 · 3인 세팅" },
+  { id: "ph15", date: d(12), time: "12:55", zone: "성수", title: "성수 점심", content: "한식 · 반찬" },
+  { id: "ph16", date: d(12), time: "13:15", zone: "성수", title: "성수 점심", content: "인물 · 3명" },
+  { id: "ph17", date: d(12), time: "15:05", zone: "성수", title: "마르디 성수", content: "매장 · 진열대" },
   { id: "ph18", date: d(12), time: "15:40", zone: "서울숲", title: "서울숲 산책" },
+  { id: "ph-o12a", date: d(12), time: "17:20", zone: "서울숲", title: "서울숲", content: "풍경 · 공원" },
+  // 10/17: 브런치 → 아트클래스 → 무인양품 → 저녁
+  { id: "ph-o17a", date: d(17), time: "12:05", zone: "서울숲", title: "서울숲 브런치", content: "브런치 · 1인 세팅" },
+  { id: "ph-o17b", date: d(17), time: "14:40", zone: "서울숲", title: "서울숲 아트클래스", content: "도자기 · 작업대" },
+  { id: "ph-o17c", date: d(17), time: "15:25", zone: "서울숲", title: "서울숲 아트클래스", content: "도자기 · 완성품" },
+  { id: "ph-o17d", date: d(17), time: "17:05", zone: "성수", title: "무인양품 성수", content: "매장 · 생활용품" },
+  { id: "ph-o17e", date: d(17), time: "20:25", zone: "성수", title: "성수족발", content: "족발 · 2인 세팅" },
   { id: "ph19", date: d(18), time: "14:50", zone: "용산", title: "CGV 용산" },
   { id: "ph20", date: d(24), time: "18:40", zone: "합정", title: "합정 숯불갈비" },
 ]
 
-// 내 위치 기록 중 결제와 별개로 동선에 이어지는 지점 (장면 6: 성수역 → 식당 → 옷가게 → 귀가)
+// 내 위치 기록 중 결제와 별개로 동선에 이어지는 지점
+// 10/12: 성수역 → 식당 → 옷가게 → 서울숲 → 성수역 → 귀가 / 10/17: 서울숲역 → 브런치 → 클래스 → 무인양품 → 저녁 → 귀가
 export const octoberTrail: TrailPoint[] = [
   { id: "t1", date: d(12), time: "12:10", name: "성수역", zone: "성수" },
+  { id: "t-o12a", date: d(12), time: "16:30", name: "서울숲", zone: "서울숲" },
+  { id: "t-o12b", date: d(12), time: "18:10", name: "성수역", zone: "성수" },
   { id: "t2", date: d(12), time: "22:30", name: "집 (귀가)", zone: "역삼" },
+  { id: "t-o17a", date: d(17), time: "11:30", name: "서울숲역", zone: "서울숲" },
+  { id: "t-o17b", date: d(17), time: "18:30", name: "성수역", zone: "성수" },
+  { id: "t-o17c", date: d(17), time: "22:00", name: "집 (귀가)", zone: "역삼" },
 ]
 
 // 장면 4에서 사용자가 직접 확정하는 10/12 점심을 뺀 그룹 결제 (10/4 술자리, 10/25 카페는 이미 확정)
