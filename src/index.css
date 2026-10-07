@@ -7460,3 +7460,37 @@ p {
   margin-top: 0;
 }
 
+
+/* 리포트 지표 줄 중 이동할 수 있는 줄: 같은 모양에 오른쪽 화살표 */
+.rpt-metrics > .rpt-metric-link {
+  width: 100%;
+  cursor: pointer;
+}
+
+.rpt-metric-link dd {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.rpt-metric-link dd svg {
+  margin-right: -4px;
+  color: var(--text-mute);
+}
+
+.rpt-metric-link:active {
+  background: var(--surface);
+}
+
+/* 월 동선 지도: 결제 횟수 / 결제 금액 기준 전환 */
+.map-metric {
+  margin-bottom: 10px;
+}
+
+.map-month-places .section-title small {
+  margin-left: 6px;
+  color: var(--text-mute);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+  font-weight: var(--fw-caption);
+}

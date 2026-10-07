@@ -22,6 +22,7 @@ import {
   shareOf,
   trailPoints,
   weekday,
+  man,
   won,
   ymd,
   zoneNames,
@@ -99,6 +100,8 @@ export function MapTab({
   const [show, setShow] = useState({ payment: true, photo: true, event: true })
   const [selected, setSelected] = useState<Selected>()
   const [selectedPlace, setSelectedPlace] = useState<string | "missing">()
+  // 월 보기: 원 크기와 "결제한 곳" 순서를 결제 횟수 / 결제 금액 중 무엇으로 볼지
+  const [metric, setMetric] = useState<"count" | "amount">("count")
   const [view, setView] = useState<MapView>({ k: 1, x: 0, y: 0 })
   const canvasRef = useRef<HTMLDivElement>(null)
   const gesture = useRef<{
@@ -228,12 +231,19 @@ export function MapTab({
       count: placePayments.length,
       total: placePayments.reduce((sum, payment) => sum + payment.amount, 0),
     }))
-    .sort((a, b) => b.count - a.count || a.place.localeCompare(b.place, "ko"))
+    .sort((a, b) =>
+      metric === "amount"
+        ? b.total - a.total || a.place.localeCompare(b.place, "ko")
+        : b.count - a.count || a.place.localeCompare(b.place, "ko"),
+    )
   const missingPays = state.sources.location
     ? pays.filter((payment) => !payment.place)
     : pays
   const missingTotal = missingPays.reduce((sum, payment) => sum + payment.amount, 0)
   const maxPlaceCount = Math.max(1, ...monthPlaces.map((item) => item.count))
+  const maxPlaceTotal = Math.max(1, ...monthPlaces.map((item) => item.total))
+  const placeRatio = (item: { count: number; total: number }) =>
+    metric === "amount" ? item.total / maxPlaceTotal : item.count / maxPlaceCount
   const placeSelection = selectedPlace === "missing"
     ? {
         title: "위치 기록 없는 결제",
@@ -334,6 +344,26 @@ export function MapTab({
         </div>
       </div>
       <div className="map-scroll">
+        {period === "month" && (
+          // 월 보기 기준: 결제 횟수(자주 간 곳) / 결제 금액(많이 쓴 곳)
+          <div className="map-filters map-metric">
+            {(
+              [
+                ["count", "결제 횟수"],
+                ["amount", "결제 금액"],
+              ] as const
+            ).map(([key, text]) => (
+              <Action
+                className={cx("filter-chip", metric === key && "selected")}
+                key={key}
+                label={`${text} 기준으로 보기`}
+                onClick={() => setMetric(key)}
+              >
+                {text}
+              </Action>
+            ))}
+          </div>
+        )}
         {period !== "month" && <div className="map-filters">
           {(
             [
@@ -468,17 +498,17 @@ export function MapTab({
               <Action
                 className="map-place-bubble"
                 key={item.place}
-                label={`${item.place} 결제 ${item.count}건`}
+                label={`${item.place} 결제 ${item.count}건 · ${won(item.total)}`}
                 onClick={() => setSelectedPlace(item.place)}
                 style={
                   {
                     left: `${(PLACES[item.place] ?? { x: 50 }).x}%`,
                     top: `${(PLACES[item.place] ?? { y: 50 }).y}%`,
-                    "--place-size": `${42 + Math.round((item.count / maxPlaceCount) * 22)}px`,
+                    "--place-size": `${42 + Math.round(placeRatio(item) * 22)}px`,
                   } as CSSProperties
                 }
               >
-                <strong>{item.count}</strong>
+                <strong>{metric === "amount" ? man(item.total) : item.count}</strong>
                 <span>{item.place}</span>
               </Action>
             ))}
@@ -604,7 +634,9 @@ export function MapTab({
         )}
         {period === "month" && (
           <div className="map-month-places">
-            <p className="section-title">{date.m}월 결제한 곳</p>
+            <p className="section-title">
+              {date.m}월 결제한 곳 <small>{metric === "amount" ? "결제 금액 순" : "결제 횟수 순"}</small>
+            </p>
             <div className="map-place-list">
               {monthPlaces.map((item) => (
                 <Action key={item.place} onClick={() => setSelectedPlace(item.place)}>
