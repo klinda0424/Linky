@@ -43,13 +43,21 @@ export function AlbumTab({
   state,
   openPhoto,
   openEvent,
+  focusDay,
 }: {
   back: () => void
   state: LedgerState
   openPhoto: (photo: Photo) => void
   openEvent: (event: CalEvent) => void
+  // 캘린더 날짜에서 열었을 때: 그날 사진을 맨 위에 먼저 보여 준다
+  focusDay?: YMD
 }) {
   const linked = photos.filter((photo) => photoLinked(photo, state))
+  const dayPhotos = focusDay
+    ? linked
+        .filter((photo) => sameDay(photo.date, focusDay))
+        .sort((a, b) => a.time.localeCompare(b.time))
+    : []
   const groups: Array<{ key: string; title: string; sub: string; event?: CalEvent; list: Photo[] }> = []
   for (const photo of linked) {
     const event = eventOfPhoto(photo)
@@ -86,6 +94,35 @@ export function AlbumTab({
             연결해요.
           </div>
         )}
+        {focusDay && (
+          <div className="album-group album-day">
+            <div className="album-head">
+              <div>
+                <strong>
+                  {label(focusDay)} ({weekday(focusDay)})
+                </strong>
+                <span>
+                  {dayPhotos.length > 0 ? `이날 사진 ${dayPhotos.length}장` : "이날 사진 기록 없음"}
+                </span>
+              </div>
+            </div>
+            {dayPhotos.length > 0 && (
+              <div className="album-grid">
+                {dayPhotos.map((photo, index) => (
+                  <Action
+                    className={cx(tile(index), "album-tile")}
+                    key={photo.id}
+                    label={`${photo.title} 사진`}
+                    onClick={() => openPhoto(photo)}
+                  >
+                    <small>{photo.time}</small>
+                  </Action>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        {focusDay && groups.length > 0 && <p className="album-divider">일정별 사진</p>}
         {groups.map((group) => (
           <div className="album-group" key={group.key}>
             <div className="album-head">

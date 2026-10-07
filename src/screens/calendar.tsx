@@ -234,7 +234,7 @@ export function DayPanel({
   back: () => void
   showMap: (day: YMD) => void
   // 사진 아이콘 → 앨범. 없으면 사진 버튼을 숨긴다
-  openAlbum?: () => void
+  openAlbum?: (day: YMD) => void
   // 지출 카드를 누르면 별도 "지출 내역" 화면으로 간다
   openDetail: (payment: Payment) => void
   openRecord: (paymentId?: string) => void
@@ -293,7 +293,7 @@ export function DayPanel({
               <Action
                 className="cal2-icon-btn"
                 label={`이날 사진 ${dayPhotos.length}장 앨범에서 보기`}
-                onClick={openAlbum}
+                onClick={() => openAlbum(day)}
               >
                 <Camera size={16} strokeWidth={1.7} />
               </Action>
