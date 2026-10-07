@@ -6519,20 +6519,21 @@ p {
 }
 
 /* 정산함 버튼: 프로필 아이콘(오른쪽 12px, 폭 40px) 왼쪽 4px */
+/* 정산함: 연한 라임 바탕 + 라임 테두리 */
 .rp-head .report-settle-btn {
   height: 36px;
   margin-right: 35px;
   padding: 0 14px;
-  border-color: var(--primary);
-  background: var(--primary);
-  color: var(--on-primary);
+  border: 1.5px solid var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary-text);
   font-size: var(--fs-label);
   line-height: var(--lh-label);
   font-weight: var(--fw-title);
 }
 
 .rp-head .report-settle-btn:active {
-  background: var(--primary-hover);
+  background: var(--primary-border);
 }
 
 .report-profile {
