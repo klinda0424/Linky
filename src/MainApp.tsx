@@ -377,13 +377,6 @@ export function MainApp({
     if (tab === "report")
       return (
         <ReportTab
-          openDay={(day) => {
-            // 가장 많이 쓴 날 → 캘린더에서 그 날짜를 연다
-            setFocusPayment(undefined)
-            setSheetDay(day)
-            setCalendarScrollKey((key) => key + 1)
-            setTab("calendar")
-          }}
           openSettlement={() => setView("settlementList")}
           openWeekMap={(day) => {
             // 가장 많이 쓴 곳 → 그 주의 동선 지도 (시트)

@@ -2744,7 +2744,8 @@ p {
 .media-sheet {
   position: relative;
   width: 100%;
-  height: 92%;
+  height: calc(75dvh / 0.85);
+  max-height: 75%;
   padding-top: 8px;
   display: flex;
   flex-direction: column;
@@ -2769,6 +2770,119 @@ p {
   min-height: 0;
   flex: 1;
   padding-bottom: 24px;
+}
+
+/* 가장 많이 쓴 날도 지도·앨범과 같은 오버레이 시트 shell을 쓴다. */
+.rpt-day-sheet-head {
+  min-height: 58px;
+  padding: 8px 20px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+
+.rpt-day-sheet-head > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rpt-day-sheet-head span,
+.rpt-day-sheet-total span,
+.rpt-day-sheet-total small {
+  color: var(--text-mute);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+}
+
+.rpt-day-sheet-head strong {
+  font-size: var(--fs-title);
+  line-height: var(--lh-title);
+  font-weight: var(--fw-title);
+}
+
+.rpt-day-sheet-close {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--surface);
+}
+
+.rpt-day-sheet-scroll {
+  min-height: 0;
+  padding: 18px 20px 28px;
+  overflow-y: auto;
+}
+
+.rpt-day-sheet-total {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.rpt-day-sheet-total b {
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: var(--fw-headline);
+}
+
+.rpt-day-sheet-section {
+  margin-top: 20px;
+}
+
+.rpt-day-sheet-section > strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+  font-weight: var(--fw-item-title);
+}
+
+.rpt-day-sheet-section > p {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+}
+
+.rpt-day-payments > div {
+  min-height: 54px;
+  padding: 10px 0;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.rpt-day-payments > div:last-child {
+  border-bottom: 0;
+}
+
+.rpt-day-payments time,
+.rpt-day-payments small {
+  color: var(--text-mute);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+}
+
+.rpt-day-payments p {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rpt-day-payments p b,
+.rpt-day-payments > div > strong {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: var(--fw-title);
 }
 
 @keyframes media-sheet-down {
@@ -7485,6 +7599,56 @@ p {
 .rp-wd.top small {
   color: var(--text);
   font-weight: var(--fw-title);
+}
+
+/* 월간 보기는 정보와 글자 크기를 유지하고 세로 여백만 줄여 한 viewport에 모은다. */
+.report-zoom.monthly {
+  padding-top: 8px;
+}
+
+.report-zoom.monthly .rpt-switch {
+  height: 44px;
+  margin-bottom: 10px;
+}
+
+.report-zoom.monthly .rp-card {
+  margin-bottom: 8px;
+  padding: 14px 18px;
+}
+
+.report-zoom.monthly .rp-card-head {
+  margin-bottom: 8px;
+}
+
+.report-zoom.monthly .rp-split {
+  height: 10px;
+  margin-top: 8px;
+}
+
+.report-zoom.monthly .rp-split-stats {
+  margin-top: 8px;
+}
+
+.report-zoom.monthly .rp-weekdays {
+  height: 76px;
+  margin-top: 10px;
+  padding-top: 8px;
+}
+
+.report-zoom.monthly .rpt-metrics {
+  margin-top: 8px;
+}
+
+.report-zoom.monthly .rpt-metrics > div {
+  min-height: 34px;
+}
+
+.report-zoom.monthly .rpt-month-card .rpt-total {
+  margin-top: 12px;
+}
+
+.report-zoom.monthly .rpt-total > p {
+  margin-top: 4px;
 }
 
 /* 오늘 내 하루: 제목과 Linky 칩은 카드 밖, 카드 안은 본문만 */
