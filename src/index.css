@@ -7451,12 +7451,14 @@ p {
   background: #f6f7f8;
 }
 
+/* 우측 상단에 스파클 + 연두색 글자 */
 .hm-story-foot {
-  margin-top: 16px;
+  margin-bottom: 8px;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 4px;
-  color: var(--text-mute);
+  color: var(--primary-strong);
   font-size: var(--fs-caption);
   line-height: var(--lh-caption);
   font-weight: var(--fw-caption);
