@@ -7106,7 +7106,7 @@ p {
   align-items: center;
   gap: 14px;
   border-radius: 20px;
-  background: var(--surface);
+  background: var(--blue);
 }
 
 .rp-note-icon {
@@ -7198,17 +7198,45 @@ p {
   line-height: var(--lh-caption);
 }
 
-.rp-event-text p {
-  margin-top: 6px;
+/* 링키 말풍선: 링키가 찾았어요 화면과 같은 로고·말풍선 모양 */
+.rp-say {
+  margin-top: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.rp-say-avatar {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.rp-say p {
+  padding: 8px 12px;
+  border-radius: 4px 14px 14px 14px;
+  background: var(--surface);
   color: var(--text-body);
   font-size: var(--fs-label);
   line-height: var(--lh-label);
   word-break: keep-all;
 }
 
-.rp-event-text p b {
+.rp-say p b {
   color: var(--text);
   font-weight: var(--fw-title);
+}
+
+/* 하늘색 카드 (내 지출 패턴) */
+.report-zoom .rp-card.rp-sky {
+  border-color: transparent;
+  background: var(--blue);
 }
 
 /* 내 지출 패턴: 핵심 숫자 + 평일/주말 막대 + 요일 막대 */

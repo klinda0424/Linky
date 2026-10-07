@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, TrendingDown } from "lucide-react"
+import { ChevronLeft, ChevronRight, Link2, TrendingDown } from "lucide-react"
 import { useState } from "react"
 import { Action, cx } from "@/components/common"
 import { TODAY, label, man, weekday, won, ymd, type LedgerState, type YMD } from "@/lib/ledger"
@@ -179,13 +179,24 @@ export function ReportTab({ state, openSettlement }: { state: LedgerState; openS
                         <div className="rp-event-text">
                           <strong>{event.title}</strong>
                           <small>{event.start}</small>
-                          {event.title.includes("지은") ? (
-                            <p>
-                              지난 지은이랑 약속에선 평균 <b>{won(reportDemoFacts.jieunAppointmentAverage)}</b>을 썼어요
-                            </p>
-                          ) : event.repeatedFact ? (
-                            <p>{event.repeatedFact}</p>
-                          ) : null}
+                          {(event.title.includes("지은") || event.repeatedFact) && (
+                            // 링키가 내 기록에서 찾은 사실을 말풍선으로 알려 준다
+                            <div className="rp-say">
+                              <span className="rp-say-avatar" aria-label="Linky">
+                                <Link2 size={13} strokeWidth={2.2} />
+                              </span>
+                              <p>
+                                {event.title.includes("지은") ? (
+                                  <>
+                                    지난 지은이랑 약속에선 평균 <b>{won(reportDemoFacts.jieunAppointmentAverage)}</b>을
+                                    썼어요
+                                  </>
+                                ) : (
+                                  event.repeatedFact
+                                )}
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -234,8 +245,8 @@ export function ReportTab({ state, openSettlement }: { state: LedgerState; openS
             </>
           ) : (
             <>
-              {/* 내 지출 패턴: 핵심 숫자 + 평일/주말 막대 하나 + 요일별 작은 막대 */}
-              <section className="rp-card">
+              {/* 내 지출 패턴: 핵심 숫자 + 평일/주말 막대 하나 + 요일별 작은 막대 (하늘색 카드) */}
+              <section className="rp-card rp-sky">
                 <div className="rp-card-head">
                   <strong>내 지출 패턴</strong>
                   <span>{pattern ? `${pattern.month}월` : `${monthly.month}월`}</span>
