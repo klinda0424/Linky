@@ -6744,10 +6744,11 @@ p {
   font-weight: var(--fw-body);
 }
 
+/* 핵심 금액: 홈 "오늘 지출" 합계와 같은 크기 (22px → 화면 18.7) */
 .rpt-total > b {
   margin-top: 5px;
-  font-size: 30px;
-  line-height: 36px;
+  font-size: 22px;
+  line-height: 28px;
   font-weight: var(--fw-headline);
   letter-spacing: -0.03em;
 }
@@ -6781,8 +6782,8 @@ p {
 
 .rpt-report-card .rpt-col em {
   color: var(--text-mute);
-  font-size: 11px;
-  line-height: 14px;
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
 }
 
 .rpt-report-card .rpt-col.today b {
@@ -6792,8 +6793,8 @@ p {
 
 .rpt-report-card .rpt-col small {
   color: var(--text-mute);
-  font-size: 10px;
-  line-height: 12px;
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
   font-weight: var(--fw-caption);
 }
 
@@ -7127,6 +7128,294 @@ p {
   color: var(--text-mute);
   font-size: var(--fs-body);
   text-align: center;
+}
+
+/* ======================================================================
+   리포트: 홈과 같은 패턴 (흰 카드 + 테두리 20 / 알림형 한 줄 / 제목 title · 핵심 숫자 22/700)
+   ====================================================================== */
+.report-zoom .rp-card {
+  margin-bottom: 12px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--background);
+  box-shadow: none;
+}
+
+.rp-card-head {
+  margin-bottom: 14px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rp-card-head strong {
+  font-size: var(--fs-title);
+  line-height: var(--lh-title);
+  font-weight: var(--fw-title);
+}
+
+.rp-card-head span {
+  color: var(--text-mute);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+}
+
+/* 지난주와 달라진 점: 홈 알림(hm-notice)과 같은 한 줄 */
+.rp-note {
+  margin-bottom: 12px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-radius: 20px;
+  background: var(--blue);
+}
+
+.rp-note-icon {
+  width: 30px;
+  flex: none;
+  display: flex;
+  justify-content: center;
+  color: var(--primary-text);
+}
+
+.rp-note div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rp-note strong {
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+  font-weight: var(--fw-item-title);
+}
+
+.rp-note small {
+  color: var(--text-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+}
+
+/* 다음 주 예고: 날짜 블록 + 일정 */
+.rp-events {
+  display: flex;
+  flex-direction: column;
+}
+
+.rp-event {
+  padding: 12px 0;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.rp-event:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.rp-date {
+  width: 44px;
+  height: 48px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--primary-soft);
+}
+
+.rp-date b {
+  color: var(--primary-text);
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+  font-weight: var(--fw-title);
+}
+
+.rp-date small {
+  color: var(--primary-text);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+}
+
+.rp-event-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rp-event-text strong {
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+  font-weight: var(--fw-item-title);
+}
+
+.rp-event-text small {
+  color: var(--text-mute);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+}
+
+/* 링키 말풍선: 오른쪽 열(일정 이름과 같은 선)에서 카드 끝까지 */
+.rp-say {
+  grid-column: 2;
+  padding: 10px 14px;
+  border-radius: 4px 14px 14px 14px;
+  background: var(--surface);
+  color: var(--text-body);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+  word-break: keep-all;
+}
+
+.rp-say b {
+  color: var(--text);
+  font-weight: var(--fw-title);
+}
+
+
+
+/* 내 지출 패턴: 핵심 숫자 + 평일/주말 막대 + 요일 막대 */
+.rp-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rp-hero span {
+  color: var(--text-mute);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+}
+
+.rp-hero b {
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: var(--fw-headline);
+}
+
+.rp-split {
+  height: 12px;
+  margin-top: 14px;
+  display: flex;
+  gap: 3px;
+}
+
+.rp-split i {
+  border-radius: 6px;
+  background: var(--primary-border);
+}
+
+.rp-split i.weekend {
+  background: var(--primary);
+}
+
+/* 막대 아래 2열 숫자: 평일 · 주말 */
+.rp-split-stats {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.rp-split-stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rp-split-stats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-mute);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+}
+
+.rp-split-stats i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary-border);
+}
+
+.rp-split-stats i.weekend {
+  background: var(--primary);
+}
+
+.rp-split-stats b {
+  font-size: var(--fs-item-amount);
+  line-height: var(--lh-item-amount);
+  font-weight: var(--fw-item-amount);
+}
+
+.rp-split-stats small {
+  color: var(--text-body);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+}
+
+/* 요일 막대: 보통은 연한 라임, 가장 많이 쓴 요일은 라임 + 위에 금액 */
+.rp-weekdays {
+  height: 96px;
+  margin-top: 16px;
+  padding-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.rp-wd {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.rp-wd em {
+  height: 16px;
+  color: var(--text);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+  font-weight: var(--fw-title);
+  font-style: normal;
+}
+
+.rp-wd span {
+  width: 18px;
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+}
+
+.rp-wd span i {
+  width: 100%;
+  border-radius: 5px;
+  background: var(--primary-border);
+}
+
+.rp-wd.top span i {
+  background: var(--primary);
+}
+
+.rp-wd small {
+  color: var(--text-mute);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+}
+
+.rp-wd.top small {
+  color: var(--text);
+  font-weight: var(--fw-title);
 }
 
 /* 오늘 내 하루: 링키 카드와 같은 연라임 배경 + 라임 테두리 */
