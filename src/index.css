@@ -7494,3 +7494,41 @@ p {
   line-height: var(--lh-caption);
   font-weight: var(--fw-caption);
 }
+
+/* 월 동선 지도: 결제 금액 기준은 하늘색. 원 색은 값이 클수록 진하게(최대 = 기본색), 작을수록 연하게 */
+.map-scroll {
+  --map-sky: #9cc3f7;
+  --map-sky-text: #2f68c4;
+}
+
+.map-place-bubble {
+  --place-color: var(--primary);
+  background: color-mix(in srgb, var(--place-color) var(--place-mix, 100%), var(--background));
+}
+
+.map-place-bubble.amount {
+  --place-color: var(--map-sky);
+}
+
+/* 원 안 숫자: 가장 작은 원에도 여유 있게 들어가는 크기 */
+.map-place-bubble strong {
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+  font-weight: var(--fw-title);
+  letter-spacing: -0.03em;
+}
+
+.map-place-bubble.amount strong {
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+}
+
+/* 결제 금액 칩이 켜지면 하늘색 */
+.filter-chip.selected.sky {
+  background: var(--blue);
+  color: var(--map-sky-text);
+}
+
+.map-legend i.pay.sky {
+  background: var(--map-sky);
+}

@@ -354,7 +354,7 @@ export function MapTab({
               ] as const
             ).map(([key, text]) => (
               <Action
-                className={cx("filter-chip", metric === key && "selected")}
+                className={cx("filter-chip", metric === key && "selected", key === "amount" && "sky")}
                 key={key}
                 label={`${text} 기준으로 보기`}
                 onClick={() => setMetric(key)}
@@ -496,7 +496,7 @@ export function MapTab({
           {period === "month" &&
             monthPlaces.map((item) => (
               <Action
-                className="map-place-bubble"
+                className={cx("map-place-bubble", metric === "amount" && "amount")}
                 key={item.place}
                 label={`${item.place} 결제 ${item.count}건 · ${won(item.total)}`}
                 onClick={() => setSelectedPlace(item.place)}
@@ -505,6 +505,8 @@ export function MapTab({
                     left: `${(PLACES[item.place] ?? { x: 50 }).x}%`,
                     top: `${(PLACES[item.place] ?? { y: 50 }).y}%`,
                     "--place-size": `${42 + Math.round(placeRatio(item) * 22)}px`,
+                    // 많을수록 진하게(최대 = 지금 색), 적을수록 연하게
+                    "--place-mix": `${Math.round(35 + placeRatio(item) * 65)}%`,
                   } as CSSProperties
                 }
               >
@@ -564,7 +566,8 @@ export function MapTab({
         </div>
         <div className="map-legend">
           <span>
-            <i className="pay" /> 결제
+            <i className={cx("pay", period === "month" && metric === "amount" && "sky")} />{" "}
+            {period === "month" ? (metric === "amount" ? "결제 금액 (클수록 진하게)" : "결제 횟수 (많을수록 진하게)") : "결제"}
           </span>
           {period !== "month" && (
             <>
