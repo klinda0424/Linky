@@ -169,13 +169,17 @@ const isDailyTransit = (payment: Payment) => /후불교통/.test(payment.merchan
 const shortName = (payment: Payment, state: LedgerState) =>
   (restoredOf(payment, state)?.label ?? payment.merchant).replace(/^\(주\)/, "")
 
-// 하루를 정보 나열이 아니라 "일정·장소와 결제의 관계"로 짧게 정리한다.
+// 오늘 내 하루: 시간대별 행으로 "일정·장소와 결제의 관계"를 보여 준다.
 // 감정·의도는 추측하지 않고, 내 일정·위치·결제 기록에서 확인된 사실의 관계만 쓴다.
-function dayStory(day: YMD, list: Payment[], state: LedgerState) {
+// 가맹점명은 눌러서 그 결제 상세로 갈 수 있게 payment를 함께 둔다.
+type StorySeg = string | { payment: Payment; text: string }
+type StoryRow = { time: string; period: string; segs: StorySeg[] }
+
+function dayRows(day: YMD, list: Payment[], state: LedgerState): StoryRow[] {
   const normal = list.filter((payment) => !isDailyTransit(payment))
-  type Clause = { time: string; rank: number; stem: string }
-  const clauses: Clause[] = []
+  const rows: StoryRow[] = []
   const inEvent = new Set<string>()
+  const pay = (payment: Payment): StorySeg => ({ payment, text: shortName(payment, state) })
 
   // 1) 일정과 그 시간대의 결제 (결제가 없었다는 것도 관계로 말한다)
   for (const event of eventsOn(day, state)) {
@@ -183,50 +187,47 @@ function dayStory(day: YMD, list: Payment[], state: LedgerState) {
       eventsFor(payment, state).some((item) => item.id === event.id),
     )
     linked.forEach((payment) => inEvent.add(payment.id))
-    const names = linked.map((payment) => shortName(payment, state)).join("·")
-    clauses.push({
-      time: event.start,
-      rank: 0,
-      stem: `'${event.title}' 일정이 있던 ${periodOf(event.start)}에는 ${
-        linked.length > 0 ? `${names} 결제가 있었` : "결제가 없었"
-      }`,
-    })
+    const segs: StorySeg[] = [`'${event.title}' · `]
+    if (linked.length === 0) segs.push("일정이 있던 시간에 결제는 없었어요")
+    else {
+      linked.forEach((payment, index) => {
+        if (index > 0) segs.push(" · ")
+        segs.push(pay(payment))
+      })
+      segs.push("에서 결제했어요")
+    }
+    rows.push({ time: event.start, period: periodOf(event.start), segs })
   }
-  // 2) 일정과 상관없는 결제: 시간대별로 묶어 "일정이 없던 낮에는 …에 들렀어요"처럼 일정과 대비해 말한다
-  const rest = normal.filter((payment) => !inEvent.has(payment.id) && !payment.transit)
-  const byPeriod = new Map<string, Payment[]>()
-  for (const payment of rest) {
+  // 2) 일정과 상관없는 결제
+  for (const payment of normal) {
+    if (inEvent.has(payment.id) || payment.transit) continue
     const period = periodOf(payment.time)
-    byPeriod.set(period, [...(byPeriod.get(period) ?? []), payment])
-  }
-  for (const [period, items] of byPeriod) {
-    const names = items.slice(0, 2).map((payment) => shortName(payment, state)).join("·")
-    const allRestored = items.every((payment) => restoredOf(payment, state))
-    clauses.push({
-      time: items[0].time,
-      rank: 1,
-      stem: `일정이 없던 ${period}에는 ${names}${allRestored ? "에 들렀" : " 결제가 있었"}`,
-    })
+    if (payment.kind === "transfer") {
+      rows.push({ time: payment.time, period, segs: [pay(payment), "에게 송금했어요"] })
+    } else {
+      rows.push({
+        time: payment.time,
+        period,
+        segs: [pay(payment), restoredOf(payment, state) ? "에 들렀어요" : "에서 결제했어요"],
+      })
+    }
   }
   // 이동만 있는 날은 이동을 적는다
-  const rides = normal.filter((payment) => payment.transit && !inEvent.has(payment.id))
-  if (clauses.length === 0 && rides.length > 0) {
-    clauses.push({ time: rides[0].time, rank: 2, stem: `${rides[0].transit?.from} 인근에서 택시를 탔` })
-  }
-  const picked = clauses
-    .sort((a, b) => a.time.localeCompare(b.time))
-    .slice(0, 3)
-  const sentence = picked
-    .map((clause, index) => `${clause.stem}${index === picked.length - 1 ? "어요." : "고,"}`)
-    .join(" ")
-
+  const ride = normal.find((payment) => payment.transit && !inEvent.has(payment.id))
+  if (rows.length === 0 && ride)
+    rows.push({
+      time: ride.time,
+      period: periodOf(ride.time),
+      segs: [`${ride.transit?.from} 인근에서 택시를 탔어요`],
+    })
+  // 후불교통은 하루 합산 요금으로 따로 적는다
   const transitFare = list
     .filter(isDailyTransit)
     .reduce((sum, payment) => sum + shareOf(payment, state), 0)
-  const fare = transitFare > 0 ? ` 대중교통 요금은 하루 합쳐 ${won(transitFare)}이었어요.` : ""
-  if (!sentence && !fare) return ""
-
-  return `${sentence}${fare}`
+  const sorted = rows.sort((a, b) => a.time.localeCompare(b.time)).slice(0, 4)
+  if (transitFare > 0)
+    sorted.push({ time: "99:99", period: "교통", segs: [`대중교통 요금은 하루 합쳐 ${won(transitFare)}이었어요`] })
+  return sorted
 }
 
 // ---------- 오늘의 동선: 체류 구간과 결제 위치를 시간순으로 잇는 미니 지도 ----------
@@ -392,7 +393,7 @@ export function HomePage({
     (photo) => !state.photoUnlinked.includes(photo.id),
   )
   const stops = routeStops(day, selectedList, state)
-  const story = dayStory(day, selectedList, state)
+  const storyRows = dayRows(day, selectedList, state)
   const linkedPayment = (photo: Photo) =>
     selectedList.find((payment) => photosFor(payment, state).some((item) => item.id === photo.id))
   // 송금 맥락은 주간 캘린더 바로 아래 연라임 카드로, 그룹 결제는 아래 알림 카드로 띄운다
@@ -515,7 +516,35 @@ export function HomePage({
           <h2>{isToday ? "오늘 내 하루" : `${label(day)}의 하루`}</h2>
         </div>
         <section className="hm-story">
-          <p className="hm-story-text">{story || "기록 없음"}</p>
+          {storyRows.length === 0 ? (
+            <p className="hm-empty">기록 없음</p>
+          ) : (
+            <div className="hm-story-rows">
+              {storyRows.map((row, index) => (
+                <div className="hm-story-row" key={`${row.time}-${index}`}>
+                  <span className="hm-story-label">
+                    {index === 0 || storyRows[index - 1].period !== row.period ? row.period : ""}
+                  </span>
+                  <div className="hm-story-text">
+                    {row.segs.map((seg, segIndex) =>
+                      typeof seg === "string" ? (
+                        <span key={segIndex}>{seg}</span>
+                      ) : (
+                        <Action
+                          className="hm-story-pay"
+                          key={segIndex}
+                          label={`${seg.text} 결제 상세`}
+                          onClick={() => openPayment(seg.payment)}
+                        >
+                          {seg.text}
+                        </Action>
+                      ),
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="hm-story-foot">
             <Sparkles size={14} strokeWidth={1.6} /> Linky가 정리했어요
           </div>
