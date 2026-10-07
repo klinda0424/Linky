@@ -14,7 +14,7 @@ import { reportDemoFacts } from "@/mock/report"
 
 type ReportView = "weekly" | "monthly"
 
-function Columns({ items }: { items: { label: string; value: number; today?: boolean }[] }) {
+function Columns({ items }: { items: { label: string; dateLabel: string; value: number; today?: boolean }[] }) {
   const max = Math.max(...items.map((item) => item.value), 1)
   const top = items.findIndex((item) => item.value === max)
   return (
@@ -29,6 +29,7 @@ function Columns({ items }: { items: { label: string; value: number; today?: boo
             />
           </span>
           <b>{item.label}</b>
+          <small>{item.dateLabel}</small>
         </div>
       ))}
     </div>
@@ -114,14 +115,13 @@ export function ReportTab({ state, openSettlement }: { state: LedgerState; openS
   const [weekAnchor, setWeekAnchor] = useState<YMD>(TODAY)
   const [monthAnchor, setMonthAnchor] = useState<YMD>(ymd(TODAY.y, TODAY.m, 1))
   const weekly = weeklyReport(state, weekAnchor)
-  // 보고 있는 주가 이번 주에서 몇 주 전인지 → "이번 주" · "지난주" · "N주 전"
+  // 이번 주에서는 다음(미래) 주로 넘어가지 않는다.
   const thisWeek = weeklyReport(state, TODAY)
   const weeksAgo = Math.round(
     (new Date(thisWeek.from.y, thisWeek.from.m - 1, thisWeek.from.d).getTime() -
       new Date(weekly.from.y, weekly.from.m - 1, weekly.from.d).getTime()) /
       (7 * 24 * 60 * 60 * 1000),
   )
-  const weekName = weeksAgo === 0 ? "이번 주" : weeksAgo === 1 ? "지난주" : `${weeksAgo}주 전`
   const isThisMonth = monthAnchor.y === TODAY.y && monthAnchor.m === TODAY.m
   const changed = weeklyChange(state, weekAnchor)
   const monthly = monthlyReport(state, monthAnchor)
@@ -184,7 +184,6 @@ export function ReportTab({ state, openSettlement }: { state: LedgerState; openS
                 <div className="rpt-card-heading">
                   <strong>주간 리포트</strong>
                   <PeriodNav
-                    label={weekName}
                     next={() => setWeekAnchor((date) => addDays(date, 7))}
                     nextDisabled={weeksAgo === 0}
                     previous={() => setWeekAnchor((date) => addDays(date, -7))}
@@ -195,14 +194,13 @@ export function ReportTab({ state, openSettlement }: { state: LedgerState; openS
                 ) : (
                   <>
                     <div className="rpt-total">
-                      <span>
-                        {label(weekly.from)} ~ {label(weekly.to)} 지출
-                      </span>
+                      <span>이번 주 지출</span>
                       <b>{won(weekly.total)}</b>
                     </div>
                     <Columns
                       items={weekly.daily.map((day) => ({
                         label: day.weekday,
+                        dateLabel: `${day.date.m}/${day.date.d}`,
                         value: day.value,
                         today: day.today,
                       }))}

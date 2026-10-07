@@ -6726,6 +6726,17 @@ p {
   font-weight: var(--fw-title);
 }
 
+.rpt-report-card .rpt-col small {
+  color: var(--text-mute);
+  font-size: 10px;
+  line-height: 12px;
+  font-weight: var(--fw-caption);
+}
+
+.rpt-report-card .rpt-col.today small {
+  color: var(--text);
+}
+
 .rpt-metrics {
   margin: 16px 0 0;
 }
