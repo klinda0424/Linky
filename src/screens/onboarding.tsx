@@ -408,17 +408,20 @@ export function PrivacyNotice({
         title={"이렇게 수집하고\n보관해요"}
         sub="동의하지 않은 항목은 근거로 쓰지 않아요"
       />
-      <div className="main-card notice-list">
+      <div className="list-cards permission-cards notice-cards">
         {shown.map((item) => {
           const off = !values[item.key]
           return (
-            <div className={cx("notice-row", off && "off")} key={item.key}>
+            <div className={cx("list-card", off && "off")} key={item.key}>
               <span className="icon-box neutral">{item.icon}</span>
-              <div className="notice-copy">
-                <strong>
-                  {item.title}
-                  {item.required && <Badge>필수</Badge>}
-                </strong>
+              <div className="list-copy">
+                <div className="label-row">
+                  <strong>
+                    {item.title}
+                    {item.parenthetical && <small> ({item.parenthetical})</small>}
+                  </strong>
+                  <Badge>{item.required ? "필수" : "선택"}</Badge>
+                </div>
                 <span>{off ? "동의하지 않음 · 근거에서 빠져요" : item.collects}</span>
                 {item.scope && !off && <span className="privacy-scope">{item.scope}</span>}
               </div>
@@ -508,7 +511,7 @@ export function ImportExpenses({
   const requiredAgreed = importTerms.every((term) => !term.required || agreed[term.key])
   useEffect(() => {
     if (phase !== "loading") return
-    const timer = window.setTimeout(() => setPhase("done"), 1400)
+    const timer = window.setTimeout(() => setPhase("done"), 2400)
     return () => window.clearTimeout(timer)
   }, [phase])
 
@@ -526,6 +529,13 @@ export function ImportExpenses({
           <p className="complete-title">
             {phase === "done" ? "결제내역을 불러왔어요" : "결제내역을 불러오는 중이에요"}
           </p>
+          {phase === "loading" && (
+            <span className="loading-dots" aria-hidden>
+              <i />
+              <i />
+              <i />
+            </span>
+          )}
         </div>
         <Footer button="다음" disabled={phase !== "done"} onNext={next} />
       </Screen>
