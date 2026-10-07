@@ -5760,6 +5760,37 @@ p {
   padding-bottom: 28px;
 }
 
+/* 확인·결과 단계: 같은 시트가 키가 커지고, 내용은 스크롤·버튼은 하단 고정 */
+.gs-sheet.tall {
+  height: min(88dvh, 720px);
+  display: flex;
+  flex-direction: column;
+}
+
+.gs-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.gs-confirm-title {
+  margin-top: 8px;
+  font-size: var(--fs-title);
+  line-height: var(--lh-title);
+  font-weight: var(--fw-title);
+}
+
+.gs-foot {
+  flex: 0 0 auto;
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.gs-foot.split {
+  grid-template-columns: 1fr 1.4fr;
+}
+
 .gs-head {
   margin-top: 8px;
   display: flex;

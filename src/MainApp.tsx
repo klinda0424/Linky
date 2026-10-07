@@ -32,12 +32,7 @@ import { AlbumPicker, addedPhotoText } from "@/screens/record"
 import { SearchScreen } from "@/screens/search"
 import { TransferConfirm } from "@/screens/transfer"
 import {
-  SettlementConfirm,
-  SettlementEdit,
-  SettlementInbox,
   SettlementList,
-  SettlementResult,
-  SettlementTable,
 } from "@/screens/settlement"
 import {
   type MainTab,
@@ -84,19 +79,13 @@ export function MainApp({
   const [returnToMonth, setReturnToMonth] = useState<YMD>()
   const [recordTarget, setRecordTarget] = useState<string>()
   const [splitting, setSplitting] = useState<Payment>()
-  // 홈 정산 알림에서 연 시트인지: 맞아요를 누르면 그룹 결제 확인 화면으로 이어진다
-  const [splitFromHome, setSplitFromHome] = useState(false)
   // 링키가 찾았어요: 확인 중인 송금
   const [transferId, setTransferId] = useState<string>()
   // 지출 내역 상세: 홈 오늘 지출에서 연 결제
   const [detailId, setDetailId] = useState<string>()
   const [photo, setPhoto] = useState<Photo>()
   const [event, setEvent] = useState<CalEvent>()
-  const [excluded, setExcluded] = useState<string[]>([])
-  const [matched, setMatched] = useState(false)
   const [settled, setSettled] = useState(false)
-  // 정산 대기함은 홈 알림과 리포트 > 정산 내역 양쪽에서 열리므로 어디서 왔는지 기억한다
-  const [inboxFromHome, setInboxFromHome] = useState(false)
   const [notifications, setNotifications] = useState<
     Record<NotificationKey, boolean>
   >({ restore: true, report: true, settlement: true })
@@ -265,15 +254,10 @@ export function MainApp({
             setPhoto(item)
             setView("photo")
           }}
+          // 정산 알림 → 정산 바텀시트(제안 → 그룹 결제 확인 → 결과·정산 완료)
           openSettlement={() => {
-            // 정산 알림을 누르면 그룹 지출 제안 시트가 먼저 올라오고, 맞아요를 누르면 그룹 결제 확인 화면으로 간다
-            if (meeting) {
-              setSplitFromHome(true)
-              setSplitting(meeting)
-              return
-            }
-            setInboxFromHome(true)
-            setView("settlement")
+            if (meeting) setSplitting(meeting)
+            else setView("settlementList")
           }}
           foundTransfer={
             foundTransfer && foundGuess
@@ -288,7 +272,7 @@ export function MainApp({
             settled || Boolean(meetingId && (state.personal ?? []).includes(meetingId))
               ? undefined
               : (() => {
-                  const pending = summarize(excluded)
+                  const pending = summarize([])
                   return pending.items.length > 0
                     ? { count: pending.items.length, total: pending.total }
                     : undefined
@@ -330,13 +314,10 @@ export function MainApp({
               openDetail={openDetail}
               openRecord={openRecord}
               openSettlement={() => {
-                setInboxFromHome(true)
-                setView("settlement")
+                if (meeting) setSplitting(meeting)
+                else setView("settlementList")
               }}
-              openSplit={(payment) => {
-                setSplitFromHome(false)
-                setSplitting(payment)
-              }}
+              openSplit={setSplitting}
               relink={relink}
               relinkPhoto={relinkPhoto}
               settlementPaymentId={meetingId}
@@ -427,10 +408,7 @@ export function MainApp({
                   markPersonal={markPersonal}
                   openDetail={openDetail}
                   openRecord={openRecord}
-                  openSplit={(payment) => {
-                    setSplitFromHome(false)
-                    setSplitting(payment)
-                  }}
+                  openSplit={setSplitting}
                   relink={relink}
                   relinkPhoto={relinkPhoto}
                   showMap={(day) => {
@@ -565,74 +543,9 @@ export function MainApp({
               setTab("home")
               toTabs()
             }}
-            open={() => {
-              setInboxFromHome(false)
-              setView("settlement")
-            }}
+            // 정산 대기 중인 모임 지출은 바텀시트로 이어서 정산한다
+            open={meeting ? () => setSplitting(meeting) : undefined}
             state={state}
-          />
-        )
-      case "settlement":
-        return (
-          <SettlementInbox
-            back={() => (inboxFromHome ? toTabs() : setView("settlementList"))}
-            excluded={excluded}
-            notGroup={
-              meetingId
-                ? () => {
-                    markPersonal(meetingId)
-                    toTabs()
-                  }
-                : undefined
-            }
-            openTable={() => setView("settlementTable")}
-            state={state}
-          />
-        )
-      case "settlementTable":
-        return (
-          <SettlementTable
-            back={() => setView("settlement")}
-            edit={() => setView("settlementEdit")}
-            excluded={excluded}
-            proceed={() => setView("settlementConfirm")}
-          />
-        )
-      case "settlementEdit":
-        return (
-          <SettlementEdit
-            back={() => setView("settlementTable")}
-            done={(list) => {
-              setExcluded(list)
-              setView("settlementTable")
-            }}
-            excluded={excluded}
-          />
-        )
-      case "settlementConfirm":
-        return (
-          <SettlementConfirm
-            back={() => setView("settlementTable")}
-            excluded={excluded}
-            matched={matched}
-            notify={() => setMatched(true)}
-            result={() => {
-              // 정산 결과는 "내 몫만 가계에 반영"이므로 이 시점에 분할을 확정해 캘린더·리포트 집계에 반영한다
-              if (meetingId) confirmSplit(meetingId)
-              setView("settlementResult")
-            }}
-          />
-        )
-      case "settlementResult":
-        return (
-          <SettlementResult
-            excluded={excluded}
-            finish={() => {
-              setSettled(true)
-              setInboxFromHome(false)
-              // 탭은 정산을 시작한 곳(홈·캘린더·리포트)에 그대로 둔다. 정산 내역에서 뒤로 가면 시작한 화면으로 돌아간다
-              setView("settlementList")
-            }}
           />
         )
       default:
@@ -741,33 +654,14 @@ export function MainApp({
             markPersonal(splitting.id)
             setSplitting(undefined)
           }}
-          // "인원 수정" → 정산 흐름(정산표 수정)으로 이동
-          editPeople={() => {
-            setSplitting(undefined)
-            setInboxFromHome(true)
-            setView("settlement")
-          }}
-          // 확인하면 원장만 갱신하고, 시트는 반영 결과(S4-3)를 보여 준 뒤 사용자가 닫는다
-          confirm={() => {
+          // "정산 완료": 내 몫만 가계에 반영(분할 확정)하고 캘린더·리포트 집계에 바로 보이게 한다
+          complete={() => {
             confirmSplit(splitting.id)
-          }}
-          openHistory={() => {
+            if (splitting.id === meetingId) setSettled(true)
             setSplitting(undefined)
-            setSheetDay(undefined)
-            setView("settlementList")
           }}
           payment={splitting}
           state={state}
-          toSettlement={
-            splitFromHome
-              ? () => {
-                  setSplitting(undefined)
-                  setSplitFromHome(false)
-                  setInboxFromHome(true)
-                  setView("settlement")
-                }
-              : undefined
-          }
         />
       )}
     </div>
