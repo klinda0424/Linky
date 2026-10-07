@@ -4706,7 +4706,7 @@ p {
 
 /* 정산해야 하는 그룹 결제 카드: 라임 테두리 */
 .pay-tl-item .pay-card.pending {
-  border: 2px solid var(--primary);
+  border: 1.5px solid var(--primary);
 }
 
 .pay-chip {
@@ -6905,6 +6905,7 @@ p {
   line-height: 28px;
 }
 
+
 /* ======================================================================
    글자 위계 통일: 모든 하위 화면을 홈과 같은 단계로 맞춘다 (화면 크기 = 값 × 0.85)
    - 화면·섹션 제목 = title(18 → 15.3)   - 핵심 금액 = 22px(→ 18.7, 홈 오늘 지출과 같게)
@@ -7293,6 +7294,8 @@ p {
   font-weight: var(--fw-title);
 }
 
+
+
 /* 내 지출 패턴: 핵심 숫자 + 평일/주말 막대 + 요일 막대 */
 .rp-hero {
   display: flex;
@@ -7427,67 +7430,5 @@ p {
 .rp-wd.top small {
   color: var(--text);
   font-weight: var(--fw-title);
-}
-
-/* 오늘 내 하루: 링키 카드와 같은 연라임 배경 + 라임 테두리 */
-.hm-story {
-  border: 2px solid var(--primary);
-  background: var(--lime-card);
-}
-
-/* 배경이 같은 연라임이라 Linky 라벨은 흰색으로 띄운다 */
-.hm-story .hm-linky {
-  background: var(--background);
-}
-
-/* ======================================================================
-   오늘 내 하루: 섹션 제목은 카드 밖, 카드는 회색 면, 시간대별 행
-   ====================================================================== */
-.hm-story {
-  margin-top: 0;
-  padding: 20px;
-  border: 0;
-  border-radius: 20px;
-  background: #f6f7f8;
-}
-
-/* 우측 상단에 스파클 + 연두색 글자 */
-.hm-story-foot {
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
-  color: var(--primary-strong);
-  font-size: var(--fs-caption);
-  line-height: var(--lh-caption);
-  font-weight: var(--fw-caption);
-}
-
-/* 그룹 지출 알림: 링키 카드와 같은 연라임, 보조 문구는 회색 */
-.hm-notice.alert {
-  border: 0;
-  background: var(--lime-card);
-}
-
-.hm-notice.alert .hm-notice-icon {
-  color: var(--text-body);
-}
-
-.hm-notice.alert strong {
-  color: var(--text);
-}
-
-.hm-notice.alert small {
-  color: var(--text-body);
-}
-
-/* 오늘 내 하루: 본문은 이전처럼 한 문단으로 */
-.hm-story .hm-story-text {
-  margin-top: 0;
-  color: var(--text-body);
-  font-size: var(--fs-body);
-  line-height: 24px;
-  font-weight: var(--fw-body);
 }
 

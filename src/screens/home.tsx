@@ -444,10 +444,6 @@ export function HomePage({
           </Action>
         )}
 
-        {notices.map((notice) => (
-          <NoticeCard key={notice.key} notice={notice} />
-        ))}
-
         <section className="hm-weekcard">
           <div className="hm-head">
             <div className="hm-week-nav">
@@ -511,14 +507,18 @@ export function HomePage({
           </div>
         </section>
 
-        <div className="hm-title-row">
-          <h2>{isToday ? "오늘 내 하루" : `${label(day)}의 하루`}</h2>
-        </div>
-        <section className="hm-story">
-          <div className="hm-story-foot">
-            <Sparkles size={14} strokeWidth={1.8} /> Linky가 정리했어요
+        {notices.map((notice) => (
+          <NoticeCard key={notice.key} notice={notice} />
+        ))}
+
+        <section className="main-card hm-story">
+          <div className="hm-story-head">
+            <strong>{isToday ? "오늘 내 하루" : `${label(day)}의 하루`}</strong>
+            <span className="hm-linky">
+              <Sparkles size={14} strokeWidth={1.6} /> Linky
+            </span>
           </div>
-          <p className="hm-story-text">{story || "기록 없음"}</p>
+          <p>{story || "기록 없음"}</p>
         </section>
 
         <div className="hm-title-row">
