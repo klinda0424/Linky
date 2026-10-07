@@ -1,7 +1,7 @@
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, TrendingDown } from "lucide-react"
 import { useState } from "react"
 import { Action, cx } from "@/components/common"
-import { TODAY, label, man, won, ymd, type LedgerState, type YMD } from "@/lib/ledger"
+import { TODAY, label, man, weekday, won, ymd, type LedgerState, type YMD } from "@/lib/ledger"
 import {
   addDays,
   monthlyReport,
@@ -122,11 +122,13 @@ export function ReportTab({ state, openSettlement }: { state: LedgerState; openS
       new Date(weekly.from.y, weekly.from.m - 1, weekly.from.d).getTime()) /
       (7 * 24 * 60 * 60 * 1000),
   )
+  const weekName = weeksAgo === 0 ? "이번 주" : weeksAgo === 1 ? "지난주" : `${weeksAgo}주 전`
   const isThisMonth = monthAnchor.y === TODAY.y && monthAnchor.m === TODAY.m
   const changed = weeklyChange(state, weekAnchor)
   const monthly = monthlyReport(state, monthAnchor)
   const pattern = patternReport(state, monthAnchor)
   const preview = nextWeekPreview(state)
+  const previewTo = preview ? addDays(preview.from, 6) : undefined
   const topDay = weekly.daily.reduce((best, day) => (day.value > best.value ? day : best), weekly.daily[0])
 
   return (
@@ -143,44 +145,63 @@ export function ReportTab({ state, openSettlement }: { state: LedgerState; openS
 
           {view === "weekly" ? (
             <>
-              <section className="main-card rpt-change-card rpt-insight-card">
-                <strong>지난주와 달라진 점</strong>
-                {changed ? (
-                  <>
-                    <span>{changed.category}</span>
-                    <b>-{won(changed.diff)}</b>
-                    <p>지난주보다 줄었어요</p>
-                  </>
-                ) : (
-                  <p className="report-line">기록 없음</p>
-                )}
+              {/* 지난주와 달라진 점: 홈 알림처럼 한 줄 */}
+              <section className="rp-note">
+                <span className="rp-note-icon">
+                  <TrendingDown size={20} strokeWidth={1.7} />
+                </span>
+                <div>
+                  <strong>지난주와 달라진 점</strong>
+                  <small>
+                    {changed ? `${changed.category} 지출이 ${won(changed.diff)} 줄었어요` : "기록 없음"}
+                  </small>
+                </div>
               </section>
 
-              <section className="main-card report-preview">
-                <div className="block-heading">
+              {/* 다음 주 예고: 날짜 블록 + 일정 이름·시각 + 내 기록에서 찾은 사실 */}
+              <section className="rp-card">
+                <div className="rp-card-head">
                   <strong>다음 주 예고</strong>
+                  {preview && previewTo && (
+                    <span>
+                      {label(preview.from)} ~ {label(previewTo)}
+                    </span>
+                  )}
                 </div>
-                {preview ? (
-                  <div className="rpt-preview-events">
+                {preview && preview.events.length > 0 ? (
+                  <div className="rp-events">
                     {preview.events.map((event) => (
-                      <div key={`${event.date.y}-${event.date.m}-${event.date.d}-${event.start}`}>
-                        <p>{`${label(event.date)} ${event.start} · ${event.title}`}</p>
-                        {event.title.includes("지은") ? (
-                          <small>
-                            전에 지은이랑 약속에선 평균 {won(reportDemoFacts.jieunAppointmentAverage)} 정도의 지출이 있었어요.
-                          </small>
-                        ) : event.repeatedFact ? (
-                          <small>{event.repeatedFact}</small>
-                        ) : null}
+                      // 2열 격자: [날짜 | 일정] / [ | 링키 말풍선] — 오른쪽 내용은 한 선에서 시작해 카드 끝까지
+                      <div className="rp-event" key={`${event.date.y}-${event.date.m}-${event.date.d}-${event.start}`}>
+                        <div className="rp-date">
+                          <b>{event.date.d}</b>
+                          <small>{weekday(event.date)}</small>
+                        </div>
+                        <div className="rp-event-text">
+                          <strong>{event.title}</strong>
+                          <small>{event.start}</small>
+                        </div>
+                        {(event.title.includes("지은") || event.repeatedFact) && (
+                          <p className="rp-say">
+                              {event.title.includes("지은") ? (
+                                <>
+                                  지난 지은이랑 약속에선 평균 <b>{won(reportDemoFacts.jieunAppointmentAverage)}</b>을
+                                  썼어요
+                                </>
+                              ) : (
+                                event.repeatedFact
+                              )}
+                          </p>
+                        )}
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="report-line">기록 없음</p>
+                  <p className="report-line">다음 주 일정 기록 없음</p>
                 )}
               </section>
 
-              <section className="main-card rpt-report-card">
+              <section className="main-card rpt-report-card rp-card">
                 <div className="rpt-card-heading">
                   <strong>주간 리포트</strong>
                   <PeriodNav
@@ -194,7 +215,7 @@ export function ReportTab({ state, openSettlement }: { state: LedgerState; openS
                 ) : (
                   <>
                     <div className="rpt-total">
-                      <span>이번 주 지출</span>
+                      <span>{weekName} 지출</span>
                       <b>{won(weekly.total)}</b>
                     </div>
                     <Columns
@@ -219,29 +240,51 @@ export function ReportTab({ state, openSettlement }: { state: LedgerState; openS
             </>
           ) : (
             <>
-              <section className="main-card rpt-pattern-card rpt-insight-card">
-                <div className="block-heading">
+              {/* 내 지출 패턴: 홈과 같은 흰 카드 — 핵심 숫자 + 평일/주말 막대·2열 숫자 + 요일 막대 */}
+              <section className="rp-card">
+                <div className="rp-card-head">
                   <strong>내 지출 패턴</strong>
                   <span>{pattern ? `${pattern.month}월` : `${monthly.month}월`}</span>
                 </div>
                 {pattern ? (
                   <>
-                    <div className="rpt-pattern-main">
+                    <div className="rp-hero">
                       <span>주말 지출 비중</span>
                       <b>{pattern.weekendPercent}%</b>
-                      <p>주말에 지출의 {pattern.weekendPercent}%를 썼어요.</p>
                     </div>
-                    <div className="rpt-average-grid">
+                    <div className="rp-split" aria-label={`평일 ${100 - pattern.weekendPercent}%, 주말 ${pattern.weekendPercent}%`}>
+                      <i style={{ flexGrow: 100 - pattern.weekendPercent }} />
+                      <i className="weekend" style={{ flexGrow: pattern.weekendPercent }} />
+                    </div>
+                    <div className="rp-split-stats">
                       <div>
-                        <span>평일 하루 평균</span>
-                        <b>{man(pattern.weekdayAverage)}원</b>
-                        <small>평일 {100 - pattern.weekendPercent}%</small>
+                        <span>
+                          <i /> 평일
+                        </span>
+                        <b>{100 - pattern.weekendPercent}%</b>
+                        <small>하루 평균 {man(pattern.weekdayAverage)}원</small>
                       </div>
                       <div>
-                        <span>주말 하루 평균</span>
-                        <b>{man(pattern.weekendAverage)}원</b>
-                        <small>주말 {pattern.weekendPercent}%</small>
+                        <span>
+                          <i className="weekend" /> 주말
+                        </span>
+                        <b>{pattern.weekendPercent}%</b>
+                        <small>하루 평균 {man(pattern.weekendAverage)}원</small>
                       </div>
+                    </div>
+                    <div className="rp-weekdays">
+                      {(() => {
+                        const max = Math.max(...pattern.byWeekday.map((day) => day.value), 1)
+                        return pattern.byWeekday.map((day) => (
+                          <div className={cx("rp-wd", day.weekday === pattern.topWeekday && "top")} key={day.weekday}>
+                            <em>{day.weekday === pattern.topWeekday ? man(day.value) : ""}</em>
+                            <span>
+                              <i style={{ height: `${Math.max(14, (day.value / max) * 100)}%` }} />
+                            </span>
+                            <small>{day.weekday}</small>
+                          </div>
+                        ))
+                      })()}
                     </div>
                     <MetricRows
                       rows={[
@@ -255,7 +298,7 @@ export function ReportTab({ state, openSettlement }: { state: LedgerState; openS
                 )}
               </section>
 
-              <section className="main-card rpt-report-card rpt-month-card">
+              <section className="main-card rpt-report-card rpt-month-card rp-card">
                 <div className="rpt-card-heading">
                   <strong>월간 리포트</strong>
                   <PeriodNav
