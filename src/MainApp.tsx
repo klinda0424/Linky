@@ -70,6 +70,10 @@ export function MainApp({
   // 검색 결과 위에 여는 결제 상세. 검색 화면을 유지해 검색어·결과가 사라지지 않게 한다.
   const [searchPayment, setSearchPayment] = useState<Payment>()
   const [mapDay, setMapDay] = useState<YMD>()
+  const [mapSheetOpen, setMapSheetOpen] = useState(false)
+  const [mapSheetClosing, setMapSheetClosing] = useState(false)
+  const [albumSheetOpen, setAlbumSheetOpen] = useState(false)
+  const [albumSheetClosing, setAlbumSheetClosing] = useState(false)
   // 지도·앨범은 탭이 아니라 홈·캘린더에서 여는 화면이라, 뒤로 가기와 하단 탭 강조에 진입한 탭을 쓴다
   const [backTab, setBackTab] = useState<MainTab>("home")
   const [mapPeriod, setMapPeriod] = useState<"day" | "month">("day")
@@ -217,20 +221,38 @@ export function MainApp({
     setRecordTarget(paymentId)
   }
 
+  const closeMapSheet = (afterClose?: () => void) => {
+    if (mapSheetClosing) return
+    setMapSheetClosing(true)
+    window.setTimeout(() => {
+      setMapSheetOpen(false)
+      setMapSheetClosing(false)
+      afterClose?.()
+    }, 220)
+  }
+  const closeAlbumSheet = () => {
+    if (albumSheetClosing) return
+    setAlbumSheetClosing(true)
+    window.setTimeout(() => {
+      setAlbumSheetOpen(false)
+      setAlbumSheetClosing(false)
+    }, 220)
+  }
+
   const tabScreen = () => {
     if (tab === "home")
       return (
         <HomePage
           day={homeDay}
           openAlbum={() => {
-            setBackTab("home")
-            setTab("album")
+            setAlbumSheetClosing(false)
+            setAlbumSheetOpen(true)
           }}
           openMap={(day) => {
-            setBackTab("home")
             setMapDay(day)
             setMapPeriod("day")
-            setTab("map")
+            setMapSheetClosing(false)
+            setMapSheetOpen(true)
           }}
           openPhoto={(item) => {
             setPhoto(item)
@@ -301,16 +323,14 @@ export function MainApp({
               relinkPhoto={relinkPhoto}
               settlementPaymentId={meetingId}
               openAlbum={() => {
-                setBackTab("calendar")
-                setTab("album")
+                setAlbumSheetClosing(false)
+                setAlbumSheetOpen(true)
               }}
               showMap={(day) => {
-                setBackTab("calendar")
-                setSheetDay(undefined)
                 setMapDay(day)
                 setMapPeriod("day")
-                setReturnToMonth(undefined)
-                setTab("map")
+                setMapSheetClosing(false)
+                setMapSheetOpen(true)
               }}
               state={state}
               unlink={unlink}
@@ -385,13 +405,10 @@ export function MainApp({
                   relink={relink}
                   relinkPhoto={relinkPhoto}
                   showMap={(day) => {
-                    setBackTab("calendar")
-                    setSearchPayment(undefined)
                     setMapDay(day)
                     setMapPeriod("day")
-                    setReturnToMonth(undefined)
-                    setTab("map")
-                    setView("tabs")
+                    setMapSheetClosing(false)
+                    setMapSheetOpen(true)
                   }}
                   state={state}
                   unlink={unlink}
@@ -408,7 +425,10 @@ export function MainApp({
         return photo ? (
           <PhotoDetail
             back={toTabs}
-            openPayment={openPayment}
+            openPayment={(payment) => {
+              setAlbumSheetOpen(false)
+              openPayment(payment)
+            }}
             photo={photo}
             state={state}
             unlink={(id) =>
@@ -424,7 +444,10 @@ export function MainApp({
           <EventReport
             back={toTabs}
             event={event}
-            openPayment={openPayment}
+            openPayment={(payment) => {
+              setAlbumSheetOpen(false)
+              openPayment(payment)
+            }}
             state={state}
           />
         ) : null
@@ -618,6 +641,60 @@ export function MainApp({
         </>
       ) : (
         fullScreen()
+      )}
+      {mapSheetOpen && (
+        <div
+          className={`media-sheet-dim${mapSheetClosing ? " closing" : ""}`}
+          onClick={() => closeMapSheet()}
+        >
+          <section
+            aria-label="동선 지도"
+            aria-modal="true"
+            className="media-sheet"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+          >
+            <div className="sheet-grip" />
+            <MapTab
+              back={() => closeMapSheet()}
+              initialDay={mapDay}
+              initialPeriod={mapPeriod}
+              key={mapDay ? `sheet-${mapPeriod}-${mapDay.y}-${mapDay.m}-${mapDay.d}` : "sheet-all"}
+              openPayment={(payment) => {
+                closeMapSheet(() => openPayment(payment))
+              }}
+              state={state}
+            />
+          </section>
+        </div>
+      )}
+      {albumSheetOpen && view !== "photo" && view !== "eventReport" && (
+        <div
+          className={`media-sheet-dim${albumSheetClosing ? " closing" : ""}`}
+          onClick={closeAlbumSheet}
+        >
+          <section
+            aria-label="앨범"
+            aria-modal="true"
+            className="media-sheet"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+          >
+            <div className="sheet-grip" />
+            <AlbumTab
+              back={closeAlbumSheet}
+              openEvent={(item) => {
+                setEvent(item)
+                setView("eventReport")
+              }}
+              openPhoto={(item) => {
+                setPhoto(item)
+                setView("photo")
+              }}
+              state={state}
+            />
+          </section>
+        </div>
       )}
       {recordPayment && (
         <AlbumPicker
