@@ -7144,9 +7144,14 @@ p {
 .rp-event {
   padding: 12px 0;
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
+  flex-direction: column;
   border-top: 1px solid var(--border);
+}
+
+.rp-event-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
 .rp-event:first-child {
@@ -7200,7 +7205,7 @@ p {
 
 /* 링키 말풍선: 링키가 찾았어요 화면과 같은 로고·말풍선 모양 */
 .rp-say {
-  margin-top: 8px;
+  margin-top: 10px;
   display: flex;
   align-items: flex-start;
   gap: 6px;

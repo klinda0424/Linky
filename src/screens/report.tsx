@@ -172,32 +172,34 @@ export function ReportTab({ state, openSettlement }: { state: LedgerState; openS
                   <div className="rp-events">
                     {preview.events.map((event) => (
                       <div className="rp-event" key={`${event.date.y}-${event.date.m}-${event.date.d}-${event.start}`}>
-                        <div className="rp-date">
-                          <b>{event.date.d}</b>
-                          <small>{weekday(event.date)}</small>
+                        <div className="rp-event-row">
+                          <div className="rp-date">
+                            <b>{event.date.d}</b>
+                            <small>{weekday(event.date)}</small>
+                          </div>
+                          <div className="rp-event-text">
+                            <strong>{event.title}</strong>
+                            <small>{event.start}</small>
+                          </div>
                         </div>
-                        <div className="rp-event-text">
-                          <strong>{event.title}</strong>
-                          <small>{event.start}</small>
-                          {(event.title.includes("지은") || event.repeatedFact) && (
-                            // 링키가 내 기록에서 찾은 사실을 말풍선으로 알려 준다
-                            <div className="rp-say">
-                              <span className="rp-say-avatar" aria-label="Linky">
-                                <Link2 size={13} strokeWidth={2.2} />
-                              </span>
-                              <p>
-                                {event.title.includes("지은") ? (
-                                  <>
-                                    지난 지은이랑 약속에선 평균 <b>{won(reportDemoFacts.jieunAppointmentAverage)}</b>을
-                                    썼어요
-                                  </>
-                                ) : (
-                                  event.repeatedFact
-                                )}
-                              </p>
-                            </div>
-                          )}
-                        </div>
+                        {(event.title.includes("지은") || event.repeatedFact) && (
+                          // 링키가 내 기록에서 찾은 사실을 말풍선으로 알려 준다 (날짜 블록 아래에서 시작)
+                          <div className="rp-say">
+                            <span className="rp-say-avatar" aria-label="Linky">
+                              <Link2 size={13} strokeWidth={2.2} />
+                            </span>
+                            <p>
+                              {event.title.includes("지은") ? (
+                                <>
+                                  지난 지은이랑 약속에선 평균 <b>{won(reportDemoFacts.jieunAppointmentAverage)}</b>을
+                                  썼어요
+                                </>
+                              ) : (
+                                event.repeatedFact
+                              )}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
