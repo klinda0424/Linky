@@ -15,11 +15,6 @@ export type MainView =
   | "transfer"
   | "paymentDetail"
   | "settlementList"
-  | "settlement"
-  | "settlementTable"
-  | "settlementEdit"
-  | "settlementConfirm"
-  | "settlementResult"
 
 // 연동 권한: 카드·계좌는 필수, 나머지는 개별 토글
 export type PermissionKey = "payment" | "calendar" | "photos" | "location"
