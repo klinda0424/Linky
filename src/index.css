@@ -7573,3 +7573,10 @@ p {
 .map-legend i.pay.sky {
   background: var(--map-sky);
 }
+
+/* 결제 상세의 연결된 기록: 제목 없이 앨범 추가 버튼만 우측에 */
+.pd-title-row.pd-records-bar {
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+

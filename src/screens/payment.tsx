@@ -138,14 +138,6 @@ export function PaymentDetail({
                 </dd>
               </div>
             )}
-            <div>
-              <dt>근거</dt>
-              <dd>
-                {evidence.length > 0
-                  ? `${evidence.length}개${confirmed ? " · 확인했어요" : ""}`
-                  : "기록 없음"}
-              </dd>
-            </div>
           </dl>
         </section>
 
@@ -168,9 +160,8 @@ export function PaymentDetail({
           <p className="pd-empty">기록 없음</p>
         )}
 
-        {/* 이 결제의 근거: 사진 · 일정 · 위치 */}
-        <div className="pd-title-row">
-          <h2 className="pd-title">이 결제의 근거</h2>
+        {/* 연결된 기록 박스: 사진 · 일정 · 위치 (제목 없이 앨범 추가 버튼만 우측에) */}
+        <div className="pd-title-row pd-records-bar">
           <Action className="pd-add" onClick={() => openRecord(payment.id)}>
             <ImagePlus size={14} strokeWidth={1.8} /> 앨범 <Plus size={13} strokeWidth={2} />
           </Action>
