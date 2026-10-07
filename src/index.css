@@ -6834,12 +6834,13 @@ p {
   font-weight: var(--fw-body);
 }
 
+/* 지표 값: 본문 크기 + 약간 굵게 (라벨과 같은 크기, 굵기로만 구분) */
 .rpt-metrics dd {
   margin: 0;
   text-align: right;
-  font-size: var(--fs-item-title);
-  line-height: var(--lh-item-title);
-  font-weight: var(--fw-item-title);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: var(--fw-title);
 }
 
 .rpt-metrics .decreased dd {
