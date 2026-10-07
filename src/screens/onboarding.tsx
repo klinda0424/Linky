@@ -511,7 +511,7 @@ export function ImportExpenses({
   const requiredAgreed = importTerms.every((term) => !term.required || agreed[term.key])
   useEffect(() => {
     if (phase !== "loading") return
-    const timer = window.setTimeout(() => setPhase("done"), 1400)
+    const timer = window.setTimeout(() => setPhase("done"), 2400)
     return () => window.clearTimeout(timer)
   }, [phase])
 
@@ -529,6 +529,13 @@ export function ImportExpenses({
           <p className="complete-title">
             {phase === "done" ? "결제내역을 불러왔어요" : "결제내역을 불러오는 중이에요"}
           </p>
+          {phase === "loading" && (
+            <span className="loading-dots" aria-hidden>
+              <i />
+              <i />
+              <i />
+            </span>
+          )}
         </div>
         <Footer button="다음" disabled={phase !== "done"} onNext={next} />
       </Screen>

@@ -3560,6 +3560,80 @@ p {
   color: var(--sub);
 }
 
+/* 불러오는 중: 아래 점 세 개가 차례로 깜빡이며 진행 중임을 알려 준다 */
+.loading-dots {
+  margin-top: 14px;
+  display: flex;
+  gap: 6px;
+}
+
+.loading-dots i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--primary);
+  animation: loading-dot 1.2s ease-in-out infinite;
+}
+
+.loading-dots i:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dots i:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes loading-dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 불러왔어요: 가운데 체크 원이 통통 튄다 */
+.import-status .complete-check:not(.loading) {
+  animation: check-bounce 0.9s cubic-bezier(0.3, 0.7, 0.4, 1) both;
+}
+
+@keyframes check-bounce {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  35% {
+    transform: scale(1.12) translateY(-10px);
+    opacity: 1;
+  }
+  55% {
+    transform: scale(0.96) translateY(0);
+  }
+  72% {
+    transform: scale(1.03) translateY(-4px);
+  }
+  86% {
+    transform: scale(1) translateY(0);
+  }
+  93% {
+    transform: translateY(-1px);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-dots i,
+  .import-status .complete-check:not(.loading) {
+    animation: none;
+  }
+}
+
 /* ---------- 홈 (이번 주 · 오늘 지출 · 하루 리포트) ---------- */
 .main-scroll {
   height: calc(100% - 44px);
