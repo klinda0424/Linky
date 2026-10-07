@@ -7064,3 +7064,255 @@ p {
   font-size: var(--fs-body);
   text-align: center;
 }
+
+/* ======================================================================
+   리포트: 홈과 같은 패턴 (흰 카드 + 테두리 20 / 알림형 한 줄 / 제목 title · 핵심 숫자 22/700)
+   ====================================================================== */
+.report-zoom .rp-card {
+  margin-bottom: 12px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--background);
+  box-shadow: none;
+}
+
+.rp-card-head {
+  margin-bottom: 14px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rp-card-head strong {
+  font-size: var(--fs-title);
+  line-height: var(--lh-title);
+  font-weight: var(--fw-title);
+}
+
+.rp-card-head span {
+  color: var(--text-mute);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+}
+
+/* 지난주와 달라진 점: 홈 알림(hm-notice)과 같은 한 줄 */
+.rp-note {
+  margin-bottom: 12px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-radius: 20px;
+  background: var(--surface);
+}
+
+.rp-note-icon {
+  width: 30px;
+  flex: none;
+  display: flex;
+  justify-content: center;
+  color: var(--primary-text);
+}
+
+.rp-note div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rp-note strong {
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+  font-weight: var(--fw-item-title);
+}
+
+.rp-note small {
+  color: var(--text-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+}
+
+/* 다음 주 예고: 날짜 블록 + 일정 */
+.rp-events {
+  display: flex;
+  flex-direction: column;
+}
+
+.rp-event {
+  padding: 12px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.rp-event:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.rp-date {
+  width: 44px;
+  height: 48px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--primary-soft);
+}
+
+.rp-date b {
+  color: var(--primary-text);
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+  font-weight: var(--fw-title);
+}
+
+.rp-date small {
+  color: var(--primary-text);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+}
+
+.rp-event-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rp-event-text strong {
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+  font-weight: var(--fw-item-title);
+}
+
+.rp-event-text small {
+  color: var(--text-mute);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+}
+
+.rp-event-text p {
+  margin-top: 6px;
+  color: var(--text-body);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+  word-break: keep-all;
+}
+
+.rp-event-text p b {
+  color: var(--text);
+  font-weight: var(--fw-title);
+}
+
+/* 내 지출 패턴: 핵심 숫자 + 평일/주말 막대 + 요일 막대 */
+.rp-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rp-hero span {
+  color: var(--text-mute);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+}
+
+.rp-hero b {
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: var(--fw-headline);
+}
+
+.rp-split {
+  height: 10px;
+  margin-top: 12px;
+  display: flex;
+  gap: 3px;
+}
+
+.rp-split i {
+  border-radius: 5px;
+  background: var(--primary-border);
+}
+
+.rp-split i.weekend {
+  background: var(--primary);
+}
+
+.rp-split-legend {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  color: var(--text-body);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+}
+
+.rp-split-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rp-split-legend i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary-border);
+}
+
+.rp-split-legend i.weekend {
+  background: var(--primary);
+}
+
+.rp-weekdays {
+  height: 64px;
+  margin-top: 16px;
+  padding-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.rp-wd {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.rp-wd span {
+  width: 14px;
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+}
+
+.rp-wd span i {
+  width: 100%;
+  border-radius: 4px;
+  background: var(--primary-border);
+}
+
+.rp-wd.top span i {
+  background: var(--primary);
+}
+
+.rp-wd small {
+  color: var(--text-mute);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+}
+
+.rp-wd.top small {
+  color: var(--text);
+  font-weight: var(--fw-title);
+}
