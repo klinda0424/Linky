@@ -229,8 +229,8 @@ export function ReportTab({ state, openSettlement }: { state: LedgerState; openS
                     <MetricRows
                       rows={[
                         ["결제 건수", `${weekly.count}건`],
-                        ["가장 많이 쓴 날", `${topDay.weekday}요일 · ${man(topDay.value)}원`],
-                        ["가장 많이 쓴 곳", weekly.places[0] ? `${weekly.places[0][0]} · ${man(weekly.places[0][1])}원` : undefined],
+                        ["가장 많이 쓴 날", `${topDay.weekday}요일 · ${won(topDay.value)}`],
+                        ["가장 많이 쓴 곳", weekly.places[0] ? `${weekly.places[0][0]} · ${won(weekly.places[0][1])}` : undefined],
                       ]}
                     />
                   </>
