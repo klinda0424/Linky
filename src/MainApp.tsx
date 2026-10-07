@@ -323,8 +323,8 @@ export function MainApp({
               relinkPhoto={relinkPhoto}
               settlementPaymentId={meetingId}
               openAlbum={() => {
-                setBackTab("calendar")
-                setTab("album")
+                setAlbumSheetClosing(false)
+                setAlbumSheetOpen(true)
               }}
               showMap={(day) => {
                 setMapDay(day)
