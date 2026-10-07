@@ -6905,7 +6905,6 @@ p {
   line-height: 28px;
 }
 
-
 /* ======================================================================
    글자 위계 통일: 모든 하위 화면을 홈과 같은 단계로 맞춘다 (화면 크기 = 값 × 0.85)
    - 화면·섹션 제목 = title(18 → 15.3)   - 핵심 금액 = 22px(→ 18.7, 홈 오늘 지출과 같게)
@@ -7294,8 +7293,6 @@ p {
   font-weight: var(--fw-title);
 }
 
-
-
 /* 내 지출 패턴: 핵심 숫자 + 평일/주말 막대 + 요일 막대 */
 .rp-hero {
   display: flex;
@@ -7454,41 +7451,6 @@ p {
   background: #f6f7f8;
 }
 
-.hm-story-rows {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.hm-story-row {
-  display: flex;
-  align-items: baseline;
-}
-
-.hm-story-label {
-  width: 40px;
-  flex: none;
-  color: var(--text-mute);
-  font-size: var(--fs-label);
-  line-height: var(--lh-label);
-  font-weight: var(--fw-label);
-}
-
-.hm-story-text {
-  min-width: 0;
-  flex: 1;
-  color: #1a1a1a;
-  font-size: 14px;
-  line-height: 22px;
-  font-weight: 500;
-  word-break: keep-all;
-}
-
-.hm-story-pay {
-  display: inline;
-  font-weight: 600;
-}
-
 .hm-story-foot {
   margin-top: 16px;
   display: flex;
@@ -7516,5 +7478,14 @@ p {
 
 .hm-notice.alert small {
   color: var(--text-body);
+}
+
+/* 오늘 내 하루: 본문은 이전처럼 한 문단으로 */
+.hm-story .hm-story-text {
+  margin-top: 0;
+  color: var(--text-body);
+  font-size: var(--fs-body);
+  line-height: 24px;
+  font-weight: var(--fw-body);
 }
 
