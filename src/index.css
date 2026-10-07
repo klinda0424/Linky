@@ -7432,14 +7432,9 @@ p {
   font-weight: var(--fw-title);
 }
 
-/* 오늘 내 하루: 링키 카드와 같은 연라임 배경 + 라임 테두리 */
+/* 오늘 내 하루: 흰 배경 + 라임 테두리 */
 .hm-story {
   border: 2px solid var(--primary);
-  background: var(--lime-card);
-}
-
-/* 배경이 같은 연라임이라 Linky 라벨은 흰색으로 띄운다 */
-.hm-story .hm-linky {
   background: var(--background);
 }
 
