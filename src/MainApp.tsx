@@ -66,6 +66,8 @@ export function MainApp({
   const [ledger, setLedger] = useState<LedgerState>(initialLedger)
   // 날짜 시트: 캘린더 탭 위에 열린다. 지도 핀·검색에서 넘어오면 해당 결제를 강조한다.
   const [sheetDay, setSheetDay] = useState<YMD>()
+  // 리포트에서 날짜로 이동할 때마다 늘려서 캘린더가 그 날 상세까지 스크롤하게 한다
+  const [calendarScrollKey, setCalendarScrollKey] = useState(0)
   const [focusPayment, setFocusPayment] = useState<string>()
   // 검색 결과 위에 여는 결제 상세. 검색 화면을 유지해 검색어·결과가 사라지지 않게 한다.
   const [searchPayment, setSearchPayment] = useState<Payment>()
@@ -291,6 +293,8 @@ export function MainApp({
     if (tab === "calendar")
       return (
         <CalendarHome
+          onScrolledToDay={() => setCalendarScrollKey(0)}
+          scrollToDayKey={calendarScrollKey}
           openDay={(day) => {
             setFocusPayment(undefined)
             setSheetDay(day)
@@ -377,6 +381,7 @@ export function MainApp({
             // 가장 많이 쓴 날 → 캘린더에서 그 날짜를 연다
             setFocusPayment(undefined)
             setSheetDay(day)
+            setCalendarScrollKey((key) => key + 1)
             setTab("calendar")
           }}
           openSettlement={() => setView("settlementList")}
