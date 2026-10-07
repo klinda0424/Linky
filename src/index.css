@@ -6569,6 +6569,12 @@ p {
   cursor: pointer;
 }
 
+/* 이번 주·이번 달에서는 다음(미래)으로 넘어가지 않는다 */
+.rpt-period-button:disabled {
+  color: var(--disabled);
+  cursor: default;
+}
+
 .rpt-period-button:active {
   background: var(--surface);
 }
