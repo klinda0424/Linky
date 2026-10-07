@@ -4597,6 +4597,20 @@ p {
   flex: 1;
 }
 
+/* 일정이 여러 개면 가로로 잘리지 않게 다음 줄로 내린다 (사진·지도 버튼은 첫 줄 오른쪽에 고정) */
+.cal2-record-row {
+  align-items: flex-start;
+}
+
+.cal2-record-row .cal2-chips {
+  flex-wrap: wrap;
+  overflow: visible;
+}
+
+.cal2-record-row .cal2-chip {
+  max-width: 100%;
+}
+
 .cal2-icon-btn {
   width: 36px;
   height: 36px;
