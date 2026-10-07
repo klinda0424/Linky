@@ -21,6 +21,12 @@ type Step = "suggest" | "confirm" | "result"
 type Member = "나" | "지은" | "민지" | "수진"
 const isMember = (name: string): name is Member => ["나", "지은", "민지", "수진"].includes(name)
 
+// "동기 저녁 모임" + 4명 → "동기 4명 저녁 모임": 첫 단어 뒤에 인원을 끼워 넣는다
+const meetingText = (title: string, count: number) => {
+  const [first, ...rest] = title.split(" ")
+  return rest.length > 0 ? `${first} ${count}명 ${rest.join(" ")}` : `${title} ${count}명`
+}
+
 export function GroupSuggestSheet({
   payment,
   state,
@@ -118,12 +124,9 @@ export function GroupSuggestSheet({
                 {label(payment.date)} · {payment.place ?? payment.zone} · {people.length}명
               </p>
               <div className="group-basis">
-                <span>근거</span>
-                {deposits.length > 0 && <p>입금 {deposits.length}건이 들어왔어요</p>}
+                {deposits.length > 0 && <p>입금 내역 {deposits.length}건 확인</p>}
                 {groupDetail.detail && (
-                  <p>
-                    {groupDetail.source} {groupDetail.count}명 · {groupDetail.detail}
-                  </p>
+                  <p>{meetingText(groupDetail.detail, groupDetail.count)} 한 날</p>
                 )}
               </div>
               <div className="settlement-summary">
