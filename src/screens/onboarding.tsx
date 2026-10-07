@@ -408,17 +408,20 @@ export function PrivacyNotice({
         title={"이렇게 수집하고\n보관해요"}
         sub="동의하지 않은 항목은 근거로 쓰지 않아요"
       />
-      <div className="main-card notice-list">
+      <div className="list-cards permission-cards notice-cards">
         {shown.map((item) => {
           const off = !values[item.key]
           return (
-            <div className={cx("notice-row", off && "off")} key={item.key}>
+            <div className={cx("list-card", off && "off")} key={item.key}>
               <span className="icon-box neutral">{item.icon}</span>
-              <div className="notice-copy">
-                <strong>
-                  {item.title}
-                  {item.required && <Badge>필수</Badge>}
-                </strong>
+              <div className="list-copy">
+                <div className="label-row">
+                  <strong>
+                    {item.title}
+                    {item.parenthetical && <small> ({item.parenthetical})</small>}
+                  </strong>
+                  <Badge>{item.required ? "필수" : "선택"}</Badge>
+                </div>
                 <span>{off ? "동의하지 않음 · 근거에서 빠져요" : item.collects}</span>
                 {item.scope && !off && <span className="privacy-scope">{item.scope}</span>}
               </div>

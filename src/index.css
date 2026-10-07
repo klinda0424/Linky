@@ -3159,61 +3159,26 @@ p {
   display: none;
 }
 
-/* 온보딩 개인정보 고지: 소스별 한 줄 */
-.notice-list {
-  padding: 4px 14px;
-}
-
-.notice-row {
-  padding: 12px 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border-bottom: 1px solid var(--border);
-}
-
-.notice-row:last-child {
-  border-bottom: 0;
-}
-
-.notice-copy {
-  min-width: 0;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.notice-row strong {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: var(--fs-item-title);
-  line-height: var(--lh-item-title);
-  font-weight: var(--fw-item-title);
-}
-
-.notice-copy > span {
-  color: var(--text-mute);
-  font-size: var(--fs-label);
-  line-height: var(--lh-label);
-  font-weight: var(--fw-label);
+/* 온보딩 개인정보 고지: 권한 연동 화면과 같은 카드 목록 */
+.notice-cards .list-copy > span {
+  white-space: normal;
   word-break: keep-all;
 }
 
-.notice-copy > span.privacy-scope {
+.notice-cards .list-copy > span.privacy-scope {
+  margin-top: 2px;
   color: var(--primary-text);
   font-size: var(--fs-caption);
   line-height: var(--lh-caption);
   font-weight: var(--fw-caption);
 }
 
-.notice-row.off .icon-box,
-.notice-row.off strong {
+.notice-cards .list-card.off .icon-box,
+.notice-cards .list-card.off .label-row {
   opacity: 0.45;
 }
 
-.notice-row.off .notice-copy > span {
+.notice-cards .list-card.off .list-copy > span {
   color: var(--warning);
 }
 
