@@ -66,19 +66,20 @@ export const UT_TASKS: readonly UTTask[] = [
     id: "T8",
     label: "완료된 정산 확인",
     situation:
-      "방금 정산한 고깃집이 정산 내역에서 어떻게 보이는지 확인해 보세요. 과제 4를 끝낸 뒤에만 진행해 주세요.",
+      "리포트의 정산함에서 과제 4에서 정산한 고깃집을 찾아, 내 몫이 얼마로 기록됐는지 확인해 주세요. 과제 4를 끝낸 뒤에만 진행해 주세요.",
     success: ["t8_settlement_list"],
   },
   {
     id: "T9",
     label: "다음 주 일정 확인",
-    situation: "다음 주에 약속이 있는지 확인해 주세요.",
+    situation:
+      "리포트의 '다음 주 예고'에서 다음 주(11월 1일~7일)에 잡힌 약속이 무엇인지 찾아 주세요.",
     success: ["t9_report_seen"],
   },
   {
     id: "T10",
     label: "장소 지출 검색",
-    situation: "10~11월에 성수에서 쓴 돈을 찾아보세요.",
+    situation: "위쪽 검색(돋보기)에서 이번 달(10월) 성수에서 쓴 돈을 찾아 주세요.",
     success: ["t10_search_results"],
   },
 ]
