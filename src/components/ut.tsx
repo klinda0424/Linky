@@ -263,6 +263,12 @@ export function UTLayer({ session }: { session: UTSession }) {
           <div className="ut-card">
             <strong>수고하셨어요!</strong>
             <p className="ut-situation">참여해 주셔서 감사합니다.</p>
+            {/* 주소에 p가 없으면 자동 번호라 참가자가 모른다 → 제출 폼에 적을 번호를 크게 보여 준다 */}
+            <div className="ut-pid">
+              <span>내 참가자 번호</span>
+              <b>{session.config.participant}</b>
+              <small>제출 폼의 '참가자 번호' 칸에 이 번호를 적어 주세요</small>
+            </div>
             {session.config.share && (
               <>
                 <p className="ut-intro">
