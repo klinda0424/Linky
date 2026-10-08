@@ -26,7 +26,7 @@ function createLinkyUTForm() {
   form
     .addTextItem()
     .setTitle("참가자 번호")
-    .setHelpText("안내받은 번호를 적어 주세요. 예: P01")
+    .setHelpText("앱 마지막 화면의 '내 참가자 번호'를 적어 주세요. 예: P4821")
     .setRequired(true)
   form.addDateItem().setTitle("테스트한 날짜").setRequired(true)
   form
