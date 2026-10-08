@@ -29,14 +29,17 @@ export default function App() {
     photos: true,
     location: true,
   })
-  // UT: T3 이상 과제가 시작됐는데 아직 온보딩 중이면 메인 앱으로 보낸다
-  // (T2 뒤 남은 온보딩 화면 위에 T3 안내가 뜨거나, 남은 온보딩 시간이 T3에 섞이지 않게)
+  // UT: 과제가 바뀔 때(다음 과제·진행자 점프) 그 과제를 시작할 화면으로 맞춘다
+  // - T1: 온보딩 처음 / T2: 결제내역 불러오기(4단계)
+  // - T3 이상: 아직 온보딩 중이면 메인 앱 (T2 뒤 남은 온보딩 위에 T3 안내가 뜨지 않게)
   useEffect(() => {
-    if (!utConfig.enabled || ut.index < 2) return
+    if (!utConfig.enabled) return
+    if (ut.index === 0) return setStep(1)
+    if (ut.index === 1) return setStep(4)
     // 온보딩 중 포기로 닉네임이 비었으면 '건너뛰기'처럼 목업 주인공 이름으로 채운다
     setProfile((value) => ({ ...value, nickname: value.nickname.trim() || "소연" }))
     setStep((value) => (value < 6 ? 6 : value))
-  }, [utConfig.enabled, ut.index])
+  }, [utConfig.enabled, ut.index, ut.runKey])
   const next = () => setStep((value) => value + 1)
   const back = () => setStep((value) => Math.max(1, value - 1))
   const toggle = (key: PermissionKey) =>
