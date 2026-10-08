@@ -99,12 +99,12 @@ export function GroupSuggestSheet({
               </p>
             )}
             <div className="gs-actions">
-              <Action className="gs-yes" onClick={() => setStep("confirm")}>
-                맞아요, 정산할게요
-              </Action>
               {/* 인원 수정 화면은 없앴다: 같은 인원·입금 내역을 다음 단계에서 확인한다 */}
               <Action className="gs-edit" onClick={() => setStep("confirm")}>
                 인원 수정
+              </Action>
+              <Action className="gs-yes" onClick={() => setStep("confirm")}>
+                맞아요, 정산할게요
               </Action>
             </div>
             <Action className="gs-no" onClick={notGroup}>
