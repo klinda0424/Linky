@@ -164,6 +164,8 @@ export function useUTSession(config: UTConfig) {
 export function UTLayer({ session }: { session: UTSession }) {
   const [chipTaps, setChipTaps] = useState(0)
   const [copied, setCopied] = useState(false)
+  // 끝난 화면: 두 파일 모두 받아야 해서 각각 받았는지 표시한다
+  const [saved, setSaved] = useState({ summary: false, events: false })
   const openFacilitator = () => {
     const next = chipTaps + 1
     setChipTaps(next)
@@ -173,8 +175,17 @@ export function UTLayer({ session }: { session: UTSession }) {
       session.setFacilitator(true)
     }
   }
+  const saveSummary = () => {
+    downloadText(`ut-summary-${session.config.participant}.csv`, summaryCsv())
+    setSaved((value) => ({ ...value, summary: true }))
+  }
+  const saveEvents = () => {
+    downloadText(`ut-events-${session.config.participant}.csv`, eventsCsv())
+    setSaved((value) => ({ ...value, events: true }))
+  }
+  // 파일이 안 받아질 때: 두 기록을 한 번에 복사해 구글폼에 붙여넣게 한다
   const copy = async () => {
-    const text = summaryCsv()
+    const text = `[요약 기록 ut-summary]\n${summaryCsv()}\n\n[상세 기록 ut-events]\n${eventsCsv()}`
     try {
       await navigator.clipboard.writeText(text)
       setCopied(true)
@@ -255,33 +266,22 @@ export function UTLayer({ session }: { session: UTSession }) {
             {session.config.share && (
               <>
                 <p className="ut-intro">
-                  이름·연락처 없이 화면 조작 기록만 담긴 두 파일을 진행자에게
-                  보내 주세요.
+                  이름·연락처 없이 화면 조작 기록만 담긴 파일 2개를 모두 받아 보내 주세요.
                 </p>
                 <button
-                  className="ut-primary"
-                  onClick={() =>
-                    downloadText(
-                      `ut-summary-${session.config.participant}.csv`,
-                      summaryCsv(),
-                    )
-                  }
+                  className={saved.summary ? "ut-secondary ut-saved" : "ut-primary"}
+                  onClick={saveSummary}
                 >
-                  요약 파일 받기
+                  {saved.summary ? "✓ 1. 요약 파일 받았어요" : "1. 요약 파일 받기"}
                 </button>
                 <button
-                  className="ut-secondary"
-                  onClick={() =>
-                    downloadText(
-                      `ut-events-${session.config.participant}.csv`,
-                      eventsCsv(),
-                    )
-                  }
+                  className={saved.events ? "ut-secondary ut-saved" : "ut-primary"}
+                  onClick={saveEvents}
                 >
-                  상세 기록 파일 받기
+                  {saved.events ? "✓ 2. 상세 기록 파일 받았어요" : "2. 상세 기록 파일 받기"}
                 </button>
                 <button className="ut-secondary" onClick={copy}>
-                  {copied ? "복사했어요" : "파일이 안 받아지면 내용 복사하기"}
+                  {copied ? "두 기록을 복사했어요" : "파일이 안 받아지면 두 기록 한 번에 복사하기"}
                 </button>
               </>
             )}
