@@ -5992,6 +5992,85 @@ p {
   border: 1px solid var(--border);
 }
 
+/* 인원 수정: 인원 수만큼 늘고 주는 동그라미 + 총액 분할 막대 */
+.gs-crowd {
+  min-height: 112px;
+  margin-bottom: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.gs-crowd .gs-avatar {
+  width: 48px;
+  height: 48px;
+  animation: gs-pop 0.22s ease;
+}
+
+.gs-avatar.extra {
+  border-style: dashed;
+  background: transparent;
+  color: var(--text-mute);
+}
+
+@keyframes gs-pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.gs-split-bar {
+  height: 16px;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 3px;
+}
+
+.gs-split-bar i {
+  flex: 1;
+  border-radius: 6px;
+  background: var(--primary-border);
+  opacity: 0.45;
+}
+
+.gs-split-bar i.me {
+  background: var(--primary);
+  opacity: 1;
+}
+
+.gs-split-legend {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-body);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+}
+
+.gs-split-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gs-split-legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--primary-border);
+}
+
+.gs-split-legend i.me {
+  background: var(--primary);
+}
+
 /* 인원 수정: - / + 로 인원 수만 조절 */
 .gs-stepper {
   margin-bottom: 18px;
