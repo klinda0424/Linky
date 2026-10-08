@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ArrowDown, Check, Minus, Plus } from "lucide-react"
+import { ArrowDown, Check, Minus, Plus, UserPlus } from "lucide-react"
 import { Action, PersonAvatar, cx } from "@/components/common"
 import {
   type LedgerState,
@@ -126,6 +126,21 @@ export function GroupSuggestSheet({
               <p className="gs-sub">
                 {payment.merchant} {won(payment.amount)} · 함께한 인원 수를 조절해요
               </p>
+              {/* 인원 수만큼 동그라미가 늘고 줄어든다: 일정에 있던 사람은 이름, 더한 사람은 빈 자리로 보여 준다 */}
+              <div className="gs-crowd" aria-hidden="true">
+                {Array.from({ length: headcount }, (_, index) => {
+                  const name = people[index]
+                  return name ? (
+                    <span key={name} className={cx("gs-avatar", name === "나" && "me")}>
+                      {name.slice(0, 1)}
+                    </span>
+                  ) : (
+                    <span key={`extra-${index}`} className="gs-avatar extra">
+                      <UserPlus size={18} strokeWidth={1.6} />
+                    </span>
+                  )
+                })}
+              </div>
               <div className="gs-stepper">
                 <Action
                   className="gs-step-btn"
@@ -146,11 +161,25 @@ export function GroupSuggestSheet({
                   <Plus size={20} strokeWidth={1.8} />
                 </Action>
               </div>
+              {/* 총액을 인원 수만큼 나눈 막대: 라임 칸이 내 몫 */}
+              <div className="gs-split-bar" aria-hidden="true">
+                {Array.from({ length: headcount }, (_, index) => (
+                  <i key={index} className={cx(index === 0 && "me")} />
+                ))}
+              </div>
+              <div className="gs-split-legend">
+                <span>
+                  <i className="me" /> 내 몫 {won(perPerson)}
+                </span>
+                <span>
+                  <i /> 받을 돈 {won(receivable)}
+                </span>
+              </div>
               <div className="gs-result">
                 <span>1인당</span>
                 <strong>{won(perPerson)}</strong>
                 <p>
-                  내 몫 {won(perPerson)} · 받을 돈 {won(receivable)}
+                  총 {won(payment.amount)} ÷ {headcount}명
                 </p>
               </div>
             </div>
