@@ -118,43 +118,45 @@ export function GroupSuggestSheet({
         )}
         {step === "edit" && (
           <>
-            <div className="gs-head">
-              <strong>인원 수정</strong>
-              <i aria-hidden="true" />
-            </div>
-            <p className="gs-sub">
-              {payment.merchant} {won(payment.amount)} · 함께한 인원 수를 조절해요
-            </p>
-            <div className="gs-stepper">
-              <Action
-                className="gs-step-btn"
-                label="인원 줄이기"
-                onClick={() => setHeadcount((value) => Math.max(2, value - 1))}
-              >
-                <Minus size={20} strokeWidth={1.8} />
-              </Action>
-              <div>
-                <strong>{headcount}명</strong>
-                <span>나 포함</span>
+            <div className="gs-body">
+              <div className="gs-head">
+                <strong>인원 수정</strong>
+                <i aria-hidden="true" />
               </div>
-              <Action
-                className="gs-step-btn"
-                label="인원 늘리기"
-                onClick={() => setHeadcount((value) => Math.min(10, value + 1))}
-              >
-                <Plus size={20} strokeWidth={1.8} />
-              </Action>
-            </div>
-            <div className="gs-result">
-              <span>1인당</span>
-              <strong>{won(perPerson)}</strong>
-              <p>
-                내 몫 {won(perPerson)} · 받을 돈 {won(receivable)}
+              <p className="gs-sub">
+                {payment.merchant} {won(payment.amount)} · 함께한 인원 수를 조절해요
               </p>
+              <div className="gs-stepper">
+                <Action
+                  className="gs-step-btn"
+                  label="인원 줄이기"
+                  onClick={() => setHeadcount((value) => Math.max(2, value - 1))}
+                >
+                  <Minus size={20} strokeWidth={1.8} />
+                </Action>
+                <div>
+                  <strong>{headcount}명</strong>
+                  <span>나 포함</span>
+                </div>
+                <Action
+                  className="gs-step-btn"
+                  label="인원 늘리기"
+                  onClick={() => setHeadcount((value) => Math.min(10, value + 1))}
+                >
+                  <Plus size={20} strokeWidth={1.8} />
+                </Action>
+              </div>
+              <div className="gs-result">
+                <span>1인당</span>
+                <strong>{won(perPerson)}</strong>
+                <p>
+                  내 몫 {won(perPerson)} · 받을 돈 {won(receivable)}
+                </p>
+              </div>
             </div>
-            <div className="gs-actions">
+            <div className="gs-foot split">
               <Action
-                className="gs-edit"
+                className="secondary-button"
                 onClick={() => {
                   setHeadcount(people.length)
                   setStep("suggest")
@@ -162,7 +164,7 @@ export function GroupSuggestSheet({
               >
                 취소
               </Action>
-              <Action className="gs-yes" onClick={() => setStep("confirm")}>
+              <Action className="primary-button" onClick={() => setStep("confirm")}>
                 {headcount}명으로 확인
               </Action>
             </div>
