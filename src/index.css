@@ -2773,6 +2773,11 @@ p {
 }
 
 /* 가장 많이 쓴 날도 지도·앨범과 같은 오버레이 시트 shell을 쓴다. */
+/* 이 시트는 상태 바 아래 화면 안에 열려 75%가 지도 시트보다 낮다 → 지도 시트와 같은 높이로 맞춘다 */
+.rpt-day-sheet {
+  max-height: calc(609px / 0.85);
+}
+
 .rpt-day-sheet-head {
   min-height: 58px;
   padding: 8px 20px 12px;
