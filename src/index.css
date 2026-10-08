@@ -7963,3 +7963,22 @@ p {
   line-height: var(--lh-label);
   font-weight: var(--fw-label);
 }
+
+/* UT 전용 오버레이: 앱 본체 레이어와 분리하며 ?ut=1일 때만 마운트한다. */
+.ut-layer { position: absolute; inset: 0; z-index: 300; pointer-events: none; }
+.ut-chip { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; padding: 4px; border-radius: 16px; background: var(--toast); color: white; pointer-events: auto; white-space: nowrap; }
+.ut-chip button { min-height: 24px; padding: 0 8px; border: 0; border-radius: 12px; background: transparent; color: inherit; font-size: 10px; }
+.ut-chip button:first-child { background: var(--primary); color: var(--on-primary); font-weight: 700; }
+.ut-toast { position: absolute; bottom: 110px; left: 50%; transform: translateX(-50%); padding: 9px 14px; border-radius: 18px; background: var(--toast); color: white; font-size: 12px; white-space: nowrap; }
+.ut-backdrop { position: absolute; inset: 0; padding: 20px; display: flex; align-items: center; justify-content: center; background: rgba(17, 17, 17, 0.55); pointer-events: auto; }
+.ut-card { width: 100%; max-height: calc(100% - 40px); overflow-y: auto; padding: 22px 20px 18px; display: flex; flex-direction: column; gap: 12px; border-radius: 20px; background: var(--background); }
+.ut-card > strong { font-size: 18px; font-weight: 700; }
+.ut-step { color: var(--primary-text); font-size: 11px; font-weight: 700; }
+.ut-intro, .ut-situation { color: var(--text); font-size: 14px; line-height: 1.6; }
+.ut-intro { color: var(--sub); font-size: 12px; }
+.ut-primary, .ut-secondary { min-height: 46px; padding: 0 12px; border: 0; border-radius: 14px; font-size: 14px; font-weight: 700; }
+.ut-primary { background: var(--primary); color: var(--on-primary); }
+.ut-secondary { background: var(--surface); color: var(--sub); font-weight: 600; }
+.ut-scale, .ut-jumps { display: flex; flex-wrap: wrap; gap: 8px; }
+.ut-scale button, .ut-jumps button { min-width: 42px; height: 46px; flex: 1; border: 0; border-radius: 12px; background: var(--surface); font-size: 13px; font-weight: 700; }
+.ut-facilitator { z-index: 1; }

@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react"
 import { ChevronRight, Search, X } from "lucide-react"
 import { Action, cx } from "@/components/common"
 import { MainHeader } from "@/components/layout"
+import { utMilestone } from "@/lib/ut"
 import {
   type LedgerState,
   type Payment,
@@ -41,6 +42,7 @@ export function SearchScreen({
     if (!text) return
     setQuery(text)
     setSubmitted(text)
+    if (text.includes("성수")) utMilestone("t10_search_results", text)
   }
   // 최근 달부터 보여 준다
   const results = submitted

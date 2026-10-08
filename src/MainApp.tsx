@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { UserRound } from "lucide-react"
 import { Action } from "@/components/common"
 import { BottomTabs } from "@/components/layout"
@@ -18,6 +18,8 @@ import { CalendarHome, DayPanel } from "@/screens/calendar"
 import { HomePage } from "@/screens/home"
 import { ReportTab } from "@/screens/report"
 import { meeting, summarize } from "@/lib/settlement"
+import { utMilestone, utScreen } from "@/lib/ut"
+import { SCENARIO } from "@/mock/scenario"
 import { MapTab } from "@/screens/map"
 import {
   ConnectionSettings,
@@ -47,6 +49,7 @@ export function MainApp({
   setProfile,
   permissions,
   setPermissions,
+  utTaskId,
 }: {
   profile: ProfileDetails
   setProfile: (value: ProfileDetails) => void
@@ -54,11 +57,16 @@ export function MainApp({
   setPermissions: (
     update: (value: Record<PermissionKey, boolean>) => Record<PermissionKey, boolean>,
   ) => void
+  utTaskId?: string
 }) {
   const [tab, setTab] = useState<MainTab>("home")
   const [view, setView] = useState<MainView>("tabs")
   const [homeDay, setHomeDay] = useState<YMD>(TODAY)
-  const [ledger, setLedger] = useState<LedgerState>(initialLedger)
+  const [ledger, setLedger] = useState<LedgerState>(() =>
+    utTaskId === "T8"
+      ? { ...initialLedger, splitConfirmed: [...initialLedger.splitConfirmed, SCENARIO.meal.id] }
+      : initialLedger,
+  )
   // 날짜 시트: 캘린더 탭 위에 열린다. 지도 핀·검색에서 넘어오면 해당 결제를 강조한다.
   const [sheetDay, setSheetDay] = useState<YMD>()
   // 리포트에서 날짜로 이동할 때마다 늘려서 캘린더가 그 날 상세까지 스크롤하게 한다
@@ -85,7 +93,7 @@ export function MainApp({
   const [detailId, setDetailId] = useState<string>()
   const [photo, setPhoto] = useState<Photo>()
   const [event, setEvent] = useState<CalEvent>()
-  const [settled, setSettled] = useState(false)
+  const [settled, setSettled] = useState(utTaskId === "T8")
   const [notifications, setNotifications] = useState<
     Record<NotificationKey, boolean>
   >({ restore: true, report: true, settlement: true })
@@ -102,6 +110,17 @@ export function MainApp({
     }),
     [ledger, permissions],
   )
+  useEffect(() => {
+    utScreen(view === "tabs" ? `tab:${tab}` : `view:${view}`)
+    if (view === "settlementList") utMilestone("t8_settlement_list")
+  }, [tab, view])
+  useEffect(() => {
+    if (
+      state.restoreConfirmed.includes(SCENARIO.taxi.id) &&
+      state.restoreConfirmed.includes(SCENARIO.photoism.id)
+    )
+      utMilestone("t3_both_confirmed")
+  }, [state.restoreConfirmed])
   // 그룹 결제 확인의 "아니요, 개인 지출"이 가리키는 결제
   const meetingId = meeting?.id
   const toTabs = () => setView("tabs")
@@ -121,6 +140,7 @@ export function MainApp({
     setView("paymentDetail")
   }
   const confirmTransfer = (payment: Payment) => {
+    utMilestone("t5_transfer_yes", payment.id)
     setLedger((value) => ({
       ...value,
       transferMatched: [...value.transferMatched, payment.id],
@@ -129,6 +149,7 @@ export function MainApp({
     openPayment(payment)
   }
   const declineTransfer = (payment: Payment) => {
+    utMilestone("t5_transfer_no", payment.id)
     setLedger((value) => ({
       ...value,
       transferDeclined: [...(value.transferDeclined ?? []), payment.id],
@@ -196,6 +217,7 @@ export function MainApp({
         : { ...value, splitConfirmed: [...value.splitConfirmed, paymentId] },
     )
   const attach = (paymentId: string, text?: string) => {
+    if (paymentId === "o85") utMilestone("t6_attached", paymentId)
     setLedger((value) => {
       const current = value.added[paymentId] ?? []
       return {
@@ -651,17 +673,22 @@ export function MainApp({
           close={() => setSplitting(undefined)}
           // "그룹 지출이 아니에요" → 개인 지출로 두고 시트를 닫는다
           notGroup={() => {
+            utMilestone("t4_declined", splitting.id)
             markPersonal(splitting.id)
             setSplitting(undefined)
           }}
           // "정산 완료": 내 몫만 가계에 반영(분할 확정)하고 캘린더·리포트 집계에 바로 보이게 한다
           complete={() => {
+            utMilestone("t4_settled", splitting.id)
             confirmSplit(splitting.id)
             if (splitting.id === meetingId) setSettled(true)
             setSplitting(undefined)
           }}
           payment={splitting}
           state={state}
+          onHeadcountConfirmed={(headcount) => {
+            if (headcount === 3) utMilestone("t4b_headcount3", "3")
+          }}
         />
       )}
     </div>

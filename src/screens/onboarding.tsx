@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 import {
   CalendarDays,
   Check,
@@ -500,13 +500,16 @@ function CheckMark({ on, size = 22 }: { on: boolean; size?: number }) {
 export function ImportExpenses({
   next,
   back,
+  onImported,
 }: {
   next: () => void
   back: () => void
+  onImported?: (requiredOnly: boolean) => void
 }) {
   const [agreed, setAgreed] = useState<Record<string, boolean>>({})
   const [opened, setOpened] = useState<string>()
   const [phase, setPhase] = useState<"agree" | "loading" | "done">("agree")
+  const importedReported = useRef(false)
   const allAgreed = importTerms.every((term) => agreed[term.key])
   const requiredAgreed = importTerms.every((term) => !term.required || agreed[term.key])
   useEffect(() => {
@@ -514,6 +517,11 @@ export function ImportExpenses({
     const timer = window.setTimeout(() => setPhase("done"), 2400)
     return () => window.clearTimeout(timer)
   }, [phase])
+  useEffect(() => {
+    if (phase !== "done" || importedReported.current) return
+    importedReported.current = true
+    onImported?.(!importTerms.some((term) => !term.required && agreed[term.key]))
+  }, [agreed, onImported, phase])
 
   if (phase !== "agree")
     return (
