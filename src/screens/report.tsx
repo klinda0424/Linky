@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight, TrendingDown, X } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Action, cx } from "@/components/common"
 import {
   TODAY,
@@ -24,6 +24,7 @@ import {
   weeklyReport,
 } from "@/lib/report"
 import { reportDemoFacts } from "@/mock/report"
+import { utMilestone } from "@/lib/ut"
 
 type ReportView = "weekly" | "monthly"
 
@@ -178,6 +179,9 @@ export function ReportTab({
       setTopDaySheetClosing(false)
     }, 220)
   }
+  useEffect(() => {
+    if (view === "weekly" && preview?.events.length) utMilestone("t9_report_seen")
+  }, [preview?.events.length, view])
 
   return (
     <>

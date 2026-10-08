@@ -1,6 +1,8 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { MainApp } from "@/MainApp"
 import { StatusBar } from "@/components/common"
+import { UTLayer, useUTSession } from "@/components/ut"
+import { parseUT, utMilestone } from "@/lib/ut"
 import {
   BasicInfo,
   ImportExpenses,
@@ -12,7 +14,10 @@ import { type PermissionKey, type ProfileDetails } from "@/types"
 
 // 온보딩 5단계 → 메인 앱. 하루 리포트는 서사형 하나로 보여 준다.
 export default function App() {
-  const [step, setStep] = useState(1)
+  const utConfig = useMemo(() => parseUT(window.location.search), [])
+  const ut = useUTSession(utConfig)
+  const skipOnboarding = utConfig.enabled && utConfig.startIndex >= 2
+  const [step, setStep] = useState(skipOnboarding ? 6 : 1)
   const [profile, setProfile] = useState<ProfileDetails>({
     nickname: "",
     birthYear: "1997",
@@ -51,9 +56,26 @@ export default function App() {
       )
     if (step === 3)
       return (
-        <PrivacyNotice back={back} next={next} toggle={toggle} values={permissions} />
+        <PrivacyNotice
+          back={back}
+          next={() => {
+            utMilestone("t1_privacy", permissions.photos ? "photos_on" : "photos_off")
+            next()
+          }}
+          toggle={toggle}
+          values={permissions}
+        />
       )
-    if (step === 4) return <ImportExpenses back={back} next={next} />
+    if (step === 4)
+      return (
+        <ImportExpenses
+          back={back}
+          next={next}
+          onImported={(requiredOnly) =>
+            utMilestone("t2_terms", requiredOnly ? "required_only" : "with_optional")
+          }
+        />
+      )
     if (step === 5) return <Welcome back={back} next={next} />
     return null
   })()
@@ -66,12 +88,15 @@ export default function App() {
           onboarding
         ) : (
           <MainApp
+            key={utConfig.enabled ? ut.runKey : undefined}
             permissions={permissions}
             profile={profile}
             setPermissions={setPermissions}
             setProfile={setProfile}
+            utTaskId={utConfig.enabled ? ut.task.id : undefined}
           />
         )}
+        {utConfig.enabled && <UTLayer session={ut} />}
       </div>
     </div>
   )

@@ -33,6 +33,7 @@ export function GroupSuggestSheet({
   close,
   complete,
   notGroup,
+  onHeadcountConfirmed,
 }: {
   payment: Payment
   state: LedgerState
@@ -41,6 +42,7 @@ export function GroupSuggestSheet({
   complete: () => void
   // "그룹 지출이 아니에요" · "아니요, 개인 지출" → 개인 지출로 둔다
   notGroup: () => void
+  onHeadcountConfirmed?: (headcount: number) => void
 }) {
   const [step, setStep] = useState<Step>("suggest")
   const event = eventsFor(payment, state).find((item) => item.people?.length)
@@ -193,7 +195,10 @@ export function GroupSuggestSheet({
               >
                 취소
               </Action>
-              <Action className="primary-button" onClick={() => setStep("confirm")}>
+              <Action className="primary-button" onClick={() => {
+                onHeadcountConfirmed?.(headcount)
+                setStep("confirm")
+              }}>
                 {headcount}명으로 확인
               </Action>
             </div>

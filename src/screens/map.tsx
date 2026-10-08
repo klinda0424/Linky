@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type MouseEvent, type TouchEvent } from "react"
 import { Camera, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react"
 import { Action, cx } from "@/components/common"
+import { utMilestone } from "@/lib/ut"
 import { MainHeader } from "@/components/layout"
 import {
   type CalEvent,
@@ -542,7 +543,10 @@ export function MapTab({
                   )}
                   key={payment.id}
                   label={`${index + 1}번 결제 ${payment.merchant}`}
-                  onClick={() => setSelected({ kind: "payment", id: payment.id })}
+                  onClick={() => {
+                    setSelected({ kind: "payment", id: payment.id })
+                    utMilestone("t7_pin_open", payment.id)
+                  }}
                   style={{
                     left: `${pinPoint(payment.zone, payment.id).x}%`,
                     top: `${pinPoint(payment.zone, payment.id).y}%`,
