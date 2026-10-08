@@ -27,7 +27,9 @@
 ### 배포 주소
 
 - 참가자에게 줄 주소는 **최신 main이 반영된 주소**여야 한다. 일일 배포 한도(Vercel)나 크레딧(Netlify) 때문에 프로덕션 주소가 최신이 아닐 수 있으니, **배포 전에 아래 "배포 전 점검"의 1~3을 직접 해 본다.**
-- 주소는 `docs/ut-participant-kit.md`의 `<배포 주소>` 자리에 넣어서 나눠 준다.
+- 현재 배포용 주소: `https://linky-ahya0q6dg-klinda0424s-projects.vercel.app` (main `8ba3eb9`의 Vercel 프로덕션 개별 배포 주소). 이 주소는 바뀌지 않아 테스트 중 main에 머지가 들어가도 참가자 화면이 같다. 참가자 안내서(`docs/ut-participant-kit.md`)에 이미 넣어 두었다.
+- 별칭 `https://linky-klinda0424s-projects.vercel.app`은 항상 최신 main을 가리키므로 테스트 기간에는 쓰지 않는다. Netlify 주소는 팀 로그인이 필요해 참가자용으로 쓸 수 없다.
+- 앱을 고쳐 다시 배포하면 새 주소가 생긴다. 참가자를 중간에 바꾸지 말고, 바꿔야 하면 안내서의 주소를 교체한 뒤 새 참가자부터 쓴다.
 
 ### 배포 전 점검 (진행자가 5분 안에)
 
