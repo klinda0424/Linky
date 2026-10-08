@@ -425,8 +425,7 @@ export function restoredOf(payment: Payment, state: LedgerState): Restored | nul
   if (evidence.length === 0) return null
   const confirmed = state.restoreConfirmed.includes(payment.id)
   if (payment.kind === "transfer") {
-    // 송금은 맞아요로 확인한 뒤에만 맥락 이름으로 복원한다
-    if (!confirmed && !(state.verified ?? []).includes(payment.id)) return null
+    // 송금은 맞아요로 확정(transferMatched)해 근거가 붙은 뒤에만 evidence가 생기므로, 홈 알림·카드 어디서 눌러도 같은 이름으로 복원된다
     const label = transferContextTitle(payment, state)
     if (!label) return null
     return {
