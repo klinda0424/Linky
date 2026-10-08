@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ArrowDown, Check } from "lucide-react"
+import { ArrowDown, Check, Minus, Plus } from "lucide-react"
 import { Action, PersonAvatar, cx } from "@/components/common"
 import {
   type LedgerState,
@@ -17,7 +17,7 @@ import {
 // ---------- 정산 바텀시트: 제안 → 그룹 결제 확인 → 결과(정산 완료) ----------
 // 일정 인원과 입금 내역을 근거로 인원을 제안하고, 확인을 거쳐 내 몫만 가계에 반영한다.
 // 정산 흐름은 전부 이 시트 안에서 이어지고, "정산 완료"를 누를 때 원장에 반영된다.
-type Step = "suggest" | "confirm" | "result"
+type Step = "suggest" | "edit" | "confirm" | "result"
 type Member = "나" | "지은" | "민지" | "수진"
 const isMember = (name: string): name is Member => ["나", "지은", "민지", "수진"].includes(name)
 
@@ -47,10 +47,14 @@ export function GroupSuggestSheet({
   const people = event?.people ? ["나", ...event.people] : (payment.group ?? ["나"])
   const deposits = payment.deposits ?? []
   // 확정 후 원장이 계산하는 내 몫과 같은 값
-  const perPerson = shareOf(payment, {
+  const ledgerShare = shareOf(payment, {
     ...state,
     splitConfirmed: [...state.splitConfirmed, payment.id],
   })
+  // 인원 수정은 시트 안에서만 보여 주는 목업이다: 인원이 바뀌면 총액을 균등하게 나눈 값으로 보여 준다
+  const [headcount, setHeadcount] = useState(people.length)
+  const perPerson = headcount === people.length ? ledgerShare : Math.round(payment.amount / headcount)
+  const receivable = headcount === people.length ? receivableOf(payment) : payment.amount - perPerson
   const sameAmount = deposits.length > 0 && deposits.every((item) => item.amount === deposits[0].amount)
   const basis = event
     ? `캘린더 '${event.title}' 참석 ${event.people?.length ?? 0}명${deposits.length > 0 ? ` + 입금 ${deposits.length}건` : ""}으로 ${people.length}명이에요`
@@ -87,7 +91,7 @@ export function GroupSuggestSheet({
               <span>1인당</span>
               <strong>{won(perPerson)}</strong>
               <p>
-                내 몫 {won(perPerson)} · 받을 돈 {won(receivableOf(payment))}
+                내 몫 {won(perPerson)} · 받을 돈 {won(receivable)}
               </p>
             </div>
             {deposits.length > 0 && (
@@ -100,7 +104,7 @@ export function GroupSuggestSheet({
             )}
             <div className="gs-actions">
               {/* 인원 수정 화면은 없앴다: 같은 인원·입금 내역을 다음 단계에서 확인한다 */}
-              <Action className="gs-edit" onClick={() => setStep("confirm")}>
+              <Action className="gs-edit" onClick={() => setStep("edit")}>
                 인원 수정
               </Action>
               <Action className="gs-yes" onClick={() => setStep("confirm")}>
@@ -112,6 +116,58 @@ export function GroupSuggestSheet({
             </Action>
           </>
         )}
+        {step === "edit" && (
+          <>
+            <div className="gs-head">
+              <strong>인원 수정</strong>
+              <i aria-hidden="true" />
+            </div>
+            <p className="gs-sub">
+              {payment.merchant} {won(payment.amount)} · 함께한 인원 수를 조절해요
+            </p>
+            <div className="gs-stepper">
+              <Action
+                className="gs-step-btn"
+                label="인원 줄이기"
+                onClick={() => setHeadcount((value) => Math.max(2, value - 1))}
+              >
+                <Minus size={20} strokeWidth={1.8} />
+              </Action>
+              <div>
+                <strong>{headcount}명</strong>
+                <span>나 포함</span>
+              </div>
+              <Action
+                className="gs-step-btn"
+                label="인원 늘리기"
+                onClick={() => setHeadcount((value) => Math.min(10, value + 1))}
+              >
+                <Plus size={20} strokeWidth={1.8} />
+              </Action>
+            </div>
+            <div className="gs-result">
+              <span>1인당</span>
+              <strong>{won(perPerson)}</strong>
+              <p>
+                내 몫 {won(perPerson)} · 받을 돈 {won(receivable)}
+              </p>
+            </div>
+            <div className="gs-actions">
+              <Action
+                className="gs-edit"
+                onClick={() => {
+                  setHeadcount(people.length)
+                  setStep("suggest")
+                }}
+              >
+                취소
+              </Action>
+              <Action className="gs-yes" onClick={() => setStep("confirm")}>
+                {headcount}명으로 확인
+              </Action>
+            </div>
+          </>
+        )}
         {step === "confirm" && (
           <>
             <div className="gs-body">
@@ -121,7 +177,7 @@ export function GroupSuggestSheet({
                 그룹 지출 같아요
               </p>
               <p className="gs-sub">
-                {label(payment.date)} · {payment.place ?? payment.zone} · {people.length}명
+                {label(payment.date)} · {payment.place ?? payment.zone} · {headcount}명
               </p>
               <div className="group-basis">
                 {deposits.length > 0 && <p>입금 내역 {deposits.length}건 확인</p>}
@@ -134,11 +190,11 @@ export function GroupSuggestSheet({
                   <span>정산 대기</span>
                   <strong>{won(payment.amount)}</strong>
                   <p>
-                    1인당 {won(perPerson)} · {people.length}명
+                    1인당 {won(perPerson)} · {headcount}명
                   </p>
                 </div>
                 <div className="stacked-avatars">
-                  {people.filter(isMember).map((name) => (
+                  {people.slice(0, headcount).filter(isMember).map((name) => (
                     <PersonAvatar key={name} name={name} />
                   ))}
                 </div>
