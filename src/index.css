@@ -5785,6 +5785,36 @@ p {
   font-weight: var(--fw-title);
 }
 
+/* 그룹 결제 확인: 스크롤 없이 한 화면에 들어오도록 시트 안에서만 간격을 줄인다 */
+.gs-sheet .gs-body .gs-sub {
+  margin: 6px 0 12px;
+  padding-bottom: 12px;
+}
+
+.gs-sheet .gs-body .group-basis {
+  margin-bottom: 6px;
+}
+
+.gs-sheet .gs-body .settlement-summary {
+  padding: 10px 0;
+}
+
+.gs-sheet .gs-body .people-settlement {
+  margin-top: 0;
+}
+
+.gs-sheet .gs-body .people-settlement > div {
+  min-height: 50px;
+}
+
+.gs-sheet .gs-body .settlement-list-title {
+  margin: 12px 0 4px;
+}
+
+.gs-sheet .gs-body .settlement-item {
+  min-height: 46px;
+}
+
 .gs-foot {
   flex: 0 0 auto;
   display: grid;
