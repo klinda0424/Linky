@@ -64,7 +64,12 @@ export function PaymentDetail({
 
   // 결제 장소: 복원된 지점이 있으면 그 지점, 없으면 결제 당시 내 위치
   const spot = restored
-    ? payment.transit
+    ? restored.kind === "transfer"
+      ? // 송금은 이름이 맥락 문구라 장소로 쓰지 않는다: 그날 내 위치(체류지)만 보여 준다
+        state.sources.location
+        ? (payment.place ?? payment.zone)
+        : undefined
+      : payment.transit
       ? `${payment.transit.from} 인근`
       : restored.spot
         ? `${restored.spot} 인근`

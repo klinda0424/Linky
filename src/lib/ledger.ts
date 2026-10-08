@@ -383,17 +383,60 @@ export const isRestored = (payment: Payment, state: LedgerState) =>
 
 // 복원 결과: 원본(가맹점명) → 복원된 장소·탑승 지점. 근거가 하나도 없으면 null("기록 없음").
 export type Restored = {
-  kind: "place" | "transit"
+  kind: "place" | "transit" | "transfer"
   original: string
   label: string
   spot?: string
   evidence: Evidence[]
   confirmed: boolean
 }
+// 받침 유무로 조사를 고른다: 지은 → 지은이랑, 민지 → 민지랑
+const withRang = (name: string) => {
+  const code = name.charCodeAt(name.length - 1)
+  const batchim = code >= 0xac00 && code <= 0xd7a3 && (code - 0xac00) % 28 !== 0
+  return `${name}${batchim ? "이" : ""}랑`
+}
+
+// 식사 시간대: 일정 시작 → 체류 시작 → 송금 시각 순으로 쓴다 (사용자 기록의 시각만 근거로 삼는다)
+const mealOf = (time: string) => {
+  const hour = Math.floor(minutes(time) / 60)
+  if (hour < 5) return "야식"
+  if (hour < 10) return "아침"
+  if (hour < 15) return "점심"
+  if (hour < 17) return "간식"
+  if (hour < 22) return "저녁"
+  return "야식"
+}
+
+// 송금 맥락 이름: "지은이랑 연남동 저녁" — 상대(일정 참석자와 맞을 때)·장소·시간대를 사용자 기록에서 조합한다.
+// 맞는 근거가 없는 항목은 이름에서 뺀다. 감정·의도 추측은 쓰지 않는다.
+function transferContextTitle(payment: Payment, state: LedgerState) {
+  const basis = transferBasis(payment, state)
+  if (!basis) return null
+  const counterparty = payment.counterparty ?? ""
+  const person = basis.event?.people?.find((name) => counterparty.includes(name))
+  const place = basis.stay?.name ?? payment.place ?? payment.zone
+  const at = basis.event?.start ?? basis.stay?.from ?? payment.time
+  return [person ? withRang(person) : undefined, place, mealOf(at)].filter(Boolean).join(" ")
+}
+
 export function restoredOf(payment: Payment, state: LedgerState): Restored | null {
   const evidence = evidenceOf(payment, state)
   if (evidence.length === 0) return null
   const confirmed = state.restoreConfirmed.includes(payment.id)
+  if (payment.kind === "transfer") {
+    // 송금은 맞아요로 확인한 뒤에만 맥락 이름으로 복원한다
+    if (!confirmed && !(state.verified ?? []).includes(payment.id)) return null
+    const label = transferContextTitle(payment, state)
+    if (!label) return null
+    return {
+      kind: "transfer",
+      original: `${payment.counterparty} 송금`,
+      label,
+      evidence,
+      confirmed: true,
+    }
+  }
   if (payment.transit)
     return {
       kind: "transit",
