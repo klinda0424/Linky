@@ -7982,3 +7982,22 @@ p {
 .ut-scale, .ut-jumps { display: flex; flex-wrap: wrap; gap: 8px; }
 .ut-scale button, .ut-jumps button { min-width: 42px; height: 46px; flex: 1; border: 0; border-radius: 12px; background: var(--surface); font-size: 13px; font-weight: 700; }
 .ut-facilitator { z-index: 1; }
+
+/* 정산 인원 수정: −/+ 버튼이 가운데 숫자 칸의 min-width(96px)를 물려받아 타원으로 깨지던 것 → 52px 원 고정 */
+.gs-stepper > .gs-step-btn {
+  min-width: 0;
+  flex: none;
+}
+
+/* 지도·앨범 시트: 내용이 길어질 때 스크롤바가 생기며 폭이 줄어 지도가 찌그러지지 않게 스크롤바를 숨긴다 */
+.map-scroll,
+.album-scroll,
+.rpt-day-sheet-scroll {
+  scrollbar-width: none;
+}
+
+.map-scroll::-webkit-scrollbar,
+.album-scroll::-webkit-scrollbar,
+.rpt-day-sheet-scroll::-webkit-scrollbar {
+  display: none;
+}
