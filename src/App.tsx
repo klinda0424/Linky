@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { MainApp } from "@/MainApp"
 import { StatusBar } from "@/components/common"
 import { UTLayer, useUTSession } from "@/components/ut"
@@ -18,6 +18,14 @@ export default function App() {
   const ut = useUTSession(utConfig)
   const skipOnboarding = utConfig.enabled && utConfig.startIndex >= 2
   const [step, setStep] = useState(skipOnboarding ? 6 : 1)
+  // UT: T3 이상 과제가 시작됐는데 아직 온보딩 중이면 메인 앱으로 보낸다
+  // (T2 뒤 남은 온보딩 화면 위에 T3 안내가 뜨거나, 남은 온보딩 시간이 T3에 섞이지 않게)
+  useEffect(() => {
+    if (!utConfig.enabled || ut.index < 2) return
+    // 온보딩 중 포기로 닉네임이 비었으면 '건너뛰기'처럼 목업 주인공 이름으로 채운다
+    setProfile((value) => ({ ...value, nickname: value.nickname.trim() || "소연" }))
+    setStep((value) => (value < 6 ? 6 : value))
+  }, [utConfig.enabled, ut.index])
   const [profile, setProfile] = useState<ProfileDetails>({
     nickname: "",
     birthYear: "1997",
