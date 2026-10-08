@@ -18,14 +18,6 @@ export default function App() {
   const ut = useUTSession(utConfig)
   const skipOnboarding = utConfig.enabled && utConfig.startIndex >= 2
   const [step, setStep] = useState(skipOnboarding ? 6 : 1)
-  // UT: T3 이상 과제가 시작됐는데 아직 온보딩 중이면 메인 앱으로 보낸다
-  // (T2 뒤 남은 온보딩 화면 위에 T3 안내가 뜨거나, 남은 온보딩 시간이 T3에 섞이지 않게)
-  useEffect(() => {
-    if (!utConfig.enabled || ut.index < 2) return
-    // 온보딩 중 포기로 닉네임이 비었으면 '건너뛰기'처럼 목업 주인공 이름으로 채운다
-    setProfile((value) => ({ ...value, nickname: value.nickname.trim() || "소연" }))
-    setStep((value) => (value < 6 ? 6 : value))
-  }, [utConfig.enabled, ut.index])
   const [profile, setProfile] = useState<ProfileDetails>({
     nickname: "",
     birthYear: "1997",
@@ -37,6 +29,14 @@ export default function App() {
     photos: true,
     location: true,
   })
+  // UT: T3 이상 과제가 시작됐는데 아직 온보딩 중이면 메인 앱으로 보낸다
+  // (T2 뒤 남은 온보딩 화면 위에 T3 안내가 뜨거나, 남은 온보딩 시간이 T3에 섞이지 않게)
+  useEffect(() => {
+    if (!utConfig.enabled || ut.index < 2) return
+    // 온보딩 중 포기로 닉네임이 비었으면 '건너뛰기'처럼 목업 주인공 이름으로 채운다
+    setProfile((value) => ({ ...value, nickname: value.nickname.trim() || "소연" }))
+    setStep((value) => (value < 6 ? 6 : value))
+  }, [utConfig.enabled, ut.index])
   const next = () => setStep((value) => value + 1)
   const back = () => setStep((value) => Math.max(1, value - 1))
   const toggle = (key: PermissionKey) =>
@@ -47,11 +47,16 @@ export default function App() {
       return (
         <BasicInfo
           next={next}
-          skipAll={() => {
-            // 닉네임이 비어 있으면 목업 주인공 이름으로 채우고 바로 메인 앱으로
-            setProfile((value) => ({ ...value, nickname: value.nickname.trim() || "소연" }))
-            setStep(6)
-          }}
+          // UT 모드에서는 참가자가 온보딩 과제를 건너뛰지 않도록 버튼을 숨긴다
+          skipAll={
+            utConfig.enabled
+              ? undefined
+              : () => {
+                  // 닉네임이 비어 있으면 목업 주인공 이름으로 채우고 바로 메인 앱으로
+                  setProfile((value) => ({ ...value, nickname: value.nickname.trim() || "소연" }))
+                  setStep(6)
+                }
+          }
           nickname={profile.nickname}
           setNickname={(nickname) =>
             setProfile((value) => ({ ...value, nickname }))

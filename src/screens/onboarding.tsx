@@ -57,8 +57,8 @@ export function BasicInfo({
   nickname: string
   setNickname: (value: string) => void
   next: () => void
-  // 개발자용: 온보딩 전체 건너뛰기
-  skipAll: () => void
+  // 개발자용: 온보딩 전체 건너뛰기 (UT 모드에서는 넘기지 않아 버튼이 숨는다)
+  skipAll?: () => void
 }) {
   const [phase, setPhase] = useState<"identity" | "code" | "nickname">("identity")
   const [name, setName] = useState("")
@@ -159,7 +159,7 @@ export function BasicInfo({
           disabled={code.length !== 6 || seconds === 0}
           onNext={() => setPhase("nickname")}
         />
-        <DevSkip onClick={skipAll} />
+        {skipAll && <DevSkip onClick={skipAll} />}
       </Screen>
     )
 
@@ -260,7 +260,7 @@ export function BasicInfo({
           setPhase("code")
         }}
       />
-      <DevSkip onClick={skipAll} />
+      {skipAll && <DevSkip onClick={skipAll} />}
       {picking && (
         <div className="main-overlay" onClick={() => setPicking(false)}>
           <div className="carrier-sheet" onClick={(event) => event.stopPropagation()}>
