@@ -8005,3 +8005,45 @@ p {
 .rpt-day-sheet-scroll::-webkit-scrollbar {
   display: none;
 }
+
+/* 인원 수정: 일정에 있던 사람 동그라미 오른쪽 위 X로 빼기, 뺀 사람은 흐리게 + 되돌리기 */
+.gs-crowd-item {
+  position: relative;
+  display: flex;
+  flex: none;
+}
+
+.gs-crowd-x {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--background);
+  border-radius: 50%;
+  background: var(--text);
+  color: var(--background);
+}
+
+.gs-crowd-item.out .gs-avatar {
+  border-style: dashed;
+  background: transparent;
+  color: var(--text-mute);
+  text-decoration: line-through;
+}
+
+.gs-crowd-item.out .gs-crowd-x {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.gs-crowd-note {
+  margin: -4px 0 10px;
+  color: var(--text-mute);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+  text-align: center;
+}
