@@ -22,6 +22,8 @@ import {
   paymentsOn,
   photos,
   photosOn,
+  depositsOf,
+  headcountOf,
   receivableOf,
   removedEvidenceOf,
   restoredOf,
@@ -401,7 +403,8 @@ function PayCard({
   const category = categoryOf(payment, state)
   const asTransfer = transfer && !category
   const photoIds = evidence.find((item) => item.kind === "photo")?.photoIds ?? []
-  const share = people ? Math.round(payment.amount / people.length) : payment.amount
+  const share = people ? Math.round(payment.amount / headcountOf(payment, state)) : payment.amount
+  const deposits = depositsOf(payment, state)
   const title = restored
     ? `${restored.label}${restored.spot ? ` · ${restored.spot}` : ""}`
     : transfer
@@ -410,8 +413,8 @@ function PayCard({
   // 내 위치·일정·사진 근거 줄은 카드에 두지 않는다(수정을 누르면 근거 목록이 열린다).
   // 정산·이체처럼 상태를 알려야 하는 안내만 남긴다.
   const footText = pendingGroup
-    ? payment.deposits
-      ? `입금 ${payment.deposits.length}건이 들어왔어요`
+    ? deposits.length > 0
+      ? `입금 ${deposits.length}건이 들어왔어요`
       : `${basis.source} ${basis.count}명 · 그룹 결제 같아요`
     : asTransfer
       ? "이체 · 가맹점 없음"
@@ -477,12 +480,12 @@ function PayCard({
           {pendingGroup && (
             <dl className="pay-split">
               <div>
-                <dt>내 몫 ({people?.length}명 중 1명)</dt>
+                <dt>내 몫 ({headcountOf(payment, state)}명 중 1명)</dt>
                 <dd>{won(share)}</dd>
               </div>
               <div>
                 <dt>받을 돈</dt>
-                <dd>{won(receivableOf(payment))}</dd>
+                <dd>{won(receivableOf(payment, state))}</dd>
               </div>
             </dl>
           )}

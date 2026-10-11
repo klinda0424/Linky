@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
+import { Info } from "lucide-react"
 import {
   beginTask,
   clearLog,
@@ -16,6 +17,10 @@ import {
 } from "@/lib/ut"
 
 type Phase = "brief" | "running" | "complete" | "finished"
+// 확인형 과제(9/11·10/11): 시작부터 '다 했어요'를 보여 준다. 목표 화면 도달은 기록(milestone)으로만 남긴다.
+const OBSERVE_TASKS = ["T8", "T9"]
+// 성공 직후 바뀐 화면(예: 홈 오늘 지출)을 잠깐 보여 준 뒤 평가 팝업을 띄운다
+const COMPLETE_DELAY_MS = 1500
 export type UTSession = ReturnType<typeof useUTSession>
 
 export function useUTSession(config: UTConfig) {
@@ -26,7 +31,8 @@ export function useUTSession(config: UTConfig) {
   const [toast, setToast] = useState("")
   const [facilitator, setFacilitator] = useState(false)
   const [begun, setBegun] = useState(false)
-  const [ready, setReady] = useState(false)
+  const [ready, setReady] = useState(OBSERVE_TASKS.includes(UT_TASKS[config.startIndex].id))
+  const completeTimer = useRef(0)
   const phaseRef = useRef<Phase>("brief")
   const taskRef = useRef<UTTask>(UT_TASKS[config.startIndex])
   const task = UT_TASKS[index]
@@ -46,10 +52,13 @@ export function useUTSession(config: UTConfig) {
       log("milestone", detail ? `${name}:${detail}` : name)
       if (taskRef.current.success.includes(name)) {
         if (["T7", "T8", "T9"].includes(taskRef.current.id)) setReady(true)
-        else {
+        else if (!completeTimer.current) {
           log("complete", name)
-          setResult("success")
-          changePhase("complete")
+          completeTimer.current = window.setTimeout(() => {
+            completeTimer.current = 0
+            setResult("success")
+            changePhase("complete")
+          }, COMPLETE_DELAY_MS)
         }
       }
     },
@@ -106,6 +115,8 @@ export function useUTSession(config: UTConfig) {
   }, [config.enabled])
 
   const goTo = (next: number) => {
+    window.clearTimeout(completeTimer.current)
+    completeTimer.current = 0
     endTask()
     const bounded = Math.max(0, Math.min(UT_TASKS.length - 1, next))
     rememberTask(config.participant, UT_TASKS[bounded].id)
@@ -115,7 +126,7 @@ export function useUTSession(config: UTConfig) {
     setIndex(bounded)
     setRunKey((key) => key + 1)
     setBegun(false)
-    setReady(false)
+    setReady(OBSERVE_TASKS.includes(UT_TASKS[bounded].id))
     changePhase("brief")
   }
   return {
@@ -140,6 +151,8 @@ export function useUTSession(config: UTConfig) {
     reopenBrief: () => changePhase("brief"),
     resume: () => changePhase("running"),
     giveUp: () => {
+      window.clearTimeout(completeTimer.current)
+      completeTimer.current = 0
       log("giveup")
       setResult("giveup")
       changePhase("complete")
@@ -196,15 +209,28 @@ export function UTLayer({ session }: { session: UTSession }) {
   return (
     <div className="ut-layer" data-ut-ignore>
       {session.phase === "running" && (
-        <div className="ut-chip">
-          <button onClick={openFacilitator}>
-            {session.index + 1}/{UT_TASKS.length} · {session.task.id}
+        // 상태바 자리(44px)를 쓰는 과제 띠: 앱 화면은 가리지 않는다. 제목은 5번 연속 탭하면 진행자 패널
+        <div className="ut-bar">
+          <button className="ut-bar-title" onClick={openFacilitator}>
+            <b>
+              {session.index + 1}/{UT_TASKS.length}
+            </b>
+            <span>{session.task.label}</span>
           </button>
-          <button onClick={session.reopenBrief}>상황 보기</button>
+          <button className="ut-bar-info" onClick={session.reopenBrief}>
+            <span>
+              <Info size={14} strokeWidth={2.2} />
+              상황 보기
+            </span>
+          </button>
           {session.ready && (
-            <button onClick={session.completeObserved}>다 했어요</button>
+            <button className="ut-bar-done" onClick={session.completeObserved}>
+              <span>다 했어요</span>
+            </button>
           )}
-          <button onClick={session.giveUp}>못 하겠어요</button>
+          <button className="ut-bar-give" onClick={session.giveUp}>
+            <span>못 하겠어요</span>
+          </button>
         </div>
       )}
       {session.toast && <div className="ut-toast">{session.toast}</div>}
@@ -222,8 +248,13 @@ export function UTLayer({ session }: { session: UTSession }) {
               </p>
             )}
             <p className="ut-situation">{session.task.situation}</p>
+            {!session.begun && (
+              <p className="ut-hint">
+                상황이 기억나지 않으면 상단의 '상황 보기'를 눌러 다시 볼 수 있어요.
+              </p>
+            )}
             <button className="ut-primary" onClick={session.start}>
-              {session.begun ? "계속하기" : "시작하기"}
+              {session.begun ? "닫기" : "시작하기"}
             </button>
             {session.begun && (
               <button className="ut-secondary" onClick={session.giveUp}>

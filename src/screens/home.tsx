@@ -31,6 +31,7 @@ import {
   type Photo,
   restoredOf,
   sameDay,
+  depositsOf,
   shareOf,
   stays,
   weekday,
@@ -411,8 +412,8 @@ export function HomePage({
             title: meeting
               ? `${meeting.merchant} ${man(meeting.amount)}원, 그룹 지출 같아요`
               : "그룹 결제가 감지됐어요",
-            sub: meeting?.deposits
-              ? `입금 ${meeting.deposits.length}건이 들어왔어요`
+            sub: meeting && depositsOf(meeting, state).length > 0
+              ? `입금 ${depositsOf(meeting, state).length}건이 들어왔어요`
               : `정산할지 확인해주세요 · 정산 대기 ${pendingSettlement.count}건`,
             alert: true,
             onClick: openSettlement,

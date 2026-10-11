@@ -62,10 +62,24 @@ export function MainApp({
   const [tab, setTab] = useState<MainTab>("home")
   const [view, setView] = useState<MainView>("tabs")
   const [homeDay, setHomeDay] = useState<YMD>(TODAY)
+  // UT 과제별 시작 데이터: 과제가 바뀌면 앱을 새로 그려 이 값에서 시작한다(과제끼리 영향 없음)
+  // - 4/11(T4)·그 외: 처음 상태
+  // - 5/11(T4B): 4/11과 같은 고깃집 정산 전, 수진이 오지 않은 상황이라 입금은 지은·민지 40,000원씩 2건
+  // - 9/11(T8): 4/11을 마친 상태(4명 정산 완료)
   const [ledger, setLedger] = useState<LedgerState>(() =>
     utTaskId === "T8"
       ? { ...initialLedger, splitConfirmed: [...initialLedger.splitConfirmed, SCENARIO.meal.id] }
-      : initialLedger,
+      : utTaskId === "T4B"
+        ? {
+            ...initialLedger,
+            depositOverride: {
+              [SCENARIO.meal.id]: [
+                { from: "지은", amount: 40000, time: "20:41" },
+                { from: "민지", amount: 40000, time: "21:02" },
+              ],
+            },
+          }
+        : initialLedger,
   )
   // 날짜 시트: 캘린더 탭 위에 열린다. 지도 핀·검색에서 넘어오면 해당 결제를 강조한다.
   const [sheetDay, setSheetDay] = useState<YMD>()
@@ -216,8 +230,9 @@ export function MainApp({
         ? value
         : { ...value, splitConfirmed: [...value.splitConfirmed, paymentId] },
     )
-  const attach = (paymentId: string, text?: string) => {
-    if (paymentId === "o85") utMilestone("t6_attached", paymentId)
+  const attach = (paymentId: string, text?: string, picked?: string) => {
+    // 7/11: 어떤 사진을 골랐는지(샐러드·포케·관련 없는 사진)도 기록에 남긴다. 성공 조건은 그대로(사진 연결)
+    if (paymentId === "o85") utMilestone("t6_attached", picked ? `${paymentId}:${picked}` : paymentId)
     setLedger((value) => {
       const current = value.added[paymentId] ?? []
       return {
@@ -686,8 +701,13 @@ export function MainApp({
           }}
           payment={splitting}
           state={state}
-          onHeadcountConfirmed={(headcount) => {
-            if (headcount === 3) utMilestone("t4b_headcount3", "3")
+          onHeadcountConfirmed={(headcount, edit) => {
+            // 인원 수정 결과를 원장에 남겨 홈 입금 배너·내 몫·받을 돈이 같이 바뀌게 한다
+            setLedger((value) => ({
+              ...value,
+              groupEdit: { ...value.groupEdit, [splitting.id]: edit },
+            }))
+            if (headcount === 3) utMilestone("t4b_headcount3", edit.removed.join("·") || "3")
           }}
         />
       )}

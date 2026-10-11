@@ -242,6 +242,10 @@ export type LedgerState = {
   transferMatched: string[]
   // 송금 맥락 제안에서 "아니에요"를 눌러 이체로 둔 송금
   transferDeclined?: string[]
+  // 인원 수정 결과(그룹 결제별): 뺀 사람과 더한 빈 자리 수. 내 몫·받을 돈·입금 건수가 이 값을 따른다
+  groupEdit?: Record<string, { removed: string[]; extras: number }>
+  // 입금 내역을 바꿔 둔 그룹 결제 (UT 과제 시작 데이터 등)
+  depositOverride?: Record<string, { from: string; amount: number; time: string }[]>
 }
 export const initialLedger: LedgerState = {
   sources: { location: true, calendar: true, photos: true },
@@ -514,9 +518,24 @@ export const categoryOf = (payment: Payment, state: LedgerState): Category | und
       : undefined
     : payment.category
 
+// 그룹 결제 인원: 결제 인원에서 인원 수정으로 뺀 사람을 빼고 더한 빈 자리를 더한다
+export const headcountOf = (payment: Payment, state?: LedgerState) => {
+  const base = payment.group?.length ?? 1
+  const edit = state?.groupEdit?.[payment.id]
+  return edit ? Math.max(1, base - edit.removed.length + edit.extras) : base
+}
+
+// 그룹 결제의 입금: 바꿔 둔 입금 내역이 있으면 그것을 쓰고, 인원 수정으로 뺀 사람의 입금은 제외한다
+export const depositsOf = (payment: Payment, state?: LedgerState) => {
+  const removed = state?.groupEdit?.[payment.id]?.removed ?? []
+  return (state?.depositOverride?.[payment.id] ?? payment.deposits ?? []).filter(
+    (item) => !removed.includes(item.from),
+  )
+}
+
 // 대표 결제에서 돌려받을 돈: 총액에서 내 몫(인원 균등)을 뺀 값
-export const receivableOf = (payment: Payment) =>
-  payment.group ? payment.amount - Math.round(payment.amount / payment.group.length) : 0
+export const receivableOf = (payment: Payment, state?: LedgerState) =>
+  payment.group ? payment.amount - Math.round(payment.amount / headcountOf(payment, state)) : 0
 
 export const paymentsOn = (date: YMD) =>
   payments
@@ -529,7 +548,7 @@ export const dayTotal = (date: YMD) =>
 // 내 몫: 인원 분할을 확정한 그룹 결제만 인원수로 나눈다. 확정 전에는 결제 전체가 내 지출이다.
 export const shareOf = (payment: Payment, state: LedgerState) =>
   payment.group && state.splitConfirmed.includes(payment.id)
-    ? Math.round(payment.amount / payment.group.length)
+    ? Math.round(payment.amount / headcountOf(payment, state))
     : payment.amount
 
 export const dayMine = (date: YMD, state: LedgerState) =>

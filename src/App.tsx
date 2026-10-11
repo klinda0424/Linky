@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { MainApp } from "@/MainApp"
 import { StatusBar } from "@/components/common"
 import { UTLayer, useUTSession } from "@/components/ut"
@@ -40,6 +40,20 @@ export default function App() {
     setProfile((value) => ({ ...value, nickname: value.nickname.trim() || "소연" }))
     setStep((value) => (value < 6 ? 6 : value))
   }, [utConfig.enabled, ut.index, ut.runKey])
+  // 폰 프레임 실제 크기를 CSS 변수로: 360px 폰 등에서 축척된 앱 화면이 프레임에 꼭 맞게 (index.css .main-scale)
+  const phoneRef = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const phone = phoneRef.current
+    if (!phone) return
+    const sync = () => {
+      phone.style.setProperty("--phone-w", `${phone.clientWidth}px`)
+      phone.style.setProperty("--phone-h", `${phone.clientHeight}px`)
+    }
+    sync()
+    const observer = new ResizeObserver(sync)
+    observer.observe(phone)
+    return () => observer.disconnect()
+  }, [])
   const next = () => setStep((value) => value + 1)
   const back = () => setStep((value) => Math.max(1, value - 1))
   const toggle = (key: PermissionKey) =>
@@ -98,7 +112,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <div className="phone">
+      <div className="phone" ref={phoneRef}>
         <StatusBar />
         {step <= 5 ? (
           onboarding

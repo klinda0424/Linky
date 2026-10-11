@@ -9,8 +9,6 @@ import {
   groupBasis,
   label,
   man,
-  receivableOf,
-  shareOf,
   won,
 } from "@/lib/ledger"
 
@@ -42,31 +40,29 @@ export function GroupSuggestSheet({
   complete: () => void
   // "그룹 지출이 아니에요" · "아니요, 개인 지출" → 개인 지출로 둔다
   notGroup: () => void
-  onHeadcountConfirmed?: (headcount: number) => void
+  // "N명으로 확인": 뺀 사람·더한 빈 자리를 원장에 남겨 내 몫·입금 건수를 갱신한다
+  onHeadcountConfirmed?: (headcount: number, edit: { removed: string[]; extras: number }) => void
 }) {
   const [step, setStep] = useState<Step>("suggest")
   const event = eventsFor(payment, state).find((item) => item.people?.length)
   const people = event?.people ? ["나", ...event.people] : (payment.group ?? ["나"])
-  const deposits = payment.deposits ?? []
-  // 확정 후 원장이 계산하는 내 몫과 같은 값
-  const ledgerShare = shareOf(payment, {
-    ...state,
-    splitConfirmed: [...state.splitConfirmed, payment.id],
-  })
+  // 인원 수정 전 입금 내역 (바꿔 둔 입금이 있으면 그것)
+  const deposits = state.depositOverride?.[payment.id] ?? payment.deposits ?? []
   // 인원 수정은 시트 안에서만 보여 주는 목업이다: 인원이 바뀌면 총액을 균등하게 나눈 값으로 보여 준다
   // 일정에 있던 사람은 X로 빼고(다시 눌러 되돌리기), 일정에 없던 사람은 +로 빈 자리를 더한다
-  const [removed, setRemoved] = useState<string[]>([])
-  const [extras, setExtras] = useState(0)
+  // 이미 인원을 고친 결제면 그 상태에서 다시 시작한다
+  const saved = state.groupEdit?.[payment.id]
+  const [removed, setRemoved] = useState<string[]>(saved?.removed ?? [])
+  const [extras, setExtras] = useState(saved?.extras ?? 0)
   const members = people.filter((name) => !removed.includes(name))
   const headcount = members.length + extras
-  const edited = removed.length > 0 || extras > 0
-  const perPerson = edited ? Math.round(payment.amount / headcount) : ledgerShare
-  const receivable = edited ? payment.amount - perPerson : receivableOf(payment)
+  const perPerson = Math.round(payment.amount / headcount)
+  const receivable = payment.amount - perPerson
   // 뺀 사람의 입금은 이 결제의 입금에서 제외한다
   const activeDeposits = deposits.filter((item) => !removed.includes(item.from))
   const resetEdit = () => {
-    setRemoved([])
-    setExtras(0)
+    setRemoved(saved?.removed ?? [])
+    setExtras(saved?.extras ?? 0)
   }
   // −: 더한 빈 자리부터 줄이고, 없으면 마지막 사람을 뺀다 (최소 2명)
   const decrease = () => {
@@ -82,7 +78,8 @@ export function GroupSuggestSheet({
           ? [...value, name]
           : value,
     )
-  const sameAmount = deposits.length > 0 && deposits.every((item) => item.amount === deposits[0].amount)
+  const sameAmount =
+    activeDeposits.length > 0 && activeDeposits.every((item) => item.amount === activeDeposits[0].amount)
   const basis = event
     ? `캘린더 '${event.title}' 참석 ${event.people?.length ?? 0}명${deposits.length > 0 ? ` + 입금 ${deposits.length}건` : ""}으로 ${people.length}명이에요`
     : `함께 결제한 ${people.length}명이에요`
@@ -106,7 +103,7 @@ export function GroupSuggestSheet({
               {payment.merchant} {won(payment.amount)} · {label(payment.date)} {payment.time}
             </p>
             <div className="gs-people">
-              {people.map((name) => (
+              {members.map((name) => (
                 <div key={name}>
                   <span className={cx("gs-avatar", name === "나" && "me")}>{name.slice(0, 1)}</span>
                   <em className={cx(name === "나" && "me")}>{name}</em>
@@ -121,11 +118,11 @@ export function GroupSuggestSheet({
                 내 몫 {won(perPerson)} · 받을 돈 {won(receivable)}
               </p>
             </div>
-            {deposits.length > 0 && (
+            {activeDeposits.length > 0 && (
               <p className="gs-deposit">
-                입금 {deposits.length}건이 들어왔어요
+                입금 {activeDeposits.length}건이 들어왔어요
                 {sameAmount
-                  ? ` (${payment.date.m}/${payment.date.d} ${won(deposits[0].amount)} × ${deposits.length})`
+                  ? ` (${payment.date.m}/${payment.date.d} ${won(activeDeposits[0].amount)} × ${activeDeposits.length})`
                   : ""}
               </p>
             )}
@@ -241,7 +238,7 @@ export function GroupSuggestSheet({
                 취소
               </Action>
               <Action className="primary-button" onClick={() => {
-                onHeadcountConfirmed?.(headcount)
+                onHeadcountConfirmed?.(headcount, { removed, extras })
                 setStep("confirm")
               }}>
                 {headcount}명으로 확인
