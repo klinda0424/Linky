@@ -8333,50 +8333,107 @@ p {
   color: var(--text-mute);
 }
 
-.tf-popup-badge {
-  align-self: flex-start;
-  padding: 4px 10px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  border-radius: 12px;
-  background: var(--lime-card);
-  color: var(--primary-text);
-  font-size: var(--fs-label);
-  line-height: var(--lh-label);
-  font-weight: var(--fw-title);
+
+
+
+
+
+
+/* 2단계: 인사 → 찾은 기록. 단계가 바뀌면 오른쪽에서 밀려 들어온다 */
+.tf-step {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: tf-step-in 0.28s ease;
 }
 
-.tf-popup-facts {
-  margin: 4px 0 0;
+@keyframes tf-step-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.tf-hello {
+  padding-top: 8px;
+  align-items: center;
+  text-align: center;
+}
+
+.tf-hello .primary-button {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.brand-mark.tf-hello-mark {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 4px;
+  border-radius: 14px;
+}
+
+.tf-hello-title {
+  margin: 0;
+  font-size: var(--fs-headline);
+  line-height: var(--lh-headline);
+  font-weight: var(--fw-headline);
+}
+
+.tf-hello-sub {
+  margin: 0;
   color: var(--text-body);
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+}
+
+.tf-found-facts {
+  margin: 8px 28px 4px 0;
+  color: var(--text);
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+  word-break: keep-all;
+}
+
+.tf-rename-box {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border-radius: 16px;
+  background: var(--lime-card);
+  color: var(--text-mute);
+}
+
+.tf-rename-old {
+  color: var(--text-mute);
   font-size: var(--fs-body);
   line-height: var(--lh-body);
+  text-decoration: line-through;
 }
 
-.tf-popup-rename {
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px;
+.tf-rename-new {
+  color: var(--primary-text);
   font-size: var(--fs-title);
   line-height: var(--lh-title);
-}
-
-.tf-popup-rename s {
-  color: var(--text-mute);
-  font-size: var(--fs-body);
-  line-height: var(--lh-body);
-}
-
-.tf-popup-rename span {
-  color: var(--text-mute);
-}
-
-.tf-popup-rename strong {
-  color: var(--primary-text);
   font-weight: var(--fw-title);
+}
+
+.tf-found-ask {
+  margin: 0;
+  text-align: center;
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tf-step {
+    animation: none;
+  }
 }
 
 .tf-popup-evidence {

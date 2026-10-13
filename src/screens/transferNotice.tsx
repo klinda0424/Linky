@@ -1,4 +1,5 @@
-import { ChevronRight, Sparkles, X } from "lucide-react"
+import { useState } from "react"
+import { ArrowDown, ChevronRight, Link2, Sparkles, X } from "lucide-react"
 import { Action } from "@/components/common"
 import {
   type LedgerState,
@@ -57,7 +58,7 @@ export function TransferNotice({
   )
 }
 
-// 오늘 송금 팝업: 찾은 맥락 이름 + 근거 한 줄 + [맞아요][수정]. 닫으면 홈 상단 알림으로 남는다
+// 오늘 송금 팝업 (2단계): 인사 → 화면 전환 → 찾은 기록과 바꿀 이름 + [수정][맞아요]. 닫으면 홈 상단 알림으로 남는다
 export function TransferPopup({
   item,
   state,
@@ -74,8 +75,10 @@ export function TransferPopup({
   // 나중에: 팝업만 닫는다 (알림은 홈 상단에 남는다)
   close: () => void
 }) {
+  const [step, setStep] = useState<"hello" | "found">("hello")
+  const { payment, guess } = item
   const name = contextNameOf(item, state)
-  const evidence = transferEvidenceLine(item.guess)
+  const evidence = transferEvidenceLine(guess)
   return (
     <div className="main-overlay center tf-popup-dim" onClick={close}>
       <div
@@ -87,24 +90,40 @@ export function TransferPopup({
         <Action className="tf-popup-close" label="나중에 보기" onClick={close}>
           <X size={18} strokeWidth={1.8} />
         </Action>
-        <span className="tf-popup-badge">
-          <Sparkles size={14} strokeWidth={1.8} /> 링키가 찾았어요
-        </span>
-        <p className="tf-popup-facts">{factsOf(item.payment)}</p>
-        <p className="tf-popup-rename">
-          <s>{item.payment.counterparty} 송금</s>
-          <span aria-hidden="true">→</span>
-          <strong>{name ?? "기록 없음"}</strong>
-        </p>
-        {evidence && <p className="tf-popup-evidence">{evidence}</p>}
-        <div className="tf-popup-actions">
-          <Action className="secondary-button" onClick={edit}>
-            수정
-          </Action>
-          <Action className="primary-button" onClick={confirm}>
-            맞아요
-          </Action>
-        </div>
+        {step === "hello" ? (
+          <div className="tf-step tf-hello" key="hello">
+            <span className="brand-mark tf-hello-mark">
+              <Link2 size={22} strokeWidth={2.2} />
+            </span>
+            <p className="tf-hello-title">돌아오셨군요!</p>
+            <p className="tf-hello-sub">링키가 발견한 기록이 있어요.</p>
+            <Action className="primary-button" onClick={() => setStep("found")}>
+              확인하기
+            </Action>
+          </div>
+        ) : (
+          <div className="tf-step tf-found" key="found">
+            <p className="tf-found-facts">
+              {label(payment.date)} ({weekday(payment.date)}) {payment.time},{" "}
+              <b>{payment.counterparty}</b> 님께 보낸 <b>{won(payment.amount)}</b> 송금이 확인되었어요.
+            </p>
+            <div className="tf-rename-box">
+              <span className="tf-rename-old">{payment.counterparty} 송금</span>
+              <ArrowDown size={18} strokeWidth={2} aria-hidden="true" />
+              <strong className="tf-rename-new">{name ?? "기록 없음"}</strong>
+            </div>
+            <p className="tf-found-ask">로 변경할까요?</p>
+            {evidence && <p className="tf-popup-evidence">근거 · {evidence}</p>}
+            <div className="tf-popup-actions">
+              <Action className="secondary-button" onClick={edit}>
+                수정
+              </Action>
+              <Action className="primary-button" onClick={confirm}>
+                맞아요
+              </Action>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

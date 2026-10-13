@@ -284,9 +284,20 @@ function transferBasis(payment: Payment, state: LedgerState) {
           at - minutes(item.to) <= 120,
       )
     : undefined
-  const event = eventsFor(payment, state).find((item) =>
-    (item.people ?? []).some((person) => name.includes(person)),
-  )
+  // 그날 받는 사람과 단둘이 만난 일정이 있으면 시간이 떨어져 있어도 그 일정을 먼저 본다 (만난 뒤 송금)
+  const oneOnOne = state.sources.calendar
+    ? events.find(
+        (item) =>
+          sameDay(item.date, payment.date) &&
+          (item.people ?? []).length === 1 &&
+          name.includes((item.people ?? [])[0]),
+      )
+    : undefined
+  const event =
+    oneOnOne ??
+    eventsFor(payment, state).find((item) =>
+      (item.people ?? []).some((person) => name.includes(person)),
+    )
   const near = state.sources.photos
     ? photos.filter(
         (photo) =>
@@ -294,7 +305,10 @@ function transferBasis(payment: Payment, state: LedgerState) {
           !state.photoUnlinked.includes(photo.id) &&
           (stay
             ? minutes(photo.time) >= minutes(stay.from) && minutes(photo.time) <= minutes(stay.to)
-            : Math.abs(minutes(photo.time) - at) <= 30),
+            : oneOnOne
+              ? minutes(photo.time) >= minutes(oneOnOne.start) &&
+                minutes(photo.time) <= minutes(oneOnOne.end)
+              : Math.abs(minutes(photo.time) - at) <= 30),
       )
     : []
   return { stay, event, photos: near }
@@ -348,7 +362,15 @@ export function evidenceOf(payment: Payment, state: LedgerState): Evidence[] {
   }
   // 송금은 맥락을 확정하기 전까지 근거로 삼지 않는다 (제안은 transferGuess가 담당)
   if (!matched) return list.filter((item) => !cut.includes(item.key))
-  for (const event of eventsFor(payment, state))
+  // 송금은 맥락으로 확정한 일정만 근거로 둔다 (시간대가 겹치는 다른 일정은 넣지 않는다)
+  const linkedEvents =
+    payment.kind === "transfer"
+      ? (() => {
+          const event = transferBasis(payment, state)?.event
+          return event ? [event] : []
+        })()
+      : eventsFor(payment, state)
+  for (const event of linkedEvents)
     list.push({
       key: `cal:${event.id}`,
       kind: "calendar",
@@ -419,9 +441,13 @@ function transferContextTitle(payment: Payment, state: LedgerState) {
   if (!basis) return null
   const counterparty = payment.counterparty ?? ""
   const person = basis.event?.people?.find((name) => counterparty.includes(name))
+  const who = person ? withRang(person) : undefined
+  // 체류 기록이 없고 그 만남의 사진이 있으면 사진 내용으로 부른다: "민지랑 카페"
+  const subject = basis.photos[0]?.content?.split("·")[0]?.trim()
+  if (!basis.stay && subject) return [who, subject].filter(Boolean).join(" ")
   const place = basis.stay?.name ?? payment.place ?? payment.zone
   const at = basis.event?.start ?? basis.stay?.from ?? payment.time
-  return [person ? withRang(person) : undefined, place, mealOf(at)].filter(Boolean).join(" ")
+  return [who, place, mealOf(at)].filter(Boolean).join(" ")
 }
 
 export function restoredOf(payment: Payment, state: LedgerState): Restored | null {
