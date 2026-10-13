@@ -1,12 +1,14 @@
 import { Link2, Sparkles } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
-import { Action, cx } from "@/components/common"
+import { Action } from "@/components/common"
 import { MainHeader } from "@/components/layout"
 import {
   TODAY,
   evidenceOf,
+  label as dateLabel,
   paymentsOn,
   restoredOf,
+  weekday,
   won,
   type LedgerState,
   type Payment,
@@ -100,7 +102,6 @@ export function CleanupScreen({
   const endRef = useRef<HTMLDivElement>(null)
   const current = turns[step]
   const waiting = replies.length > step
-  const total = turns.filter((turn) => turn.kind !== "transfer").length
 
   // 건이 처리되어 목록에서 빠지면 내 답장을 남긴다
   useEffect(() => {
@@ -117,7 +118,8 @@ export function CleanupScreen({
   // 답장을 남긴 뒤 잠깐 있다가 링키가 다음 건을 묻는다
   useEffect(() => {
     if (!waiting) return
-    const timer = window.setTimeout(() => setStep((value) => value + 1), 450)
+    // 내 답장과 링키의 마무리 말을 읽을 시간을 두고 다음 건을 묻는다
+    const timer = window.setTimeout(() => setStep((value) => value + 1), 900)
     return () => window.clearTimeout(timer)
   }, [waiting, step])
 
@@ -140,7 +142,13 @@ export function CleanupScreen({
     <div className="main-page sub-page cl-page">
       <MainHeader back={back} title="링키" />
       <div className="main-scroll cl-thread">
-        {total > 0 && <Linky>오늘 확인할 지출이 {total}건 있어요</Linky>}
+        {turns.length > 0 && (
+          <Linky>
+            <p className="cl-plain">
+              오늘 확인할 기록이 <b>{turns.length}건</b> 있어요. 하나씩 같이 볼게요.
+            </p>
+          </Linky>
+        )}
         {shown.map((turn, index) => (
           <TurnView
             key={turn.id}
@@ -154,7 +162,7 @@ export function CleanupScreen({
       </div>
       <div className="cl-chips">
         {finished ? (
-          <Action className="pill primary" onClick={back}>
+          <Action className="primary-button cl-home" onClick={back}>
             홈으로
           </Action>
         ) : (
@@ -188,6 +196,29 @@ function Linky({ children }: { children: React.ReactNode }) {
   )
 }
 
+// 받침 있으면 "으로", 없거나 ㄹ받침이면 "로"
+const toward = (word: string) => {
+  const code = word.charCodeAt(word.length - 1) - 0xac00
+  if (code < 0 || code > 11171) return "로"
+  const final = code % 28
+  return final === 0 || final === 8 ? "로" : "으로"
+}
+
+// "11시 35분"
+const spoken = (time: string) => {
+  const [h, m] = time.split(":").map(Number)
+  return m ? `${h}시 ${m}분` : `${h}시`
+}
+
+// 링키의 질문: 복원된 장소·이동을 사실로 묻는다 (추측·평가 없이)
+function questionOf(payment: Payment, state: LedgerState) {
+  const restored = restoredOf(payment, state)
+  if (!restored) return undefined
+  if (payment.transit) return `${payment.transit.from} 인근에서 택시를 타셨나요?`
+  return `${restored.spot ? `${restored.spot} ` : ""}${restored.label}에서 결제하셨나요?`
+}
+
+// 대화 한 건: 결제 사실 → 링키의 질문(+근거) → 내 답장 → 링키의 마무리
 function TurnView({
   turn,
   reply,
@@ -198,24 +229,44 @@ function TurnView({
   state: LedgerState
 }) {
   const { payment } = turn
+  const restored = restoredOf(payment, state)
+  const day = `${dateLabel(payment.date)} (${weekday(payment.date)})`
+  const fact =
+    turn.kind === "transfer"
+      ? `${day} ${spoken(payment.time)}, ${payment.counterparty} 님께 ${won(payment.amount)}을 보냈어요.`
+      : `${spoken(payment.time)}, ${payment.merchant}에서 ${won(payment.amount)}이 결제됐어요.`
+  // 마무리: 맞아요면 바뀐 이름을, 아니면 그대로 둔다고 알린다
+  const closing =
+    reply === "맞아요" && restored
+      ? `그러면 '${restored.label}'${toward(restored.label)} 바꿔 둘게요.`
+      : reply === "아니에요"
+        ? "알겠어요. 송금으로 그대로 둘게요."
+        : reply === "기록 없음으로 둘게요"
+          ? "알겠어요. '기록 없음'으로 둘게요."
+          : reply === "앨범에서 불러왔어요"
+            ? "사진을 근거로 붙였어요."
+            : undefined
   return (
     <>
+      <Linky>{fact}</Linky>
       {turn.kind === "transfer" ? (
-        <>
-          <Linky>링키가 찾았어요</Linky>
-          <Linky>
-            <p className="cl-text">{transferQuestion(payment, turn.guess)}</p>
-            <p className="cl-sub">{transferEvidenceLine(turn.guess)}</p>
-          </Linky>
-        </>
-      ) : turn.kind === "confirm" ? (
-        <ConfirmTurn payment={payment} state={state} />
+        <Linky>
+          <p className="cl-text">{transferQuestion(payment, turn.guess)}</p>
+          <p className="cl-why">링키가 찾은 기록 · {transferEvidenceLine(turn.guess)}</p>
+        </Linky>
+      ) : turn.kind === "confirm" && restored ? (
+        <Linky>
+          <p className="cl-text">{questionOf(payment, state)}</p>
+          <ul className="cl-evidence">
+            {restored.evidence.map((evidence) => (
+              <li key={evidence.key}>{evidence.text}</li>
+            ))}
+          </ul>
+        </Linky>
       ) : (
         <Linky>
-          <p className="cl-orig">{payment.time} 결제</p>
-          <strong className="cl-title">{payment.merchant}</strong>
-          <b className="cl-amount">{won(payment.amount)}</b>
-          <p className="cl-sub">기록 없음</p>
+          <p className="cl-text">이 결제를 설명할 기록이 아직 없어요.</p>
+          <p className="cl-why">그때 찍은 사진이 있으면 붙여 둘 수 있어요.</p>
         </Linky>
       )}
       {reply && (
@@ -223,30 +274,8 @@ function TurnView({
           <div className="cl-bubble me">{reply}</div>
         </div>
       )}
+      {closing && <Linky>{closing}</Linky>}
     </>
-  )
-}
-
-// 복원 결과는 근거와 함께 보여 준다 (원본 → 복원된 장소, 붙은 기록)
-function ConfirmTurn({ payment, state }: { payment: Payment; state: LedgerState }) {
-  const restored = restoredOf(payment, state)
-  if (!restored) return null
-  return (
-    <Linky>
-      <p className="cl-orig">
-        {payment.time} · {restored.original}
-      </p>
-      <strong className="cl-title">
-        {restored.label}
-        {restored.spot ? ` · ${restored.spot}` : ""}
-      </strong>
-      <b className="cl-amount">{won(payment.amount)}</b>
-      <ul className="cl-evidence">
-        {restored.evidence.map((evidence) => (
-          <li key={evidence.key}>{evidence.text}</li>
-        ))}
-      </ul>
-    </Linky>
   )
 }
 
@@ -273,11 +302,11 @@ function ChipsFor({
   if (turn.kind === "confirm")
     return (
       <>
-        <Action className="pill" onClick={() => edit(payment)}>
+        <Action className="secondary-button" onClick={() => edit(payment)}>
           수정
         </Action>
         <Action
-          className={cx("pill", "primary")}
+          className="primary-button"
           onClick={() => reply("맞아요", () => confirm(payment.id))}
         >
           맞아요
@@ -288,13 +317,13 @@ function ChipsFor({
     return (
       <>
         <Action
-          className="pill"
+          className="secondary-button"
           onClick={() => reply("기록 없음으로 둘게요", () => skip(payment.id))}
         >
           기록 없음으로 두기
         </Action>
         <Action
-          className="pill primary"
+          className="primary-button"
           onClick={() => reply("앨범에서 불러왔어요", () => addRecord(payment.id))}
         >
           앨범에서 불러오기
@@ -304,13 +333,13 @@ function ChipsFor({
   return (
     <>
       <Action
-        className="pill"
+        className="secondary-button"
         onClick={() => reply("아니에요", () => declineTransfer(payment))}
       >
         아니에요
       </Action>
       <Action
-        className="pill primary"
+        className="primary-button"
         onClick={() => reply("맞아요", () => confirmTransfer(payment))}
       >
         맞아요

@@ -8757,24 +8757,45 @@ p {
   font-weight: var(--fw-item-amount);
 }
 
-/* 정리 대화: 답장 칩을 화면 아래 답장 줄로 (작은 알약이 구석에 붙어 보이던 것) */
+/* 정리 대화: 위 여백, 링키 말풍선 근거 줄, 아래를 채우는 큰 답장 버튼 */
+.cl-page .cl-thread {
+  height: calc(100% - 56px - 84px);
+  padding-top: 24px;
+  gap: 10px;
+}
+
+.cl-page .cl-text {
+  margin: 0;
+  font-weight: var(--fw-item-title);
+}
+
+.cl-page .cl-why {
+  margin: 2px 0 0;
+  color: var(--text-body);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+}
+
+.cl-page .cl-evidence li {
+  color: var(--text-body);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+}
+
 .cl-page .cl-chips {
-  height: auto;
-  min-height: 72px;
+  height: 84px;
   padding: 12px var(--page-padding) 20px;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 8px;
   border-top: 1px solid var(--border);
   background: var(--background);
 }
 
-.cl-page .cl-chips .pill {
-  height: 40px;
-  padding: 0 18px;
-  font-size: var(--fs-body);
-  line-height: var(--lh-body);
+.cl-page .cl-chips .cl-home {
+  grid-column: 1 / -1;
 }
 
-.cl-page .cl-thread {
-  height: calc(100% - 56px - 72px);
-  padding-top: 16px;
+.cl-page .cl-plain {
+  margin: 0;
 }
