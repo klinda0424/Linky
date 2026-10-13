@@ -40,12 +40,15 @@ export const SCENARIO = {
 export const scenarioEvents: CalEvent[] = [
   { id: "e-sc1", title: "지은이랑 저녁", date: d(10, 30), start: "20:00", end: "22:00", zone: "연남동", people: ["지은"] },
   { id: "e-sc2", title: "동기 저녁 모임", date: d(10, 31), start: "19:00", end: "21:30", zone: "강남역", people: ["지은", "민지", "수진"] },
+  // 오늘 송금(박민지 6,000원)의 근거: 낮에 민지와 만난 일정
+  { id: "e-sc3", title: "민지", date: d(10, 31), start: "14:00", end: "15:00", zone: "강남역", people: ["민지"] },
 ]
 
 export const scenarioPhotos: Photo[] = [
   { id: "ph-sc1", date: d(10, 30), time: "19:40", zone: "연남동", title: "연남동 파스타", content: "파스타 · 2인 세팅" },
   { id: "ph-sc2", date: d(10, 31), time: "13:12", zone: "강남역", title: "포토이즘 강남역점", content: "포토부스 · 사진 4컷" },
   { id: "ph-sc3", date: d(10, 31), time: "19:35", zone: "강남역", title: "한돈명가 강남역점", content: "고기 · 4인 세팅" },
+  { id: "ph-sc4", date: d(10, 31), time: "14:15", zone: "강남역", title: "강남역 카페", content: "카페 · 음료 2잔" },
 ]
 
 // 위치 체류 구간: 복원의 기준. 결제 시각이 구간 밖이면 이동 중으로 본다.

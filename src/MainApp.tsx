@@ -9,6 +9,8 @@ import {
   type Photo,
   type YMD,
   TODAY,
+  depositsOf,
+  groupBasis,
   initialLedger,
   payments,
   sameDay,
@@ -152,22 +154,28 @@ export function MainApp({
     .sort((a, b) => dayNumber(b.payment) - dayNumber(a.payment))
   // 오늘 송금은 홈에 들어올 때 팝업으로 한 번만 띄운다 (닫으면 홈 상단 알림으로 남는다)
   const todayTransfer = pendingTransfers.find((item) => sameDay(item.payment.date, TODAY))
-  // 오늘 정산을 확인해야 하는 그룹 결제는 홈에서 정산 시트를 팝업으로 한 번 띄운다.
-  // 송금 팝업이 먼저 뜨는 날은 그 팝업을 닫은 뒤에 띄워 두 팝업이 겹치지 않게 한다.
-  // 닫아도 홈 알림 카드·정산 대기 배지로 다시 열 수 있다.
-  const groupPopupShown = useRef(false)
-  useEffect(() => {
-    if (groupPopupShown.current || !meeting) return
-    if (tab !== "home" || view !== "tabs") return
-    if (todayTransfer && !transferPopupSeen) return
-    groupPopupShown.current = true
-    const pending =
-      sameDay(meeting.date, TODAY) &&
-      !settled &&
-      !state.splitConfirmed.includes(meeting.id) &&
-      !(state.personal ?? []).includes(meeting.id)
-    if (pending) setSplitting(meeting)
-  }, [tab, view, todayTransfer, transferPopupSeen, settled, state.personal, state.splitConfirmed])
+  // 오늘 이전에 밀린 송금: 홈 상단 알림·정리 대화
+  const pastTransfers = pendingTransfers.filter((item) => !sameDay(item.payment.date, TODAY))
+  // 오늘 정산을 확인해야 하는 그룹 결제: 홈 진입 팝업에서 송금 다음 단계로 이어 보여 준다
+  // (예전에는 송금 팝업을 닫자마자 정산 시트가 따로 올라와 팝업이 연달아 떴다)
+  const todayGroup =
+    meeting &&
+    sameDay(meeting.date, TODAY) &&
+    !settled &&
+    !state.splitConfirmed.includes(meeting.id) &&
+    !(state.personal ?? []).includes(meeting.id)
+      ? (() => {
+          const deposits = depositsOf(meeting, state)
+          const detail = groupBasis(meeting, state)
+          return {
+            payment: meeting,
+            facts: [
+              deposits.length > 0 ? `입금 내역 ${deposits.length}건 확인` : undefined,
+              detail.detail ? `${detail.detail} 일정이 있던 날` : undefined,
+            ].filter((fact): fact is string => Boolean(fact)),
+          }
+        })()
+      : undefined
   const transferPayment = payments.find((item) => item.id === transferId)
   const detailPayment = payments.find((item) => item.id === detailId)
   const openDetail = (payment: Payment) => {
@@ -328,7 +336,7 @@ export function MainApp({
             if (meeting) setSplitting(meeting)
             else setView("settlementList")
           }}
-          pendingTransfers={pendingTransfers}
+          pendingTransfers={pastTransfers}
           // 알림을 누르면 첫 건(가장 최근)의 확인 화면으로. 다른 흐름으로 바꿀 때는 이 핸들러만 바꾼다
           openTransfer={(first) => {
             setTransferId(first.payment.id)
@@ -618,7 +626,8 @@ export function MainApp({
             items={cleanup}
             skip={(id) => setCleanupSkipped((value) => [...value, id])}
             state={state}
-            transfers={pendingTransfers}
+            // 오늘 송금은 홈 진입 팝업이 맡고, 정리 대화에는 지난 송금만 잇는다
+            transfers={pastTransfers}
           />
         )
       case "settlementList":
@@ -758,19 +767,25 @@ export function MainApp({
           }
         />
       )}
-      {todayTransfer && !transferPopupSeen && view === "tabs" && tab === "home" && (
+      {(todayTransfer || todayGroup) && !transferPopupSeen && view === "tabs" && tab === "home" && (
         <TransferPopup
           close={() => setTransferPopupSeen(true)}
-          confirm={() => {
-            setTransferPopupSeen(true)
-            confirmTransfer(todayTransfer.payment)
+          confirm={(item, last) => {
+            if (last) setTransferPopupSeen(true)
+            // 다음 단계(그룹 지출)가 있으면 팝업에 머물고, 마지막이면 바뀐 행을 보여 준다
+            confirmTransfer(item.payment, !last)
           }}
-          edit={() => {
+          edit={(item) => {
             setTransferPopupSeen(true)
-            setTransferId(todayTransfer.payment.id)
+            setTransferId(item.payment.id)
             setView("transfer")
           }}
+          group={todayGroup}
           item={todayTransfer}
+          openGroup={(payment) => {
+            setTransferPopupSeen(true)
+            setSplitting(payment)
+          }}
           state={state}
         />
       )}
@@ -781,8 +796,8 @@ export function MainApp({
       )}
       {cleanupDone && (
         <div className="cl-done" role="status" aria-live="polite">
-          <strong>오늘 정리 끝</strong>
-          <span>확인할 지출을 모두 확인했어요</span>
+          <strong>정리 끝</strong>
+          <span>밀린 기록을 모두 확인했어요</span>
         </div>
       )}
     </div>

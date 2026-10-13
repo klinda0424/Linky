@@ -8333,50 +8333,107 @@ p {
   color: var(--text-mute);
 }
 
-.tf-popup-badge {
-  align-self: flex-start;
-  padding: 4px 10px;
-  display: inline-flex;
+
+
+
+
+
+
+/* 2단계: 인사 → 찾은 기록. 단계가 바뀌면 오른쪽에서 밀려 들어온다 */
+.tf-step {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: tf-step-in 0.28s ease;
+}
+
+@keyframes tf-step-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.tf-hello {
+  padding-top: 8px;
   align-items: center;
-  gap: 4px;
-  border-radius: 12px;
-  background: var(--lime-card);
-  color: var(--primary-text);
-  font-size: var(--fs-label);
-  line-height: var(--lh-label);
+  text-align: center;
+}
+
+.tf-hello .primary-button {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.brand-mark.tf-hello-mark {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 2px;
+  border-radius: 11px;
+}
+
+.tf-hello-title {
+  margin: 0;
+  font-size: var(--fs-title);
+  line-height: var(--lh-title);
   font-weight: var(--fw-title);
 }
 
-.tf-popup-facts {
-  margin: 4px 0 0;
+.tf-hello-sub {
+  margin: 0;
   color: var(--text-body);
   font-size: var(--fs-body);
   line-height: var(--lh-body);
 }
 
-.tf-popup-rename {
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px;
-  font-size: var(--fs-title);
-  line-height: var(--lh-title);
+.tf-found-facts {
+  margin: 8px 28px 4px 0;
+  color: var(--text);
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+  word-break: keep-all;
 }
 
-.tf-popup-rename s {
+.tf-rename-box {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border-radius: 16px;
+  background: var(--lime-card);
+  color: var(--text-mute);
+}
+
+.tf-rename-old {
   color: var(--text-mute);
   font-size: var(--fs-body);
   line-height: var(--lh-body);
+  text-decoration: line-through;
 }
 
-.tf-popup-rename span {
-  color: var(--text-mute);
-}
-
-.tf-popup-rename strong {
+.tf-rename-new {
   color: var(--primary-text);
+  font-size: var(--fs-title);
+  line-height: var(--lh-title);
   font-weight: var(--fw-title);
+}
+
+.tf-found-ask {
+  margin: 0;
+  text-align: center;
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tf-step {
+    animation: none;
+  }
 }
 
 .tf-popup-evidence {
@@ -8489,4 +8546,358 @@ p {
   line-height: var(--lh-caption);
   font-weight: var(--fw-caption);
   word-break: keep-all;
+}
+
+/* ---------- 그룹 지출 시트 첫 화면 (gs3): 큰 금액 → 근거 → 함께한 사람 → 1인당 ---------- */
+.gs-body.gs3 {
+  padding-top: 6px;
+  scrollbar-width: none;
+}
+
+.gs-body.gs3::-webkit-scrollbar {
+  display: none;
+}
+
+.gs3-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  color: var(--primary-text);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+  font-weight: var(--fw-title);
+}
+
+.gs3-merchant {
+  margin: 14px 0 0;
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+  font-weight: var(--fw-item-title);
+}
+
+.gs3-amount {
+  margin: 2px 0 0;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: var(--fw-headline);
+  letter-spacing: -0.02em;
+}
+
+.gs3-meta {
+  margin: 4px 0 0;
+  color: var(--text-mute);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+}
+
+.gs3-why {
+  margin-top: 18px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.gs3-why p {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+}
+
+.gs3-why svg {
+  flex: none;
+  color: var(--primary-text);
+}
+
+.gs3-section {
+  margin-top: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gs3-section strong {
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+  font-weight: var(--fw-title);
+}
+
+.gs3-edit {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  color: var(--text-body);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+}
+
+.gs3-people {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.gs3-people > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.gs3-avatar {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--surface);
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+  font-weight: var(--fw-item-title);
+}
+
+.gs3-avatar.me {
+  background: var(--pink);
+}
+
+.gs3-avatar.su {
+  background: var(--blue);
+}
+
+.gs3-avatar.min {
+  background: var(--green);
+}
+
+.gs3-avatar.jin {
+  background: var(--purple);
+}
+
+.gs3-people b {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: var(--fw-item-title);
+}
+
+.gs3-people small {
+  color: var(--text-mute);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+  white-space: nowrap;
+}
+
+.gs3-people small.paid {
+  color: var(--primary-text);
+  font-weight: var(--fw-title);
+}
+
+.gs3-share {
+  margin-top: 22px;
+  padding: 16px 18px;
+  border: 1px solid var(--primary-border);
+  border-radius: 18px;
+  background: var(--primary-soft);
+}
+
+.gs3-share-main {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.gs3-share-main span {
+  color: var(--text-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+}
+
+.gs3-share-main strong {
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: var(--fw-headline);
+}
+
+.gs3-share-split {
+  margin-top: 12px;
+  padding-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--primary-border);
+}
+
+.gs3-share-split div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gs3-share-split div + div {
+  padding-left: 16px;
+  border-left: 1px solid var(--primary-border);
+}
+
+.gs3-share-split span {
+  color: var(--text-body);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+}
+
+.gs3-share-split b {
+  font-size: var(--fs-item-amount);
+  line-height: var(--lh-item-amount);
+  font-weight: var(--fw-item-amount);
+}
+
+/* 정리 대화: 위 여백, 링키 말풍선 근거 줄, 아래를 채우는 큰 답장 버튼 */
+.cl-page .cl-thread {
+  height: calc(100% - 56px - 84px);
+  padding-top: 24px;
+  gap: 10px;
+}
+
+.cl-page .cl-text {
+  margin: 0;
+  font-weight: var(--fw-item-title);
+}
+
+.cl-page .cl-why {
+  margin: 2px 0 0;
+  color: var(--text-body);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+}
+
+.cl-page .cl-evidence li {
+  color: var(--text-body);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+}
+
+.cl-page .cl-chips {
+  height: 84px;
+  padding: 12px var(--page-padding) 20px;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+  background: var(--background);
+}
+
+.cl-page .cl-chips .cl-home {
+  grid-column: 1 / -1;
+}
+
+.cl-page .cl-plain {
+  margin: 0;
+}
+
+/* 정리 대화 카드 말풍선: 홈 "오늘 지출" 행 + 질문 + 근거 아이콘 줄 */
+.cl-page .cl-bubble.cl-card {
+  width: 100%;
+  max-width: 290px;
+  padding: 4px 14px 14px;
+  gap: 8px;
+  border: 1px solid var(--border);
+  background: var(--background);
+}
+
+.cl-page .cl-payrow {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.cl-page .cl-payrow b {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: var(--fw-item-amount);
+}
+
+.cl-page .cl-ask {
+  margin: 4px 0 0;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: var(--fw-title);
+  word-break: keep-all;
+}
+
+.cl-evidence2 {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+}
+
+.cl-evidence2 li {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--text-body);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+}
+
+.cl-evidence2 svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--primary-text);
+}
+
+.cl-rename {
+  padding: 10px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  border-radius: 12px;
+  background: var(--lime-card);
+}
+
+.cl-rename s {
+  color: var(--text-mute);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+}
+
+.cl-rename span {
+  color: var(--text-mute);
+}
+
+.cl-rename strong {
+  color: var(--primary-text);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: var(--fw-title);
+}
+
+/* 앨범 선택 칸: 그림이 칸을 꽉 채우고(.album-tile svg의 position: relative가 덮어쓰던 것), 체크·카메라 표시는 그림 위 오른쪽 아래에 */
+.album-tile > .album-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.album-tile > svg:not(.album-art) {
+  z-index: 1;
+}
+
+.album-tile.picked::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border: 3px solid var(--primary);
+  border-radius: 10px;
+  pointer-events: none;
 }

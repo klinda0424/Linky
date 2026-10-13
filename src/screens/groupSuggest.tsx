@@ -1,12 +1,14 @@
 import { useState } from "react"
-import { ArrowDown, Check, Minus, Plus, RotateCcw, UserPlus, X } from "lucide-react"
-import { Action, PersonAvatar, cx } from "@/components/common"
+import { ArrowDown, CalendarDays, Check, Minus, Plus, RotateCcw, UserPlus, X } from "lucide-react"
+import { Action, cx } from "@/components/common"
 import {
   type LedgerState,
   type Payment,
+  categoryOf,
   eventsFor,
   groupBasis,
   label,
+  weekday,
   won,
 } from "@/lib/ledger"
 
@@ -14,14 +16,16 @@ import {
 // 일정 인원과 입금 내역을 근거로 인원을 제안하고, 확인을 거쳐 내 몫만 가계에 반영한다.
 // 정산 흐름은 전부 이 시트 안에서 이어지고, "정산 완료"를 누를 때 원장에 반영된다.
 type Step = "suggest" | "edit" | "result"
-type Member = "나" | "지은" | "민지" | "수진"
-const isMember = (name: string): name is Member => ["나", "지은", "민지", "수진"].includes(name)
 
 // "동기 저녁 모임" + 4명 → "동기 4명 저녁 모임": 첫 단어 뒤에 인원을 끼워 넣는다
 const meetingText = (title: string, count: number) => {
   const [first, ...rest] = title.split(" ")
   return rest.length > 0 ? `${first} ${count}명 ${rest.join(" ")}` : `${title} ${count}명`
 }
+
+// 사람마다 고정 틴트 (앱 아바타와 같은 색): 나 pink, 지은 blue, 민지 green, 수진 purple
+const toneOf = (name: string) =>
+  ({ 나: "me", 지은: "su", 민지: "min", 수진: "jin" })[name] ?? "other"
 
 export function GroupSuggestSheet({
   payment,
@@ -76,12 +80,11 @@ export function GroupSuggestSheet({
           ? [...value, name]
           : value,
     )
-  const sameAmount =
-    activeDeposits.length > 0 && activeDeposits.every((item) => item.amount === activeDeposits[0].amount)
   const basis = event
     ? `캘린더 '${event.title}' 참석 ${event.people?.length ?? 0}명${deposits.length > 0 ? ` + 입금 ${deposits.length}건` : ""}으로 ${people.length}명이에요`
     : `함께 결제한 ${people.length}명이에요`
   const groupDetail = groupBasis(payment, state)
+  const category = categoryOf(payment, state)?.split("·")[0]
 
   return (
     <div className="main-overlay split-overlay" onClick={close}>
@@ -92,65 +95,68 @@ export function GroupSuggestSheet({
         <div className="sheet-grip" />
         {step === "suggest" && (
           <>
-            <div className="gs-body">
-              <div className="gs-head">
-                <strong>그룹 지출 같아요</strong>
-                <i aria-hidden="true" />
-              </div>
-              <p className="gs-sub">
-                {payment.merchant} {won(payment.amount)} · {label(payment.date)} {payment.time}
+            {/* 첫 화면: ① 무슨 결제인지(크게) ② 근거 두 줄 ③ 함께한 사람·입금 ④ 1인당·내 몫 */}
+            <div className="gs-body gs3">
+              <span className="gs3-tag">그룹 지출 같아요</span>
+              <p className="gs3-merchant">{payment.merchant}</p>
+              <p className="gs3-amount">{won(payment.amount)}</p>
+              <p className="gs3-meta">
+                {label(payment.date)} ({weekday(payment.date)}) {payment.time} · {payment.place ?? payment.zone}
+                {category ? ` · ${category}` : ""}
               </p>
-              <div className="gs-people">
-                {members.map((name) => (
-                  <div key={name}>
-                    <span className={cx("gs-avatar", name === "나" && "me")}>{name.slice(0, 1)}</span>
-                    <em className={cx(name === "나" && "me")}>{name}</em>
-                  </div>
-                ))}
-              </div>
-              <p className="gs-basis">{basis}</p>
-              <Action className="gs-edit-link" onClick={() => setStep("edit")}>
-                인원 수정
-              </Action>
-              <div className="gs-result">
-                <span>1인당</span>
-                <strong>{won(perPerson)}</strong>
-                <p>
-                  내 몫 {won(perPerson)} · 받을 돈 {won(receivable)}
-                </p>
-              </div>
-              {/* 예전 두 번째 확인 화면에 있던 입금 확인·같이 한 일정을 이 화면에 합쳤다 */}
-              {activeDeposits.length > 0 && (
-                <>
-                  <p className="gs-deposit">
-                    입금 {activeDeposits.length}건이 들어왔어요
-                    {sameAmount
-                      ? ` (${payment.date.m}/${payment.date.d} ${won(activeDeposits[0].amount)} × ${activeDeposits.length})`
-                      : ""}
+
+              <div className="gs3-why">
+                {groupDetail.detail && (
+                  <p>
+                    <CalendarDays size={16} strokeWidth={1.8} />
+                    {meetingText(groupDetail.detail, groupDetail.count)} 한 날
                   </p>
-                  <div className="people-settlement">
-                    {activeDeposits.map((item) => (
-                      <div key={`${item.from}-${item.time}`}>
-                        {isMember(item.from) ? (
-                          <PersonAvatar name={item.from} />
-                        ) : (
-                          <span className="gs-avatar">{item.from.slice(0, 1)}</span>
-                        )}
-                        <div>
-                          <strong>{item.from}</strong>
-                          <span>{won(item.amount)}</span>
-                        </div>
-                        <span className="status-chip done">✓ {item.time} 입금 확인</span>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-              {groupDetail.detail && (
-                <div className="group-basis">
-                  <p>{meetingText(groupDetail.detail, groupDetail.count)} 한 날</p>
+                )}
+                {activeDeposits.length > 0 && (
+                  <p>
+                    <Check size={16} strokeWidth={2} />
+                    입금 {activeDeposits.length}건이 들어왔어요
+                  </p>
+                )}
+              </div>
+
+              <div className="gs3-section">
+                <strong>함께한 사람 {headcount}명</strong>
+                <Action className="gs3-edit" onClick={() => setStep("edit")}>
+                  인원 수정
+                </Action>
+              </div>
+              <div className="gs3-people">
+                {members.map((name) => {
+                  const paid = activeDeposits.find((item) => item.from === name)
+                  return (
+                    <div key={name}>
+                      <span className={cx("gs3-avatar", toneOf(name))}>{name.slice(0, 1)}</span>
+                      <b>{name}</b>
+                      <small className={cx(paid && "paid")}>
+                        {name === "나" ? "결제" : paid ? `${paid.time} 입금` : "입금 전"}
+                      </small>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div className="gs3-share">
+                <div className="gs3-share-main">
+                  <span>1인당</span>
+                  <strong>{won(perPerson)}</strong>
                 </div>
-              )}
+                <div className="gs3-share-split">
+                  <div>
+                    <span>내 몫</span>
+                    <b>{won(perPerson)}</b>
+                  </div>
+                  <div>
+                    <span>받을 돈</span>
+                    <b>{won(receivable)}</b>
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="gs-foot split">
               <Action className="secondary-button" onClick={notGroup}>

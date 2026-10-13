@@ -1,4 +1,5 @@
-import { ChevronRight, Sparkles, X } from "lucide-react"
+import { useState } from "react"
+import { ArrowDown, ChevronRight, Link2, Sparkles, X } from "lucide-react"
 import { Action } from "@/components/common"
 import {
   type LedgerState,
@@ -32,24 +33,28 @@ const contextNameOf = (item: FoundTransfer, state: LedgerState) =>
 // 홈 상단 고정 알림: 밀린 송금이 몇 건이든 하나로 묶는다. 누르면 onClick (기본: 첫 건 확인 화면)
 export function TransferNotice({
   items,
+  total,
   onClick,
 }: {
   items: FoundTransfer[]
+  // 함께 정리할 다른 밀린 기록까지 합친 건수 (없으면 송금 건수)
+  total?: number
   // 알림을 눌렀을 때. 다른 흐름(지출 정리 등)으로 이어 붙일 수 있게 열어 둔다
   onClick: (first: FoundTransfer, items: FoundTransfer[]) => void
 }) {
   const first = items[0]
   if (!first) return null
+  const count = total ?? items.length
   return (
     <Action className="hm-link tf-notice" onClick={() => onClick(first, items)}>
       <Sparkles size={20} strokeWidth={1.6} />
       <span className="hm-link-text">
         <strong>
-          링키가 찾았어요 <em className="tf-notice-count">{items.length}건</em>
+          링키가 찾았어요 <em className="tf-notice-count">{count}건</em>
         </strong>
         <small>
           {factsOf(first.payment)}
-          {items.length > 1 ? ` 외 ${items.length - 1}건` : ""}
+          {count > 1 ? ` 외 ${count - 1}건` : ""}
         </small>
       </span>
       <ChevronRight size={18} strokeWidth={1.8} />
@@ -57,25 +62,44 @@ export function TransferNotice({
   )
 }
 
-// 오늘 송금 팝업: 찾은 맥락 이름 + 근거 한 줄 + [맞아요][수정]. 닫으면 홈 상단 알림으로 남는다
+// 오늘 찾은 기록을 홈 진입 때 한 팝업으로 이어 보여 준다 (팝업이 연달아 뜨지 않게):
+// 인사 → (오늘 송금이 있으면) 찾은 송금·바꿀 이름 → (오늘 그룹 결제가 있으면) 무슨 결제인지·그룹 지출 같아요
+// 닫으면 홈 상단 알림·그룹 지출 알림으로 다시 열 수 있다
+export type FoundGroup = {
+  payment: Payment
+  // 근거 사실 두 줄: "입금 내역 3건 확인", "동기 4명 저녁 모임 한 날"
+  facts: string[]
+}
+
 export function TransferPopup({
   item,
+  group,
   state,
   confirm,
   edit,
+  openGroup,
   close,
 }: {
-  item: FoundTransfer
+  item?: FoundTransfer
+  group?: FoundGroup
   state: LedgerState
-  // 맞아요: 맥락 이름으로 바꾼다
-  confirm: () => void
+  // 맞아요: 맥락 이름으로 바꾼다 (다음 단계가 있으면 팝업에 머문다)
+  confirm: (item: FoundTransfer, last: boolean) => void
   // 수정: 근거를 보고 고르는 확인 화면으로
-  edit: () => void
-  // 나중에: 팝업만 닫는다 (알림은 홈 상단에 남는다)
+  edit: (item: FoundTransfer) => void
+  // 정산하러 가기: 그룹 지출 시트로
+  openGroup: (payment: Payment) => void
+  // 나중에: 팝업만 닫는다
   close: () => void
 }) {
-  const name = contextNameOf(item, state)
-  const evidence = transferEvidenceLine(item.guess)
+  const steps = [item && "found", group && "group"].filter(Boolean) as Array<"found" | "group">
+  const [step, setStep] = useState<"hello" | "found" | "group">("hello")
+  const next = () => {
+    const index = step === "hello" ? 0 : steps.indexOf(step as "found" | "group") + 1
+    if (steps[index]) setStep(steps[index])
+    else close()
+  }
+  const isLast = (current: "found" | "group") => steps.indexOf(current) === steps.length - 1
   return (
     <div className="main-overlay center tf-popup-dim" onClick={close}>
       <div
@@ -87,24 +111,77 @@ export function TransferPopup({
         <Action className="tf-popup-close" label="나중에 보기" onClick={close}>
           <X size={18} strokeWidth={1.8} />
         </Action>
-        <span className="tf-popup-badge">
-          <Sparkles size={14} strokeWidth={1.8} /> 링키가 찾았어요
-        </span>
-        <p className="tf-popup-facts">{factsOf(item.payment)}</p>
-        <p className="tf-popup-rename">
-          <s>{item.payment.counterparty} 송금</s>
-          <span aria-hidden="true">→</span>
-          <strong>{name ?? "기록 없음"}</strong>
-        </p>
-        {evidence && <p className="tf-popup-evidence">{evidence}</p>}
-        <div className="tf-popup-actions">
-          <Action className="secondary-button" onClick={edit}>
-            수정
-          </Action>
-          <Action className="primary-button" onClick={confirm}>
-            맞아요
-          </Action>
-        </div>
+        {step === "hello" && (
+          <div className="tf-step tf-hello" key="hello">
+            <span className="brand-mark tf-hello-mark">
+              <Link2 size={18} strokeWidth={2.2} />
+            </span>
+            <p className="tf-hello-title">돌아오셨군요!</p>
+            <p className="tf-hello-sub">
+              링키가 발견한 기록이 {steps.length > 1 && <b>{steps.length}건</b>} 있어요.
+            </p>
+            <Action className="primary-button" onClick={next}>
+              확인하기
+            </Action>
+          </div>
+        )}
+        {step === "found" && item && (
+          <div className="tf-step tf-found" key="found">
+            {steps.length > 1 && <p className="tf-step-count">1 / {steps.length}</p>}
+            <p className="tf-found-facts">
+              {label(item.payment.date)} ({weekday(item.payment.date)}) {item.payment.time},{" "}
+              <b>{item.payment.counterparty}</b> 님께 보낸 <b>{won(item.payment.amount)}</b> 송금이
+              확인되었어요.
+            </p>
+            <div className="tf-rename-box">
+              <span className="tf-rename-old">{item.payment.counterparty} 송금</span>
+              <ArrowDown size={18} strokeWidth={2} aria-hidden="true" />
+              <strong className="tf-rename-new">{contextNameOf(item, state) ?? "기록 없음"}</strong>
+            </div>
+            <p className="tf-found-ask">로 변경할까요?</p>
+            {transferEvidenceLine(item.guess) && (
+              <p className="tf-popup-evidence">근거 · {transferEvidenceLine(item.guess)}</p>
+            )}
+            <div className="tf-popup-actions">
+              <Action className="secondary-button" onClick={() => edit(item)}>
+                수정
+              </Action>
+              <Action
+                className="primary-button"
+                onClick={() => {
+                  const last = isLast("found")
+                  confirm(item, last)
+                  if (!last) next()
+                }}
+              >
+                맞아요
+              </Action>
+            </div>
+          </div>
+        )}
+        {step === "group" && group && (
+          <div className="tf-step tf-found" key="group">
+            {steps.length > 1 && <p className="tf-step-count">{steps.indexOf("group") + 1} / {steps.length}</p>}
+            <p className="tf-found-facts">
+              {label(group.payment.date)} ({weekday(group.payment.date)}) {group.payment.time},{" "}
+              <b>{group.payment.merchant}</b>에서 결제한 <b>{won(group.payment.amount)}</b>
+            </p>
+            <div className="tf-rename-box tf-group-box">
+              <strong className="tf-rename-new">그룹 지출 같아요</strong>
+              {group.facts.map((fact) => (
+                <span key={fact}>{fact}</span>
+              ))}
+            </div>
+            <div className="tf-popup-actions">
+              <Action className="secondary-button" onClick={close}>
+                나중에
+              </Action>
+              <Action className="primary-button" onClick={() => openGroup(group.payment)}>
+                정산하러 가기
+              </Action>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
