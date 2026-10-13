@@ -110,7 +110,7 @@ export function TransferPopup({
         {step === "hello" && (
           <div className="tf-step tf-hello" key="hello">
             <span className="brand-mark tf-hello-mark">
-              <Link2 size={22} strokeWidth={2.2} />
+              <Link2 size={18} strokeWidth={2.2} />
             </span>
             <p className="tf-hello-title">돌아오셨군요!</p>
             <p className="tf-hello-sub">링키가 발견한 기록이 있어요.</p>

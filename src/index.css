@@ -8370,24 +8370,24 @@ p {
 }
 
 .brand-mark.tf-hello-mark {
-  width: 48px;
-  height: 48px;
-  margin-bottom: 4px;
-  border-radius: 14px;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 2px;
+  border-radius: 11px;
 }
 
 .tf-hello-title {
   margin: 0;
-  font-size: var(--fs-headline);
-  line-height: var(--lh-headline);
-  font-weight: var(--fw-headline);
+  font-size: var(--fs-title);
+  line-height: var(--lh-title);
+  font-weight: var(--fw-title);
 }
 
 .tf-hello-sub {
   margin: 0;
   color: var(--text-body);
-  font-size: var(--fs-item-title);
-  line-height: var(--lh-item-title);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
 }
 
 .tf-found-facts {
