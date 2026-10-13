@@ -8,13 +8,11 @@ import {
   Link2,
   Sparkles,
   Ticket,
-  Users,
   Utensils,
 } from "lucide-react"
 import { useRef, type MouseEvent, type PointerEvent } from "react"
 import { Action, cx } from "@/components/common"
 import { HeaderActions } from "@/components/layout"
-import { meeting } from "@/lib/settlement"
 import { CleanupCard } from "@/screens/cleanup"
 import { type FoundTransfer, TransferNotice } from "@/screens/transferNotice"
 import {
@@ -33,7 +31,6 @@ import {
   type Photo,
   restoredOf,
   sameDay,
-  depositsOf,
   shareOf,
   stays,
   weekday,
@@ -405,25 +402,8 @@ export function HomePage({
   // 송금 맥락은 주간 캘린더 바로 아래 연라임 카드로, 그룹 결제는 아래 알림 카드로 띄운다
   // 감지된 것만 알림으로 띄운다: 송금 맥락, 그룹 결제 (복원 결과는 알림 없이 캘린더 카드에서 확인)
   // 오늘 받은 알림이라 다른 날짜를 골랐을 때는 보이지 않는다
-  const notices: Notice[] = [
-    ...(isToday && pendingSettlement
-      ? [
-          {
-            key: "settle",
-            icon: Users,
-            // 대표 결제가 있으면 "고깃집 12만원, 그룹 지출 같아요"와 입금 근거를 보인다
-            title: meeting
-              ? `${meeting.merchant} ${man(meeting.amount)}원, 그룹 지출 같아요`
-              : "그룹 결제가 감지됐어요",
-            sub: meeting && depositsOf(meeting, state).length > 0
-              ? `입금 ${depositsOf(meeting, state).length}건이 들어왔어요`
-              : `정산할지 확인해주세요 · 정산 대기 ${pendingSettlement.count}건`,
-            alert: true,
-            onClick: openSettlement,
-          },
-        ]
-      : []),
-  ]
+  // 그룹 결제는 별도 빨간 알림 카드 없이 상단 "링키가 찾았어요"에 함께 모은다 (cleanup.tsx 대화에서 이어서 확인)
+  const notices: Notice[] = []
   return (
     <>
       <div className="cal-brandbar">

@@ -31,6 +31,7 @@ import {
   type TransferGuess,
 } from "@/lib/ledger"
 import { transferQuestion } from "@/screens/transfer"
+import { type FoundGroup } from "@/screens/transferNotice"
 
 // ---------- 정리할 지출 ----------
 // 밀린 기록 정리: 오늘 이전 최근 7일(10/24~10/30) 결제 중 사용자가 한 번 확인해야 남는 건
@@ -84,6 +85,7 @@ export function CleanupCard({ count, open }: { count: number; open: () => void }
 type Turn =
   | { id: string; kind: "confirm" | "empty"; payment: Payment }
   | { id: string; kind: "transfer"; payment: Payment; guess: TransferGuess }
+  | { id: string; kind: "group"; payment: Payment; facts: string[] }
 
 // 챗봇 대화형: 링키가 한 건씩 묻고, 아래 답장 버튼으로 답한다. 처리한 건은 내 답장으로 남는다.
 export function CleanupScreen({
@@ -97,8 +99,15 @@ export function CleanupScreen({
   addRecord,
   confirmTransfer,
   declineTransfer,
+  group,
+  openGroup,
+  markPersonal,
   finish,
 }: {
+  // 확인하지 않은 그룹 결제: 송금 다음에 이어 붙인다 (정산은 정산 시트에서)
+  group?: FoundGroup
+  openGroup: (payment: Payment) => void
+  markPersonal: (paymentId: string) => void
   // 대화가 끝났을 때 한 번 알린다 ("정리 끝" 팝업)
   finish: () => void
   items: CleanupItem[]
@@ -117,6 +126,7 @@ export function CleanupScreen({
   const [turns] = useState<Turn[]>(() => [
     ...items.map((item) => ({ id: item.payment.id, ...item })),
     ...transfers.map((item) => ({ id: item.payment.id, kind: "transfer" as const, ...item })),
+    ...(group ? [{ id: group.payment.id, kind: "group" as const, ...group }] : []),
   ])
   const [step, setStep] = useState(0)
   const [replies, setReplies] = useState<string[]>([])
@@ -131,11 +141,13 @@ export function CleanupScreen({
     const stillOpen =
       current.kind === "transfer"
         ? transfers.some((item) => item.payment.id === current.id)
-        : items.some((item) => item.payment.id === current.id)
+        : current.kind === "group"
+          ? Boolean(group)
+          : items.some((item) => item.payment.id === current.id)
     if (stillOpen) return
     setReplies((value) => [...value, pendingReply.current])
     pendingReply.current = "확인했어요"
-  }, [current, items, transfers, waiting])
+  }, [current, items, transfers, group, waiting])
 
   // 답장을 남긴 뒤 잠깐 있다가 링키가 다음 건을 묻는다
   useEffect(() => {
@@ -167,8 +179,7 @@ export function CleanupScreen({
         {turns.length > 0 && (
           <Linky>
             <p className="cl-plain">
-              지난 {CLEANUP_DAYS}일 동안 확인하지 못한 기록이 <b>{turns.length}건</b> 있어요. 하나씩
-              같이 볼게요.
+              아직 확인하지 못한 기록이 <b>{turns.length}건</b> 있어요. 하나씩 같이 볼게요.
             </p>
           </Linky>
         )}
@@ -180,7 +191,7 @@ export function CleanupScreen({
             turn={turn}
           />
         ))}
-        {finished && <Linky>밀린 기록을 모두 정리했어요</Linky>}
+        {finished && <Linky>확인하지 못한 기록을 모두 정리했어요</Linky>}
         <div ref={endRef} />
       </div>
       <div className="cl-chips">
@@ -197,6 +208,8 @@ export function CleanupScreen({
               confirmTransfer={confirmTransfer}
               declineTransfer={declineTransfer}
               edit={edit}
+              markPersonal={markPersonal}
+              openGroup={openGroup}
               reply={reply}
               skip={skip}
               turn={current}
@@ -284,6 +297,31 @@ function TurnView({
   state: LedgerState
 }) {
   const { payment } = turn
+  if (turn.kind === "group")
+    return (
+      <>
+        <Linky card>
+          <PayRow name={payment.merchant} payment={payment} state={state} />
+          <p className="cl-ask">그룹 지출 같아요</p>
+          {turn.facts.length > 0 && (
+            <ul className="cl-evidence2">
+              {turn.facts.map((fact) => (
+                <li key={fact}>
+                  <span>{fact}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Linky>
+        {reply && (
+          <div className="cl-row me">
+            <div className="cl-bubble me">{reply}</div>
+          </div>
+        )}
+        {reply === "개인 지출이에요" && <Linky>알겠어요. 개인 지출로 둘게요.</Linky>}
+        {reply === "정산했어요" && <Linky>내 몫만 가계에 반영했어요.</Linky>}
+      </>
+    )
   const restored = restoredOf(payment, state)
   const original = turn.kind === "transfer" ? `${payment.counterparty} 송금` : payment.merchant
   const question =
@@ -341,8 +379,12 @@ function ChipsFor({
   addRecord,
   confirmTransfer,
   declineTransfer,
+  openGroup,
+  markPersonal,
 }: {
   turn: Turn
+  openGroup: (payment: Payment) => void
+  markPersonal: (paymentId: string) => void
   reply: (text: string, act: () => void) => void
   confirm: (paymentId: string) => void
   skip: (paymentId: string) => void
@@ -352,6 +394,23 @@ function ChipsFor({
   declineTransfer: (payment: Payment) => void
 }) {
   const { payment } = turn
+  if (turn.kind === "group")
+    return (
+      <>
+        <Action
+          className="secondary-button"
+          onClick={() => reply("개인 지출이에요", () => markPersonal(payment.id))}
+        >
+          개인 지출이에요
+        </Action>
+        <Action
+          className="primary-button"
+          onClick={() => reply("정산했어요", () => openGroup(payment))}
+        >
+          정산하러 가기
+        </Action>
+      </>
+    )
   if (turn.kind === "confirm")
     return (
       <>
