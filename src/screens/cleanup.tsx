@@ -136,7 +136,8 @@ export function CleanupScreen({
   }, [finished])
 
   return (
-    <>
+    // 다른 화면처럼 상태바 아래(main-page)에서 시작한다. 없으면 헤더가 상태바와 겹친다
+    <div className="main-page sub-page cl-page">
       <MainHeader back={back} title="링키" />
       <div className="main-scroll cl-thread">
         {total > 0 && <Linky>오늘 확인할 지출이 {total}건 있어요</Linky>}
@@ -172,7 +173,7 @@ export function CleanupScreen({
           )
         )}
       </div>
-    </>
+    </div>
   )
 }
 
