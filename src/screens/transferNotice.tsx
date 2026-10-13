@@ -113,8 +113,9 @@ export function TransferPopup({
               <Link2 size={18} strokeWidth={2.2} />
             </span>
             <p className="tf-hello-title">돌아오셨군요!</p>
-            <p className="tf-hello-sub">링키가 발견한 기록이 있어요.</p>
-            {steps.length > 1 && <p className="tf-step-count">{steps.length}건</p>}
+            <p className="tf-hello-sub">
+              링키가 발견한 기록이 {steps.length > 1 ? `${steps.length}건 ` : ""}있어요.
+            </p>
             <Action className="primary-button" onClick={next}>
               확인하기
             </Action>
