@@ -8578,8 +8578,8 @@ p {
 
 .gs3-amount {
   margin: 2px 0 0;
-  font-size: 30px;
-  line-height: 38px;
+  font-size: 22px;
+  line-height: 28px;
   font-weight: var(--fw-headline);
   letter-spacing: -0.02em;
 }
@@ -8721,8 +8721,8 @@ p {
 }
 
 .gs3-share-main strong {
-  font-size: 26px;
-  line-height: 32px;
+  font-size: 22px;
+  line-height: 28px;
   font-weight: var(--fw-headline);
 }
 
