@@ -6619,6 +6619,71 @@ p {
 }
 
 /* 알림·하루·동선·사진 */
+.hm-media-actions {
+  margin-bottom: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.hm-media-action {
+  min-width: 0;
+  min-height: 92px;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  grid-template-rows: 1fr;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  text-align: left;
+}
+
+.hm-media-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  color: var(--primary-text);
+}
+
+.hm-media-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hm-media-copy strong,
+.hm-media-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hm-media-copy strong {
+  color: var(--text);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+  font-weight: var(--fw-item-title);
+}
+
+.hm-media-copy small {
+  color: var(--text-mute);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+  font-weight: var(--fw-caption);
+}
+
+.hm-media-action > svg {
+  color: var(--text-mute);
+}
+
 .hm-notice strong {
   font-size: var(--fs-item-title);
   line-height: var(--lh-item-title);

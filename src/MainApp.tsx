@@ -314,8 +314,8 @@ export function MainApp({
       return (
         <HomePage
           day={homeDay}
-          openAlbum={() => {
-            setAlbumDay(undefined)
+          openAlbum={(day) => {
+            setAlbumDay(day)
             setAlbumSheetClosing(false)
             setAlbumSheetOpen(true)
           }}
