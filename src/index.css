@@ -8879,3 +8879,25 @@ p {
   line-height: var(--lh-body);
   font-weight: var(--fw-title);
 }
+
+/* 앨범 선택 칸: 그림이 칸을 꽉 채우고(.album-tile svg의 position: relative가 덮어쓰던 것), 체크·카메라 표시는 그림 위 오른쪽 아래에 */
+.album-tile > .album-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.album-tile > svg:not(.album-art) {
+  z-index: 1;
+}
+
+.album-tile.picked::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border: 3px solid var(--primary);
+  border-radius: 10px;
+  pointer-events: none;
+}
