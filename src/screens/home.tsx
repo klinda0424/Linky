@@ -442,6 +442,7 @@ export function HomePage({
           (pendingTransfers.length > 0 ? (
             <TransferNotice
               items={pendingTransfers}
+              total={pendingTransfers.length + (cleanupCount ?? 0)}
               onClick={(first) => (openCleanup ? openCleanup() : openTransfer(first))}
             />
           ) : (

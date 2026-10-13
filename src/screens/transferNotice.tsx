@@ -33,24 +33,28 @@ const contextNameOf = (item: FoundTransfer, state: LedgerState) =>
 // 홈 상단 고정 알림: 밀린 송금이 몇 건이든 하나로 묶는다. 누르면 onClick (기본: 첫 건 확인 화면)
 export function TransferNotice({
   items,
+  total,
   onClick,
 }: {
   items: FoundTransfer[]
+  // 함께 정리할 다른 밀린 기록까지 합친 건수 (없으면 송금 건수)
+  total?: number
   // 알림을 눌렀을 때. 다른 흐름(지출 정리 등)으로 이어 붙일 수 있게 열어 둔다
   onClick: (first: FoundTransfer, items: FoundTransfer[]) => void
 }) {
   const first = items[0]
   if (!first) return null
+  const count = total ?? items.length
   return (
     <Action className="hm-link tf-notice" onClick={() => onClick(first, items)}>
       <Sparkles size={20} strokeWidth={1.6} />
       <span className="hm-link-text">
         <strong>
-          링키가 찾았어요 <em className="tf-notice-count">{items.length}건</em>
+          링키가 찾았어요 <em className="tf-notice-count">{count}건</em>
         </strong>
         <small>
           {factsOf(first.payment)}
-          {items.length > 1 ? ` 외 ${items.length - 1}건` : ""}
+          {count > 1 ? ` 외 ${count - 1}건` : ""}
         </small>
       </span>
       <ChevronRight size={18} strokeWidth={1.8} />

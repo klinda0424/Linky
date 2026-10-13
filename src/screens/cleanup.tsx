@@ -33,14 +33,20 @@ import {
 import { transferQuestion } from "@/screens/transfer"
 
 // ---------- 정리할 지출 ----------
-// 오늘 결제 중 사용자가 한 번 확인해야 남는 건:
+// 밀린 기록 정리: 오늘 이전 최근 7일(10/24~10/30) 결제 중 사용자가 한 번 확인해야 남는 건
 //  confirm = 근거로 복원됐지만 [맞아요]를 아직 누르지 않은 결제
 //  empty   = 근거가 하나도 없어 "기록 없음"인 결제
-// 송금·정산 대기 그룹 결제는 각자의 알림(링키가 찾았어요, 정산 팝업)이 맡으므로 여기서 건수에 넣지 않는다.
+// 오늘 건은 홈 진입 팝업이 맡는다. 송금·정산 대기 그룹 결제는 각자의 흐름이 맡으므로 여기서 건수에 넣지 않는다.
 export type CleanupItem = { payment: Payment; kind: "confirm" | "empty" }
+export const CLEANUP_DAYS = 7
+const pastDays = (count: number) =>
+  Array.from({ length: count }, (_, index) => {
+    const date = new Date(TODAY.y, TODAY.m - 1, TODAY.d - count + index)
+    return { y: date.getFullYear(), m: date.getMonth() + 1, d: date.getDate() }
+  })
 
 export function cleanupItems(state: LedgerState, skipped: string[]): CleanupItem[] {
-  return paymentsOn(TODAY).flatMap((payment): CleanupItem[] => {
+  return pastDays(CLEANUP_DAYS).flatMap((day) => paymentsOn(day)).flatMap((payment): CleanupItem[] => {
     if (payment.kind === "transfer" || skipped.includes(payment.id)) return []
     const pendingGroup =
       Boolean(payment.group) &&
@@ -93,7 +99,7 @@ export function CleanupScreen({
   declineTransfer,
   finish,
 }: {
-  // 대화가 끝났을 때 한 번 알린다 ("오늘 정리 끝" 팝업)
+  // 대화가 끝났을 때 한 번 알린다 ("정리 끝" 팝업)
   finish: () => void
   items: CleanupItem[]
   // 링키가 찾은 송금 맥락: 정리할 건 뒤에 질문으로 이어 붙인다 (건마다 한 번씩)
@@ -161,7 +167,8 @@ export function CleanupScreen({
         {turns.length > 0 && (
           <Linky>
             <p className="cl-plain">
-              오늘 확인할 기록이 <b>{turns.length}건</b> 있어요. 하나씩 같이 볼게요.
+              지난 {CLEANUP_DAYS}일 동안 확인하지 못한 기록이 <b>{turns.length}건</b> 있어요. 하나씩
+              같이 볼게요.
             </p>
           </Linky>
         )}
@@ -173,7 +180,7 @@ export function CleanupScreen({
             turn={turn}
           />
         ))}
-        {finished && <Linky>오늘 정리 끝이에요</Linky>}
+        {finished && <Linky>밀린 기록을 모두 정리했어요</Linky>}
         <div ref={endRef} />
       </div>
       <div className="cl-chips">
