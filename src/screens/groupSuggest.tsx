@@ -1,12 +1,14 @@
 import { useState } from "react"
 import { ArrowDown, Check, Minus, Plus, RotateCcw, UserPlus, X } from "lucide-react"
-import { Action, PersonAvatar, cx } from "@/components/common"
+import { Action, cx } from "@/components/common"
 import {
   type LedgerState,
   type Payment,
+  categoryOf,
   eventsFor,
   groupBasis,
   label,
+  man,
   won,
 } from "@/lib/ledger"
 
@@ -14,8 +16,6 @@ import {
 // 일정 인원과 입금 내역을 근거로 인원을 제안하고, 확인을 거쳐 내 몫만 가계에 반영한다.
 // 정산 흐름은 전부 이 시트 안에서 이어지고, "정산 완료"를 누를 때 원장에 반영된다.
 type Step = "suggest" | "edit" | "result"
-type Member = "나" | "지은" | "민지" | "수진"
-const isMember = (name: string): name is Member => ["나", "지은", "민지", "수진"].includes(name)
 
 // "동기 저녁 모임" + 4명 → "동기 4명 저녁 모임": 첫 단어 뒤에 인원을 끼워 넣는다
 const meetingText = (title: string, count: number) => {
@@ -76,12 +76,11 @@ export function GroupSuggestSheet({
           ? [...value, name]
           : value,
     )
-  const sameAmount =
-    activeDeposits.length > 0 && activeDeposits.every((item) => item.amount === activeDeposits[0].amount)
   const basis = event
     ? `캘린더 '${event.title}' 참석 ${event.people?.length ?? 0}명${deposits.length > 0 ? ` + 입금 ${deposits.length}건` : ""}으로 ${people.length}명이에요`
     : `함께 결제한 ${people.length}명이에요`
   const groupDetail = groupBasis(payment, state)
+  const category = categoryOf(payment, state)?.split("·")[0]
 
   return (
     <div className="main-overlay split-overlay" onClick={close}>
@@ -92,23 +91,41 @@ export function GroupSuggestSheet({
         <div className="sheet-grip" />
         {step === "suggest" && (
           <>
-            <div className="gs-body">
-              <div className="gs-head">
-                <strong>그룹 지출 같아요</strong>
-                <i aria-hidden="true" />
-              </div>
-              <p className="gs-sub">
-                {payment.merchant} {won(payment.amount)} · {label(payment.date)} {payment.time}
+            {/* 첫 화면: 무슨 결제인지(가맹점·금액) → 근거 두 줄 → 사람별 입금 → 1인당 → 포함된 결제 */}
+            <div className="gs-body gs2">
+              <p className="gs2-title">
+                {payment.merchant} {man(payment.amount)}원
+                <br />
+                그룹 지출 같아요
               </p>
-              <div className="gs-people">
-                {members.map((name) => (
-                  <div key={name}>
-                    <span className={cx("gs-avatar", name === "나" && "me")}>{name.slice(0, 1)}</span>
-                    <em className={cx(name === "나" && "me")}>{name}</em>
-                  </div>
-                ))}
+              <p className="gs2-sub">
+                {label(payment.date)} · {payment.place ?? payment.zone} · {headcount}명
+              </p>
+              <div className="gs2-facts">
+                {activeDeposits.length > 0 && <p>입금 내역 {activeDeposits.length}건 확인</p>}
+                {groupDetail.detail && (
+                  <p>{meetingText(groupDetail.detail, groupDetail.count)} 한 날</p>
+                )}
               </div>
-              <p className="gs-basis">{basis}</p>
+              <div className="gs2-people">
+                {members.map((name) => {
+                  const paid = activeDeposits.find((item) => item.from === name)
+                  return (
+                    <div key={name}>
+                      <span className={cx("gs-avatar", name === "나" && "me")}>{name.slice(0, 1)}</span>
+                      <em className={cx(name === "나" && "me")}>{name}</em>
+                      {paid ? (
+                        <span className="gs2-paid">
+                          <Check size={11} strokeWidth={2.4} /> {paid.time} 입금
+                        </span>
+                      ) : (
+                        <span className="gs2-paid empty" aria-hidden="true" />
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              <p className="gs2-basis">{basis}</p>
               <Action className="gs-edit-link" onClick={() => setStep("edit")}>
                 인원 수정
               </Action>
@@ -119,38 +136,14 @@ export function GroupSuggestSheet({
                   내 몫 {won(perPerson)} · 받을 돈 {won(receivable)}
                 </p>
               </div>
-              {/* 예전 두 번째 확인 화면에 있던 입금 확인·같이 한 일정을 이 화면에 합쳤다 */}
-              {activeDeposits.length > 0 && (
-                <>
-                  <p className="gs-deposit">
-                    입금 {activeDeposits.length}건이 들어왔어요
-                    {sameAmount
-                      ? ` (${payment.date.m}/${payment.date.d} ${won(activeDeposits[0].amount)} × ${activeDeposits.length})`
-                      : ""}
-                  </p>
-                  <div className="people-settlement">
-                    {activeDeposits.map((item) => (
-                      <div key={`${item.from}-${item.time}`}>
-                        {isMember(item.from) ? (
-                          <PersonAvatar name={item.from} />
-                        ) : (
-                          <span className="gs-avatar">{item.from.slice(0, 1)}</span>
-                        )}
-                        <div>
-                          <strong>{item.from}</strong>
-                          <span>{won(item.amount)}</span>
-                        </div>
-                        <span className="status-chip done">✓ {item.time} 입금 확인</span>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-              {groupDetail.detail && (
-                <div className="group-basis">
-                  <p>{meetingText(groupDetail.detail, groupDetail.count)} 한 날</p>
+              <p className="gs2-section">포함된 결제</p>
+              <div className="gs2-item">
+                <div>
+                  <strong>{payment.merchant}</strong>
+                  <span>{category ? `${category} · ` : ""}나 결제</span>
                 </div>
-              )}
+                <b>{won(payment.amount)}</b>
+              </div>
             </div>
             <div className="gs-foot split">
               <Action className="secondary-button" onClick={notGroup}>
