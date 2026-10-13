@@ -114,7 +114,7 @@ export function TransferPopup({
             </span>
             <p className="tf-hello-title">돌아오셨군요!</p>
             <p className="tf-hello-sub">
-              링키가 발견한 기록이 {steps.length > 1 ? `${steps.length}건 ` : ""}있어요.
+              링키가 발견한 기록이 {steps.length > 1 && <b>{steps.length}건</b>} 있어요.
             </p>
             <Action className="primary-button" onClick={next}>
               확인하기
