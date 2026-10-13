@@ -1,9 +1,25 @@
-import { Link2, Sparkles } from "lucide-react"
+import {
+  Bus,
+  CalendarDays,
+  Camera,
+  ImagePlus,
+  Link2,
+  MapPin,
+  Package,
+  Receipt,
+  ShoppingBag,
+  Sparkles,
+  Ticket,
+  Utensils,
+} from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { Action } from "@/components/common"
 import { MainHeader } from "@/components/layout"
 import {
   TODAY,
+  type Category,
+  type Evidence,
+  categoryOf,
   evidenceOf,
   label as dateLabel,
   paymentsOn,
@@ -14,7 +30,7 @@ import {
   type Payment,
   type TransferGuess,
 } from "@/lib/ledger"
-import { transferEvidenceLine, transferQuestion } from "@/screens/transfer"
+import { transferQuestion } from "@/screens/transfer"
 
 // ---------- 정리할 지출 ----------
 // 오늘 결제 중 사용자가 한 번 확인해야 남는 건:
@@ -185,29 +201,61 @@ export function CleanupScreen({
   )
 }
 
-function Linky({ children }: { children: React.ReactNode }) {
+function Linky({ children, card }: { children: React.ReactNode; card?: boolean }) {
   return (
     <div className="cl-row">
       <i className="cl-avatar">
         <Link2 size={14} strokeWidth={2.2} />
       </i>
-      <div className="cl-bubble">{children}</div>
+      <div className={card ? "cl-bubble cl-card" : "cl-bubble"}>{children}</div>
     </div>
   )
 }
 
-// 받침 있으면 "으로", 없거나 ㄹ받침이면 "로"
-const toward = (word: string) => {
-  const code = word.charCodeAt(word.length - 1) - 0xac00
-  if (code < 0 || code > 11171) return "로"
-  const final = code % 28
-  return final === 0 || final === 8 ? "로" : "으로"
+// 홈 "오늘 지출" 행과 같은 모양: 분류 아이콘 · 이름 · 날짜·시각 · 금액
+const categoryIcon: Record<Category, typeof Utensils> = {
+  "식비·카페": Utensils,
+  쇼핑: ShoppingBag,
+  "문화·여가": Ticket,
+  "생활·기타": Package,
+  교통: Bus,
+}
+function PayRow({ payment, state, name }: { payment: Payment; state: LedgerState; name: string }) {
+  const category = categoryOf(payment, state)
+  const Icon = category ? categoryIcon[category] : Receipt
+  return (
+    <div className="hm-today-row cl-payrow">
+      <span className="hm-today-icon">
+        <Icon size={20} strokeWidth={1.6} />
+      </span>
+      <div>
+        <strong>{name}</strong>
+        <small>
+          {dateLabel(payment.date)} ({weekday(payment.date)}) · {payment.time}
+        </small>
+      </div>
+      <b>{won(payment.amount)}</b>
+    </div>
+  )
 }
 
-// "11시 35분"
-const spoken = (time: string) => {
-  const [h, m] = time.split(":").map(Number)
-  return m ? `${h}시 ${m}분` : `${h}시`
+// 근거 한 줄씩: 위치·일정·사진 아이콘 + 사실
+const evidenceIcon = { location: MapPin, calendar: CalendarDays, photo: Camera, added: ImagePlus }
+function EvidenceList({ items }: { items: Evidence[] }) {
+  if (items.length === 0) return null
+  return (
+    <ul className="cl-evidence2">
+      {items.map((item) => {
+        const Icon = evidenceIcon[item.kind]
+        return (
+          <li key={item.key}>
+            <Icon size={14} strokeWidth={1.8} />
+            <span>{item.text}</span>
+          </li>
+        )
+      })}
+    </ul>
+  )
 }
 
 // 링키의 질문: 복원된 장소·이동을 사실로 묻는다 (추측·평가 없이)
@@ -230,49 +278,47 @@ function TurnView({
 }) {
   const { payment } = turn
   const restored = restoredOf(payment, state)
-  const day = `${dateLabel(payment.date)} (${weekday(payment.date)})`
-  const fact =
+  const original = turn.kind === "transfer" ? `${payment.counterparty} 송금` : payment.merchant
+  const question =
     turn.kind === "transfer"
-      ? `${day} ${spoken(payment.time)}, ${payment.counterparty} 님께 ${won(payment.amount)}을 보냈어요.`
-      : `${spoken(payment.time)}, ${payment.merchant}에서 ${won(payment.amount)}이 결제됐어요.`
-  // 마무리: 맞아요면 바뀐 이름을, 아니면 그대로 둔다고 알린다
+      ? transferQuestion(payment, turn.guess)
+      : turn.kind === "confirm"
+        ? questionOf(payment, state)
+        : "이 결제를 설명할 기록이 아직 없어요."
+  const evidence =
+    turn.kind === "transfer" ? turn.guess.evidence : turn.kind === "confirm" ? (restored?.evidence ?? []) : []
+  // 마무리: 맞아요면 바뀐 이름 카드, 그 밖에는 한 줄
+  const renamed = reply === "맞아요" && restored ? restored.label : undefined
   const closing =
-    reply === "맞아요" && restored
-      ? `그러면 '${restored.label}'${toward(restored.label)} 바꿔 둘게요.`
-      : reply === "아니에요"
-        ? "알겠어요. 송금으로 그대로 둘게요."
-        : reply === "기록 없음으로 둘게요"
-          ? "알겠어요. '기록 없음'으로 둘게요."
-          : reply === "앨범에서 불러왔어요"
-            ? "사진을 근거로 붙였어요."
-            : undefined
+    reply === "아니에요"
+      ? "알겠어요. 송금으로 그대로 둘게요."
+      : reply === "기록 없음으로 둘게요"
+        ? "알겠어요. '기록 없음'으로 둘게요."
+        : reply === "앨범에서 불러왔어요"
+          ? "사진을 근거로 붙였어요."
+          : undefined
   return (
     <>
-      <Linky>{fact}</Linky>
-      {turn.kind === "transfer" ? (
-        <Linky>
-          <p className="cl-text">{transferQuestion(payment, turn.guess)}</p>
-          <p className="cl-why">링키가 찾은 기록 · {transferEvidenceLine(turn.guess)}</p>
-        </Linky>
-      ) : turn.kind === "confirm" && restored ? (
-        <Linky>
-          <p className="cl-text">{questionOf(payment, state)}</p>
-          <ul className="cl-evidence">
-            {restored.evidence.map((evidence) => (
-              <li key={evidence.key}>{evidence.text}</li>
-            ))}
-          </ul>
-        </Linky>
-      ) : (
-        <Linky>
-          <p className="cl-text">이 결제를 설명할 기록이 아직 없어요.</p>
-          <p className="cl-why">그때 찍은 사진이 있으면 붙여 둘 수 있어요.</p>
-        </Linky>
-      )}
+      <Linky card>
+        <PayRow name={original} payment={payment} state={state} />
+        <p className="cl-ask">{question}</p>
+        <EvidenceList items={evidence} />
+        {turn.kind === "empty" && <p className="cl-why">그때 찍은 사진이 있으면 붙여 둘 수 있어요.</p>}
+      </Linky>
       {reply && (
         <div className="cl-row me">
           <div className="cl-bubble me">{reply}</div>
         </div>
+      )}
+      {renamed && (
+        <Linky card>
+          <p className="cl-plain">그러면 이렇게 바꿔 둘게요.</p>
+          <div className="cl-rename">
+            <s>{original}</s>
+            <span aria-hidden="true">→</span>
+            <strong>{renamed}</strong>
+          </div>
+        </Linky>
       )}
       {closing && <Linky>{closing}</Linky>}
     </>

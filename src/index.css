@@ -8799,3 +8799,83 @@ p {
 .cl-page .cl-plain {
   margin: 0;
 }
+
+/* 정리 대화 카드 말풍선: 홈 "오늘 지출" 행 + 질문 + 근거 아이콘 줄 */
+.cl-page .cl-bubble.cl-card {
+  width: 100%;
+  max-width: 290px;
+  padding: 4px 14px 14px;
+  gap: 8px;
+  border: 1px solid var(--border);
+  background: var(--background);
+}
+
+.cl-page .cl-payrow {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.cl-page .cl-payrow b {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: var(--fw-item-amount);
+}
+
+.cl-page .cl-ask {
+  margin: 4px 0 0;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: var(--fw-title);
+  word-break: keep-all;
+}
+
+.cl-evidence2 {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+}
+
+.cl-evidence2 li {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--text-body);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+}
+
+.cl-evidence2 svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--primary-text);
+}
+
+.cl-rename {
+  padding: 10px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  border-radius: 12px;
+  background: var(--lime-card);
+}
+
+.cl-rename s {
+  color: var(--text-mute);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+}
+
+.cl-rename span {
+  color: var(--text-mute);
+}
+
+.cl-rename strong {
+  color: var(--primary-text);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: var(--fw-title);
+}
