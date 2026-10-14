@@ -92,7 +92,10 @@ export function TransferPopup({
   // 나중에: 팝업만 닫는다
   close: () => void
 }) {
-  const steps = [item && "found", group && "group"].filter(Boolean) as Array<"found" | "group">
+  // 단계 목록은 팝업을 열 때 고정한다. 송금을 맞아요로 확정하면 item이 빠지지만, 그룹 단계는 그대로 "2 / 2"로 보인다
+  const [steps] = useState(
+    () => [item && "found", group && "group"].filter(Boolean) as Array<"found" | "group">,
+  )
   const [step, setStep] = useState<"hello" | "found" | "group">("hello")
   const next = () => {
     const index = step === "hello" ? 0 : steps.indexOf(step as "found" | "group") + 1
