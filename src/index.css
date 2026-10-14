@@ -104,12 +104,55 @@ p {
 }
 
 .splash-logo {
+  display: flex;
+  align-items: baseline;
   color: var(--on-primary);
-  font-size: 44px;
+  font-size: 48px;
   line-height: 1;
   font-weight: 800;
   letter-spacing: -0.04em;
-  animation: splash-in 0.5s ease both;
+  animation: splash-in 0.45s ease both;
+}
+
+/* 점 없는 ı 위에 점과 로고를 같은 자리에 겹쳐 둔다 */
+.splash-i {
+  position: relative;
+  display: inline-block;
+}
+
+.splash-dot,
+.splash-mark {
+  position: absolute;
+  top: -0.02em;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.splash-dot {
+  width: 0.2em;
+  height: 0.2em;
+  border-radius: 50%;
+  background: var(--on-primary);
+  animation: splash-dot 1.2s ease 0.45s both;
+}
+
+/* 로고: 점 자리에서 통 튀어 올랐다가(커졌다 작아졌다) 다시 점 크기로 줄어든다 */
+.splash-mark {
+  width: 0.62em;
+  height: 0.62em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.18em;
+  background: var(--on-primary);
+  color: var(--primary);
+  opacity: 0;
+  animation: splash-pop 1.2s cubic-bezier(0.3, 0.9, 0.4, 1) 0.45s both;
+}
+
+.splash-mark svg {
+  width: 0.4em;
+  height: 0.4em;
 }
 
 @keyframes splash-in {
@@ -123,11 +166,64 @@ p {
   }
 }
 
+@keyframes splash-dot {
+  0%,
+  8% {
+    opacity: 1;
+  }
+  12%,
+  86% {
+    opacity: 0;
+  }
+  92%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes splash-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3);
+  }
+  10% {
+    opacity: 1;
+  }
+  28% {
+    transform: translate(-50%, -80%) scale(1.25);
+  }
+  42% {
+    transform: translate(-50%, -60%) scale(0.92);
+  }
+  54% {
+    transform: translate(-50%, -68%) scale(1.04);
+  }
+  64%,
+  78% {
+    opacity: 1;
+    transform: translate(-50%, -64%) scale(1);
+  }
+  92% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.3);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .splash,
-  .splash-logo {
+  .splash-logo,
+  .splash-dot,
+  .splash-mark {
     animation: none;
     transition: none;
+  }
+
+  .splash-mark {
+    opacity: 0;
   }
 }
 

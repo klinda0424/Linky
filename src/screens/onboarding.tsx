@@ -6,6 +6,7 @@ import {
   ChevronDown,
   CreditCard,
   Image,
+  Link2,
   MapPin,
   ShieldCheck,
 } from "lucide-react"
@@ -656,12 +657,13 @@ export function ImportExpenses({
 
 // ---------- 5. 시작 (마지막 단계) ----------
 // 복원 결과는 온보딩에서 따로 보여 주지 않고, 시작하면 캘린더 월뷰에서 바로 보인다.
-// 앱을 처음 열 때 잠깐 보이는 시작 화면: 라임 단색 배경 + Linky 글자 로고. 잠시 뒤 스스로 사라진다
+// 앱을 처음 열 때 잠깐 보이는 시작 화면: 라임 단색 배경 + Linky 글자 로고.
+// i의 점 자리에서 링키 로고(링크 아이콘)가 "통" 튀어 올랐다가 다시 점으로 돌아간 뒤 스스로 사라진다
 export function Splash({ done }: { done: () => void }) {
   const [leaving, setLeaving] = useState(false)
   useEffect(() => {
-    const leave = window.setTimeout(() => setLeaving(true), 1200)
-    const end = window.setTimeout(done, 1500)
+    const leave = window.setTimeout(() => setLeaving(true), 1900)
+    const end = window.setTimeout(done, 2200)
     return () => {
       window.clearTimeout(leave)
       window.clearTimeout(end)
@@ -669,7 +671,16 @@ export function Splash({ done }: { done: () => void }) {
   }, [])
   return (
     <div aria-label="Linky" className={leaving ? "splash leaving" : "splash"} role="img">
-      <span className="splash-logo">Linky</span>
+      <span className="splash-logo" aria-hidden="true">
+        L
+        <span className="splash-i">
+          ı<i className="splash-dot" />
+          <span className="splash-mark">
+            <Link2 strokeWidth={2.6} />
+          </span>
+        </span>
+        nky
+      </span>
     </div>
   )
 }
