@@ -8543,16 +8543,14 @@ p {
 }
 
 .cl-row.me {
-  flex-direction: column;
-  align-items: flex-end;
   justify-content: flex-end;
-  gap: 6px;
 }
 
-/* 앨범에서 불러온 사진: 내 답장 위에 보낸 사진처럼 */
+/* 앨범에서 불러온 사진: 링키 카드의 "기록 없음" 질문 자리에 들어간다 */
 .cl-photo {
-  width: 132px;
-  height: 132px;
+  width: 100%;
+  height: 120px;
+  margin-top: 12px;
   position: relative;
   overflow: hidden;
   display: flex;

@@ -360,19 +360,24 @@ function TurnView({
     <>
       <Linky card>
         <PayRow name={original} payment={payment} state={state} />
-        <p className="cl-ask">{question}</p>
-        <EvidenceList items={evidence} />
-        {turn.kind === "empty" && <p className="cl-why">그때 찍은 사진이 있으면 붙여 둘 수 있어요.</p>}
+        {/* 앨범에서 불러왔으면 "기록 없음" 질문 자리에 고른 사진을 넣는다 */}
+        {pickedPhoto ? (
+          <div className="cl-photo">
+            {pickedPhoto.art ? <AlbumArtwork art={pickedPhoto.art} wide /> : <ImagePlus size={22} strokeWidth={1.6} />}
+            <small>
+              추가한 사진{pickedPhoto.time ? ` · ${pickedPhoto.time}` : ""}
+            </small>
+          </div>
+        ) : (
+          <>
+            <p className="cl-ask">{question}</p>
+            <EvidenceList items={evidence} />
+            {turn.kind === "empty" && <p className="cl-why">그때 찍은 사진이 있으면 붙여 둘 수 있어요.</p>}
+          </>
+        )}
       </Linky>
       {reply && (
         <div className="cl-row me">
-          {/* 앨범에서 불러왔으면 고른 사진을 내 답장 위에 보낸 사진처럼 붙인다 */}
-          {pickedPhoto && (
-            <div className="cl-photo">
-              {pickedPhoto.art ? <AlbumArtwork art={pickedPhoto.art} /> : <ImagePlus size={22} strokeWidth={1.6} />}
-              {pickedPhoto.time && <small>{pickedPhoto.time}</small>}
-            </div>
-          )}
           <div className="cl-bubble me">{reply}</div>
         </div>
       )}
