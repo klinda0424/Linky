@@ -87,6 +87,50 @@ p {
   box-shadow: 0 18px 56px rgba(17, 17, 17, 0.14);
 }
 
+/* 시작 화면: 라임 단색 + Linky 글자 로고 (상태바까지 덮는다) */
+.splash {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary);
+  transition: opacity 0.3s ease;
+}
+
+.splash.leaving {
+  opacity: 0;
+}
+
+.splash-logo {
+  color: var(--on-primary);
+  font-size: 44px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  animation: splash-in 0.5s ease both;
+}
+
+@keyframes splash-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splash,
+  .splash-logo {
+    animation: none;
+    transition: none;
+  }
+}
+
 .status-bar {
   height: 44px;
   padding: 23px 44px 0px;

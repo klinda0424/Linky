@@ -6,6 +6,7 @@ import {
   ImportExpenses,
   Permissions,
   PrivacyNotice,
+  Splash,
   Welcome,
 } from "@/screens/onboarding"
 import { type PermissionKey, type ProfileDetails } from "@/types"
@@ -13,6 +14,8 @@ import { type PermissionKey, type ProfileDetails } from "@/types"
 // 온보딩 5단계 → 메인 앱. 하루 리포트는 서사형 하나로 보여 준다.
 export default function App() {
   const [step, setStep] = useState(1)
+  // 앱을 처음 열 때 한 번만 보이는 시작 화면
+  const [splash, setSplash] = useState(true)
   const [profile, setProfile] = useState<ProfileDetails>({
     nickname: "",
     birthYear: "1997",
@@ -86,6 +89,7 @@ export default function App() {
             setProfile={setProfile}
           />
         )}
+        {splash && <Splash done={() => setSplash(false)} />}
       </div>
     </div>
   )
