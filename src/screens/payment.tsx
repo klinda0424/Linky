@@ -1,8 +1,10 @@
 import { useState } from "react"
-import { ArrowLeft, ArrowUpRight, CalendarDays, ImageIcon, MapPin, Navigation, Plus } from "lucide-react"
+import { ArrowLeft, ArrowUpRight, CalendarDays, ImageIcon, MapPin, Navigation, Pencil, Plus, X } from "lucide-react"
 import { Action, cx } from "@/components/common"
+import { AlbumArtwork, artOf } from "@/screens/record"
 import {
   categoryOf,
+  events,
   eventsFor,
   evidenceOf,
   label,
@@ -25,8 +27,9 @@ const minutes = (time: string) => {
 }
 
 // ---------- 지출 내역 상세 (홈 오늘 지출·캘린더 결제 카드에서 진입) ----------
-// 한 화면: 일시·분류 → 지출명(수정하면 바로 아래에 입력 칸) → 금액 → 원래 이름
-// → 이날의 기록(사진 크게 · 결제 당시 내 위치 지도 · 일정 한 줄)
+// 한 화면: 일시·분류 → 지출명(연필을 누르면 그 자리에서 입력) → 금액 → 원래 이름
+// → 이날의 기록(사진 크게 · 결제 당시 내 위치 지도 · 일정 한 줄). 기록은 각자 X로 빼고, 뺀 기록은 아래에서 되돌린다
+// 따로 켜는 편집 모드는 없다
 export function PaymentDetail({
   payment,
   state,
@@ -54,13 +57,30 @@ export function PaymentDetail({
   // 송금 수정 → 원래 이름으로 되돌리기 (맞아요 취소)
   revertTransfer?: (paymentId: string) => void
 }) {
-  // 상단 [수정]: 지출명 입력 칸과 근거 해제·되돌리기가 지출명 바로 아래에 열린다
-  const [editing, setEditing] = useState(false)
+  // 지출명 연필 → 그 자리에서 입력 칸
+  const [renaming, setRenaming] = useState(false)
   const [photoOpen, setPhotoOpen] = useState(false)
   const [mapOpen, setMapOpen] = useState(false)
   const title = titleOf(payment, state)
   const [draft, setDraft] = useState(title)
-  const removed = removedEvidenceOf(payment, state)
+  // 뺀 기록: 송금의 근거 사진은 결제 ±30분 밖일 수 있어 같은 날 뺀 사진도 함께 되돌릴 수 있게 둔다
+  const removed = [
+    ...removedEvidenceOf(payment, state),
+    ...(payment.kind === "transfer"
+      ? photos
+          .filter(
+            (item) =>
+              sameDay(item.date, payment.date) &&
+              state.photoUnlinked.includes(item.id) &&
+              !removedEvidenceOf(payment, state).some((removedItem) => removedItem.photoId === item.id),
+          )
+          .map((item) => ({
+            key: `photo:${item.id}`,
+            text: `사진 · ${item.title} ${item.time}`,
+            photoId: item.id as string | undefined,
+          }))
+      : []),
+  ]
   const restored = restoredOf(payment, state)
   const evidence = evidenceOf(payment, state)
   const mine = shareOf(payment, state)
@@ -116,20 +136,37 @@ export function PaymentDetail({
   // 앨범에서 직접 불러온 사진: 위 사진 근거와 따로 이 결제에 붙인 기록
   const addedPhotos = evidence.filter((item) => item.kind === "added")
   const mainPhoto = photo
-    ? { title: photo.title, sub: photo.content, time: photo.time }
+    ? {
+        title: photo.title,
+        sub: photo.content,
+        time: photo.time,
+        art: artOf(`${photo.title} ${photo.content ?? ""}`),
+        remove: () => unlinkPhoto(photo.id),
+      }
     : addedPhotos[0]
-      ? { title: addedPhotos[0].text, sub: undefined, time: undefined }
+      ? {
+          title: addedPhotos[0].text,
+          sub: undefined,
+          time: undefined,
+          art: artOf(addedPhotos[0].text),
+          remove: () => unlink(payment.id, addedPhotos[0].key),
+        }
       : undefined
   const morePhotos = photo ? addedPhotos : addedPhotos.slice(1)
-  const event = evidence.some((item) => item.kind === "calendar")
-    ? eventsFor(payment, state)[0]
+  // 일정: 근거로 붙은 그 일정 (송금은 시각이 떨어진 같은 날 일정이 근거일 수 있다)
+  const eventKey = evidence.find((item) => item.kind === "calendar")?.key
+  const event = eventKey
+    ? (events.find((item) => `cal:${item.id}` === eventKey) ?? eventsFor(payment, state)[0])
     : undefined
-  const hasRecord = Boolean(mainPhoto || event || spot)
+  const hasRecord = Boolean(mainPhoto || event || (spot && !removed.some((item) => item.key === "loc")))
 
-  const toggleEdit = () => {
-    if (!editing) setDraft(title)
-    setEditing(!editing)
+  const startRename = () => {
+    setDraft(title)
+    setRenaming(true)
   }
+  const locationKey = evidence.find((item) => item.kind === "location")?.key
+  // 위치를 뺐으면 지도 카드도 숨긴다 (뺀 기록에서 되돌릴 수 있다)
+  const locationRemoved = removed.some((item) => item.key === "loc")
 
   return (
     <div className="main-page sub-page">
@@ -138,9 +175,7 @@ export function PaymentDetail({
           <ArrowLeft size={20} strokeWidth={1.6} />
         </Action>
         <p>지출 내역</p>
-        <Action className="pd-head-edit" onClick={toggleEdit}>
-          {editing ? "완료" : "수정"}
-        </Action>
+        <span />
       </div>
       <div className="pd-scroll">
         <section className="pd-top">
@@ -150,88 +185,51 @@ export function PaymentDetail({
             </span>
             {category && <em className="pd-cat">{category}</em>}
           </div>
-          <p className="pd-name">
-            {title}
-            {people > 1 && !splitDone && <em className="pd-chip">정산 대기</em>}
-          </p>
-
-          {editing && (
-            <div className="pd-edit-box">
-              <form
-                className="pd-rename"
-                onSubmit={(event) => {
-                  event.preventDefault()
-                  rename(payment.id, draft)
-                  setEditing(false)
-                }}
-              >
-                <label htmlFor="pd-rename-input">지출명</label>
-                <div className="pd-rename-row">
-                  <input
-                    id="pd-rename-input"
-                    onChange={(event) => setDraft(event.target.value)}
-                    placeholder={originalName}
-                    value={draft}
-                  />
-                  <button className="pd-rename-apply" type="submit">
-                    적용
-                  </button>
-                </div>
-              </form>
-              {(evidence.length > 0 || removed.length > 0) && (
-                <div className="pd-edit-list">
-                  {evidence.map((item) =>
-                    item.kind === "photo" ? (
-                      (item.photoIds ?? []).map((id) => {
-                        const found = photos.find((p) => p.id === id)
-                        return (
-                          <div className="detail-row" key={id}>
-                            <span>
-                              사진 · {found?.title} {found?.time}
-                            </span>
-                            <Action className="text-btn" onClick={() => unlinkPhoto(id)}>
-                              제외
-                            </Action>
-                          </div>
-                        )
-                      })
-                    ) : (
-                      <div className="detail-row" key={item.key}>
-                        <span>{item.text}</span>
-                        <Action className="text-btn" onClick={() => unlink(payment.id, item.key)}>
-                          해제
-                        </Action>
-                      </div>
-                    ),
-                  )}
-                  {removed.map((item) => (
-                    <div className="detail-row removed" key={item.key}>
-                      <span>{item.text}</span>
-                      <Action
-                        className="text-btn"
-                        onClick={() =>
-                          item.photoId ? relinkPhoto(item.photoId) : relink(payment.id, item.key)
-                        }
-                      >
-                        되돌리기
-                      </Action>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {restored?.kind === "transfer" && revertTransfer && (
-                <Action
-                  className="pill"
-                  onClick={() => {
-                    revertTransfer(payment.id)
-                    rename(payment.id, "")
-                    setEditing(false)
-                  }}
-                >
-                  원래 이름으로 되돌리기
+          {renaming ? (
+            <form
+              className="pd-rename"
+              onSubmit={(event) => {
+                event.preventDefault()
+                rename(payment.id, draft)
+                setRenaming(false)
+              }}
+            >
+              <input
+                aria-label="지출명"
+                autoFocus
+                onChange={(event) => setDraft(event.target.value)}
+                placeholder={originalName}
+                value={draft}
+              />
+              <div className="pd-rename-actions">
+                {restored?.kind === "transfer" && revertTransfer ? (
+                  <Action
+                    className="pd-rename-reset"
+                    onClick={() => {
+                      revertTransfer(payment.id)
+                      rename(payment.id, "")
+                      setRenaming(false)
+                    }}
+                  >
+                    원래 이름으로
+                  </Action>
+                ) : (
+                  <span />
+                )}
+                <Action className="pill" onClick={() => setRenaming(false)}>
+                  취소
                 </Action>
-              )}
-            </div>
+                <button className="pill primary" type="submit">
+                  저장
+                </button>
+              </div>
+            </form>
+          ) : (
+            <Action className="pd-name" label={`지출명 수정: ${title}`} onClick={startRename}>
+              <span>{title}</span>
+              <Pencil size={15} strokeWidth={1.8} />
+              {people > 1 && !splitDone && <em className="pd-chip">정산 대기</em>}
+            </Action>
           )}
 
           <p className="pd-amount">
@@ -258,28 +256,40 @@ export function PaymentDetail({
         {!hasRecord && <p className="pd-empty">기록 없음</p>}
 
         {mainPhoto && (
-          <Action
-            className={cx("pd-photo photo-thumb t0", photoOpen && "open")}
-            label={photoOpen ? "사진 작게 보기" : "사진 크게 보기"}
-            onClick={() => setPhotoOpen(!photoOpen)}
-          >
-            <span className="pd-photo-text">
-              <ImageIcon size={20} strokeWidth={1.6} />
-              <strong>{mainPhoto.title}</strong>
-              {mainPhoto.sub && <small>{mainPhoto.sub}</small>}
-            </span>
-            {mainPhoto.time && <time>{mainPhoto.time}</time>}
-          </Action>
+          <div className={cx("pd-photo", !mainPhoto.art && "photo-thumb t0", photoOpen && "open")}>
+            <Action
+              className="pd-photo-view"
+              label={photoOpen ? "사진 작게 보기" : "사진 크게 보기"}
+              onClick={() => setPhotoOpen(!photoOpen)}
+            >
+              {mainPhoto.art ? (
+                <AlbumArtwork art={mainPhoto.art} wide />
+              ) : (
+                <span className="pd-photo-text">
+                  <ImageIcon size={20} strokeWidth={1.6} />
+                </span>
+              )}
+              <span className="pd-photo-cap">
+                {mainPhoto.time && <time>{mainPhoto.time}</time>}
+                {mainPhoto.title}
+              </span>
+            </Action>
+            <Action className="pd-remove on-photo" label="이 사진 빼기" onClick={mainPhoto.remove}>
+              <X size={14} strokeWidth={2} />
+            </Action>
+          </div>
         )}
         {morePhotos.map((item) => (
           <div className="pd-line" key={item.key}>
             <ImageIcon size={16} strokeWidth={1.7} />
             <span>{item.text}</span>
-            <i className="photo-thumb t1" />
+            <Action className="pd-remove" label="이 사진 빼기" onClick={() => unlink(payment.id, item.key)}>
+              <X size={14} strokeWidth={2} />
+            </Action>
           </div>
         ))}
 
-        {spot && (
+        {spot && !locationRemoved && (
           <section className={cx("pd-mapcard", mapOpen && "open")}>
             <div className="pd-map2" aria-hidden="true">
               <i className="r1" />
@@ -297,6 +307,11 @@ export function PaymentDetail({
               <Action className="pd-map-more" onClick={() => setMapOpen(!mapOpen)}>
                 {mapOpen ? "접기" : "지도 확대"} <ArrowUpRight size={14} strokeWidth={1.8} />
               </Action>
+              {locationKey && (
+                <Action className="pd-remove" label="이 위치 빼기" onClick={() => unlink(payment.id, locationKey)}>
+                  <X size={14} strokeWidth={2} />
+                </Action>
+              )}
             </div>
             {mapOpen && (
               <p className="pd-map-note">
@@ -320,6 +335,31 @@ export function PaymentDetail({
             <CalendarDays size={16} strokeWidth={1.7} />
             <span>{event.title}</span>
             <time>{event.start}</time>
+            {eventKey && (
+              <Action className="pd-remove" label="이 일정 빼기" onClick={() => unlink(payment.id, eventKey)}>
+                <X size={14} strokeWidth={2} />
+              </Action>
+            )}
+          </div>
+        )}
+
+        {/* 뺀 기록: 각 줄에서 되돌린다 */}
+        {removed.length > 0 && (
+          <div className="pd-removed">
+            <p>뺀 기록</p>
+            {removed.map((item) => (
+              <div className="pd-removed-row" key={item.key}>
+                <span>{item.text}</span>
+                <Action
+                  className="text-btn"
+                  onClick={() =>
+                    item.photoId ? relinkPhoto(item.photoId) : relink(payment.id, item.key)
+                  }
+                >
+                  되돌리기
+                </Action>
+              </div>
+            ))}
           </div>
         )}
       </div>
