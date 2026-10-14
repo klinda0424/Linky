@@ -35,6 +35,19 @@ export const SCENARIO = {
   transfer: { id: "sc-transfer", time: "21:30", counterparty: "김지은", amount: 18000 },
   // 오늘 송금: 동기 저녁 모임이 끝난 뒤 민지에게 보낸 돈 → 홈 진입 팝업("링키가 찾았어요") 시연용
   transferToday: { id: "sc-transfer-today", time: "21:40", counterparty: "박민지", amount: 6000 },
+  // 아직 처리하지 않은 지난 기록: 10/29 송금(점심 약속 근거)과 10/28 그룹 결제(입금 2건, 정산 전)
+  transferPast: { id: "sc-transfer-past", time: "13:20", counterparty: "정수진", amount: 9000 },
+  groupPast: {
+    id: "sc-group-past",
+    time: "19:10",
+    merchant: "(주)샤브올데이 선릉점",
+    amount: 36000,
+    members: ["나", "지은", "민지", "수진"],
+    deposits: [
+      { from: "지은", amount: 9000, time: "20:05" },
+      { from: "민지", amount: 9000, time: "20:20" },
+    ],
+  },
 } as const
 
 export const scenarioEvents: CalEvent[] = [
@@ -42,6 +55,8 @@ export const scenarioEvents: CalEvent[] = [
   { id: "e-sc2", title: "동기 저녁 모임", date: d(10, 31), start: "19:00", end: "21:30", zone: "강남역", people: ["지은", "민지", "수진"] },
   // 오늘 송금(박민지 6,000원)의 근거: 낮에 민지와 만난 일정
   { id: "e-sc3", title: "민지", date: d(10, 31), start: "14:00", end: "15:00", zone: "강남역", people: ["민지"] },
+  // 지난 송금(정수진 9,000원)의 근거: 점심 약속
+  { id: "e-sc4", title: "수진이랑 점심", date: d(10, 29), start: "12:00", end: "13:30", zone: "성수", people: ["수진"] },
 ]
 
 export const scenarioPhotos: Photo[] = [
@@ -49,12 +64,14 @@ export const scenarioPhotos: Photo[] = [
   { id: "ph-sc2", date: d(10, 31), time: "13:12", zone: "강남역", title: "포토이즘 강남역점", content: "포토부스 · 사진 4컷" },
   { id: "ph-sc3", date: d(10, 31), time: "19:35", zone: "강남역", title: "한돈명가 강남역점", content: "고기 · 4인 세팅" },
   { id: "ph-sc4", date: d(10, 31), time: "14:15", zone: "강남역", title: "강남역 카페", content: "카페 · 음료 2잔" },
+  { id: "ph-sc5", date: d(10, 29), time: "12:20", zone: "성수", title: "성수 점심", content: "샐러드 · 2인 세팅" },
 ]
 
 // 위치 체류 구간: 복원의 기준. 결제 시각이 구간 밖이면 이동 중으로 본다.
 export const scenarioStays: Stay[] = [
   { id: "stay-sc1", date: d(10, 30), zone: "연남동", name: "연남동", from: "19:12", to: "21:05" },
   { id: "stay-sc2", date: d(10, 31), zone: "압구정로데오", name: "압구정로데오", from: "09:30", to: "11:20" },
+  { id: "stay-sc3", date: d(10, 29), zone: "성수", name: "성수", from: "11:50", to: "13:05" },
 ]
 
 // 체류 지점은 구역 이름이 지도에 이미 표시되므로 별도 라벨을 두지 않는다
@@ -63,7 +80,7 @@ export const scenarioTrail: TrailPoint[] = [
   { id: "t-sc2", date: d(10, 31), time: "09:30", name: "", zone: "압구정로데오" },
 ]
 
-const { taxi, photoism, meal, transfer, transferToday } = SCENARIO
+const { taxi, photoism, meal, transfer, transferToday, transferPast, groupPast } = SCENARIO
 
 export const scenarioPayments: Payment[] = [
   {
@@ -119,6 +136,28 @@ export const scenarioPayments: Payment[] = [
     zone: "강남역",
     kind: "transfer",
     counterparty: transferToday.counterparty,
+  },
+  {
+    id: transferPast.id,
+    date: d(10, 29),
+    time: transferPast.time,
+    merchant: "송금",
+    amount: transferPast.amount,
+    zone: "성수",
+    kind: "transfer",
+    counterparty: transferPast.counterparty,
+  },
+  {
+    id: groupPast.id,
+    date: d(10, 28),
+    time: groupPast.time,
+    merchant: groupPast.merchant,
+    amount: groupPast.amount,
+    category: "식비·카페",
+    zone: "선릉",
+    place: "선릉",
+    group: [...groupPast.members],
+    deposits: groupPast.deposits.map((item) => ({ ...item })),
   },
 ]
 

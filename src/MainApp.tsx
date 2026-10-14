@@ -156,24 +156,48 @@ export function MainApp({
   const todayTransfer = pendingTransfers.find((item) => sameDay(item.payment.date, TODAY))
   // 오늘 정산을 확인해야 하는 그룹 결제: 홈 진입 팝업에서 송금 다음 단계로 이어 보여 준다
   // (예전에는 송금 팝업을 닫자마자 정산 시트가 따로 올라와 팝업이 연달아 떴다)
+  const foundGroupOf = (payment: Payment) => {
+    const deposits = depositsOf(payment, state)
+    const detail = groupBasis(payment, state)
+    return {
+      payment,
+      facts: [
+        deposits.length > 0 ? `입금 내역 ${deposits.length}건 확인` : undefined,
+        detail.detail ? `${detail.detail} 일정이 있던 날` : `함께 결제한 ${payment.group?.length ?? 0}명`,
+      ].filter((fact): fact is string => Boolean(fact)),
+    }
+  }
   const todayGroup =
     meeting &&
     sameDay(meeting.date, TODAY) &&
     !settled &&
     !state.splitConfirmed.includes(meeting.id) &&
     !(state.personal ?? []).includes(meeting.id)
-      ? (() => {
-          const deposits = depositsOf(meeting, state)
-          const detail = groupBasis(meeting, state)
-          return {
-            payment: meeting,
-            facts: [
-              deposits.length > 0 ? `입금 내역 ${deposits.length}건 확인` : undefined,
-              detail.detail ? `${detail.detail} 일정이 있던 날` : undefined,
-            ].filter((fact): fact is string => Boolean(fact)),
-          }
-        })()
+      ? foundGroupOf(meeting)
       : undefined
+  // 오늘 이전 7일 안에 정산하지 않고 남은 그룹 결제 (최근 것부터). 오늘 것은 위 todayGroup이 맡는다
+  const daysAgo = (payment: Payment) =>
+    Math.round(
+      (new Date(TODAY.y, TODAY.m - 1, TODAY.d).getTime() -
+        new Date(payment.date.y, payment.date.m - 1, payment.date.d).getTime()) /
+        86400000,
+    )
+  const pendingGroups = [
+    ...(todayGroup ? [todayGroup] : []),
+    ...payments
+      .filter(
+        (item) =>
+          item.group &&
+          item.kind !== "transfer" &&
+          item.id !== meetingId &&
+          daysAgo(item) >= 1 &&
+          daysAgo(item) <= 7 &&
+          !state.splitConfirmed.includes(item.id) &&
+          !(state.personal ?? []).includes(item.id),
+      )
+      .sort((a, b) => dayNumber(b) - dayNumber(a))
+      .map(foundGroupOf),
+  ]
   const transferPayment = payments.find((item) => item.id === transferId)
   const detailPayment = payments.find((item) => item.id === detailId)
   const openDetail = (payment: Payment) => {
@@ -269,7 +293,7 @@ export function MainApp({
         ? value
         : { ...value, splitConfirmed: [...value.splitConfirmed, paymentId] },
     )
-  const attach = (paymentId: string, text?: string) => {
+  const attach = (paymentId: string, text?: string, picked?: string) => {
     setLedger((value) => {
       const current = value.added[paymentId] ?? []
       return {
@@ -278,7 +302,7 @@ export function MainApp({
           ...value.added,
           [paymentId]: [
             ...current,
-            { kind: "added", text: text ?? addedPhotoText },
+            { kind: "added", text: picked ? `${text ?? addedPhotoText} · ${picked}` : (text ?? addedPhotoText) },
           ],
         },
       }
@@ -352,7 +376,7 @@ export function MainApp({
                 })()
           }
           openPayment={openDetail}
-          cleanupCount={cleanup.length + (todayGroup ? 1 : 0)}
+          cleanupCount={cleanup.length + pendingGroups.length}
           openCleanup={() => setView("cleanup")}
           openProfile={() => setView("profile")}
           openSearch={() => setView("search")}
@@ -626,7 +650,7 @@ export function MainApp({
             skip={(id) => setCleanupSkipped((value) => [...value, id])}
             state={state}
             // 확인하지 않은 송금·그룹 결제까지 한 대화에 모은다 (홈 상단 "링키가 찾았어요")
-            group={todayGroup}
+            groups={pendingGroups}
             markPersonal={markPersonal}
             openGroup={(payment) => setSplitting(payment)}
             transfers={pendingTransfers}
