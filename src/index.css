@@ -8912,6 +8912,7 @@ p {
 /* 2단계: 인사 → 찾은 기록. 단계가 바뀌면 오른쪽에서 밀려 들어온다 */
 .tf-step {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 10px;
   animation: tf-step-in 0.28s ease;
@@ -9016,8 +9017,10 @@ p {
   line-height: var(--lh-label);
 }
 
+/* 단계마다 내용 길이가 달라도 버튼은 팝업 아래에 붙는다 (팝업 높이는 단계 간에 같게 유지) */
 .tf-popup-actions {
-  margin-top: 6px;
+  margin-top: auto;
+  padding-top: 6px;
   display: grid;
   grid-template-columns: 1fr 2fr;
   gap: 8px;

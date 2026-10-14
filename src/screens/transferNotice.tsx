@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useLayoutEffect, useRef, useState } from "react"
 import { ArrowDown, ChevronRight, Link2, Sparkles, X } from "lucide-react"
 import { Action } from "@/components/common"
 import {
@@ -103,11 +103,21 @@ export function TransferPopup({
     else close()
   }
   const isLast = (current: "found" | "group") => steps.indexOf(current) === steps.length - 1
+  // 1 / 2 → 2 / 2로 넘어가도 팝업 크기가 변하지 않게, 지금까지 보인 단계 중 가장 큰 높이를 최소 높이로 둔다 (인사 단계는 제외)
+  const popupRef = useRef<HTMLDivElement>(null)
+  const [minHeight, setMinHeight] = useState<number>()
+  useLayoutEffect(() => {
+    if (step === "hello" || !popupRef.current) return
+    const height = popupRef.current.offsetHeight
+    setMinHeight((value) => Math.max(value ?? 0, height))
+  }, [step])
   return (
     <div className="main-overlay center tf-popup-dim" onClick={close}>
       <div
         aria-label="링키가 찾았어요"
         className="tf-popup"
+        ref={popupRef}
+        style={step === "hello" ? undefined : { minHeight }}
         onClick={(event) => event.stopPropagation()}
         role="dialog"
       >
