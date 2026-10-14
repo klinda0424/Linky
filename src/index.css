@@ -87,6 +87,148 @@ p {
   box-shadow: 0 18px 56px rgba(17, 17, 17, 0.14);
 }
 
+/* 시작 화면: 라임 단색 + Linky 글자 로고 (상태바까지 덮는다) */
+.splash {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary);
+  transition: opacity 0.3s ease;
+}
+
+.splash.leaving {
+  opacity: 0;
+}
+
+.splash-logo {
+  display: flex;
+  align-items: baseline;
+  color: var(--on-primary);
+  font-size: 48px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  animation: splash-in 0.45s ease both;
+}
+
+/* 점 없는 ı 위에 점과 로고를 같은 자리에 겹쳐 둔다 */
+.splash-i {
+  position: relative;
+  display: inline-block;
+  /* 자간(-0.04em)이 이 칸 폭을 줄여 점·아이콘이 왼쪽으로 치우치지 않게, 자간은 바깥 여백으로 뺀다 */
+  margin-right: -0.04em;
+  letter-spacing: 0;
+}
+
+/* 점 자리: Pretendard i의 실제 점 중심(기준선 위 0.674em = 이 칸 위에서 0.18em) */
+.splash-dot,
+.splash-mark {
+  position: absolute;
+  top: 0.18em;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.splash-dot {
+  width: 0.17em;
+  height: 0.17em;
+  border-radius: 50%;
+  background: var(--on-primary);
+  animation: splash-dot 1.2s ease 0.45s both;
+}
+
+/* 로고: 점(o)이 링크 아이콘으로 통 튀어 올랐다가 다시 점(o)으로 줄어든다. 배경 없이 아이콘 선만 */
+.splash-mark {
+  width: 0.5em;
+  height: 0.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--on-primary);
+  opacity: 0;
+  animation: splash-pop 1.2s cubic-bezier(0.3, 0.9, 0.4, 1) 0.45s both;
+}
+
+.splash-mark svg {
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes splash-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes splash-dot {
+  0%,
+  8% {
+    opacity: 1;
+  }
+  12%,
+  86% {
+    opacity: 0;
+  }
+  92%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes splash-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.35);
+  }
+  10% {
+    opacity: 1;
+  }
+  28% {
+    transform: translate(-50%, -88%) scale(1.15);
+  }
+  42% {
+    transform: translate(-50%, -62%) scale(0.95);
+  }
+  54% {
+    transform: translate(-50%, -70%) scale(1.02);
+  }
+  64%,
+  78% {
+    opacity: 1;
+    transform: translate(-50%, -66%) scale(1);
+  }
+  92% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.35);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splash,
+  .splash-logo,
+  .splash-dot,
+  .splash-mark {
+    animation: none;
+    transition: none;
+  }
+
+  .splash-mark {
+    opacity: 0;
+  }
+}
+
 .status-bar {
   height: 44px;
   padding: 23px 44px 0px;
