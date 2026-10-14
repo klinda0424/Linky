@@ -262,6 +262,19 @@ export function MainApp({
       else delete names[paymentId]
       return { ...value, names }
     })
+  // 지출 내역 상세 "일정 추가": 같은 날 일정을 근거로 직접 붙인다 (전에 뺀 일정이면 다시 붙인다)
+  const linkEvent = (paymentId: string, eventId: string) =>
+    setLedger((value) => ({
+      ...value,
+      unlinked: {
+        ...value.unlinked,
+        [paymentId]: (value.unlinked[paymentId] ?? []).filter((item) => item !== `cal:${eventId}`),
+      },
+      linkedEvents: {
+        ...value.linkedEvents,
+        [paymentId]: [...(value.linkedEvents?.[paymentId] ?? []).filter((id) => id !== eventId), eventId],
+      },
+    }))
   const relink = (paymentId: string, key: string) =>
     setLedger((value) => ({
       ...value,
@@ -629,6 +642,7 @@ export function MainApp({
             payment={detailPayment}
             relink={relink}
             relinkPhoto={relinkPhoto}
+            linkEvent={linkEvent}
             rename={rename}
             state={state}
             unlink={unlink}

@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react"
-import { ArrowLeft, ArrowUpRight, CalendarDays, ImageIcon, MapPin, Navigation, Pencil, Plus, X } from "lucide-react"
+import { ArrowLeft, ArrowUpRight, CalendarDays, CalendarPlus, ImageIcon, MapPin, Navigation, Pencil, Plus, X } from "lucide-react"
 import { Action, cx } from "@/components/common"
 import { AlbumArtwork, artOf } from "@/screens/record"
 import {
   categoryOf,
   events,
-  eventsFor,
+  eventsOn,
   evidenceOf,
   label,
   photos,
@@ -27,7 +27,8 @@ const minutes = (time: string) => {
 
 // ---------- 지출 내역 상세 (홈 오늘 지출·캘린더 결제 카드에서 진입) ----------
 // 한 화면: 일시·분류 → 지출명(연필을 누르면 그 자리에서 입력) → 금액 → 원래 이름
-// → 이날의 기록(사진 크게 · 결제 당시 내 위치 지도 · 일정 한 줄). 기록은 각자 X로 빼고,
+// → 이날의 기록(사진 크게 · 결제 당시 내 위치 지도 · 일정 줄 + 일정 추가). 사진·일정은 각자 X로 빼고,
+// 위치는 결제의 기본 기록이라 빼지 않는다.
 // 실수로 뺐을 때만 잠깐 뜨는 [되돌리기] 알림으로 되돌린다 (뺀 기록 목록은 두지 않는다)
 // 따로 켜는 편집 모드는 없다
 export function PaymentDetail({
@@ -40,6 +41,7 @@ export function PaymentDetail({
   unlinkPhoto,
   relinkPhoto,
   openRecord,
+  linkEvent,
   rename,
   revertTransfer,
 }: {
@@ -52,6 +54,8 @@ export function PaymentDetail({
   unlinkPhoto: (photoId: string) => void
   relinkPhoto: (photoId: string) => void
   openRecord: (paymentId: string) => void
+  // 일정 추가: 같은 날 일정을 근거로 직접 붙인다
+  linkEvent: (paymentId: string, eventId: string) => void
   // 지출명 직접 바꾸기 (빈 칸이면 원래 이름으로)
   rename: (paymentId: string, name: string) => void
   // 송금 수정 → 원래 이름으로 되돌리기 (맞아요 취소)
@@ -61,6 +65,7 @@ export function PaymentDetail({
   const [renaming, setRenaming] = useState(false)
   const [photoOpen, setPhotoOpen] = useState(false)
   const [mapOpen, setMapOpen] = useState(false)
+  const [eventPicker, setEventPicker] = useState(false)
   // X로 뺀 직후 4초 동안만 보이는 되돌리기 알림
   const [undo, setUndo] = useState<{ key: number; text: string; run: () => void }>()
   useEffect(() => {
@@ -152,20 +157,23 @@ export function PaymentDetail({
         }
       : undefined
   const morePhotos = photo ? addedPhotos : addedPhotos.slice(1)
-  // 일정: 근거로 붙은 그 일정 (송금은 시각이 떨어진 같은 날 일정이 근거일 수 있다)
-  const eventKey = evidence.find((item) => item.kind === "calendar")?.key
-  const event = eventKey
-    ? (events.find((item) => `cal:${item.id}` === eventKey) ?? eventsFor(payment, state)[0])
-    : undefined
+  // 일정: 근거로 붙은 일정 전부 (송금은 시각이 떨어진 같은 날 일정이 근거일 수 있다)
+  const linkedEvents = evidence
+    .filter((item) => item.kind === "calendar")
+    .map((item) => ({ key: item.key, event: events.find((event) => `cal:${event.id}` === item.key) }))
+    .filter((item) => item.event)
+  // 일정 추가 후보: 같은 날 내 캘린더 일정 중 아직 붙지 않은 것
+  const eventCandidates = eventsOn(payment.date, state).filter(
+    (event) => !linkedEvents.some((item) => item.key === `cal:${event.id}`),
+  )
   const hasRecord = Boolean(
-    mainPhoto || event || (spot && !(state.unlinked[payment.id] ?? []).includes("loc")),
+    mainPhoto || linkedEvents.length > 0 || (spot && !(state.unlinked[payment.id] ?? []).includes("loc")),
   )
 
   const startRename = () => {
     setDraft(title)
     setRenaming(true)
   }
-  const locationKey = evidence.find((item) => item.kind === "location")?.key
   // 위치를 뺐으면 지도 카드도 숨긴다
   const locationRemoved = (state.unlinked[payment.id] ?? []).includes("loc")
 
@@ -315,18 +323,6 @@ export function PaymentDetail({
               <Action className="pd-map-more" onClick={() => setMapOpen(!mapOpen)}>
                 {mapOpen ? "접기" : "지도 확대"} <ArrowUpRight size={14} strokeWidth={1.8} />
               </Action>
-              {locationKey && (
-                <Action className="pd-remove" label="이 위치 빼기" onClick={() =>
-                    removeRecord(
-                      "위치를 뺐어요",
-                      () => unlink(payment.id, locationKey),
-                      () => relink(payment.id, locationKey),
-                    )
-                  }
-                >
-                  <X size={14} strokeWidth={2} />
-                </Action>
-              )}
             </div>
             {mapOpen && (
               <p className="pd-map-note">
@@ -345,27 +341,72 @@ export function PaymentDetail({
             </time>
           </div>
         )}
-        {event && (
-          <div className="pd-line">
+        {linkedEvents.map(({ key, event }) => (
+          <div className="pd-line" key={key}>
             <CalendarDays size={16} strokeWidth={1.7} />
-            <span>{event.title}</span>
-            <time>{event.start}</time>
-            {eventKey && (
-              <Action className="pd-remove" label="이 일정 빼기" onClick={() =>
-                  removeRecord(
-                    "일정을 뺐어요",
-                    () => unlink(payment.id, eventKey),
-                    () => relink(payment.id, eventKey),
-                  )
-                }
-              >
-                <X size={14} strokeWidth={2} />
-              </Action>
-            )}
+            <span>{event?.title}</span>
+            <time>{event?.start}</time>
+            <Action
+              className="pd-remove"
+              label="이 일정 빼기"
+              onClick={() =>
+                removeRecord(
+                  "일정을 뺐어요",
+                  () => unlink(payment.id, key),
+                  () => relink(payment.id, key),
+                )
+              }
+            >
+              <X size={14} strokeWidth={2} />
+            </Action>
           </div>
-        )}
-
+        ))}
+        <Action className="pd-line pd-add-event" onClick={() => setEventPicker(true)}>
+          <CalendarPlus size={16} strokeWidth={1.7} />
+          <span>일정 추가</span>
+          <Plus size={16} strokeWidth={2} />
+        </Action>
       </div>
+      {eventPicker && (
+        <div className="main-overlay center" onClick={() => setEventPicker(false)}>
+          <div
+            aria-label="일정 추가"
+            className="album-picker pd-event-picker"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+          >
+            <p className="sheet-title">일정 추가</p>
+            <p className="sheet-sub">
+              {label(payment.date)} ({weekday(payment.date)}) 내 캘린더
+            </p>
+            {eventCandidates.length > 0 ? (
+              <div className="pd-event-options">
+                {eventCandidates.map((event) => (
+                  <Action
+                    className="pd-event-option"
+                    key={event.id}
+                    onClick={() => {
+                      linkEvent(payment.id, event.id)
+                      setEventPicker(false)
+                    }}
+                  >
+                    <CalendarDays size={16} strokeWidth={1.7} />
+                    <span>{event.title}</span>
+                    <time>
+                      {event.start}~{event.end}
+                    </time>
+                  </Action>
+                ))}
+              </div>
+            ) : (
+              <p className="pd-empty">이날 붙일 수 있는 다른 일정이 없어요</p>
+            )}
+            <Action className="secondary-button pd-event-close" onClick={() => setEventPicker(false)}>
+              닫기
+            </Action>
+          </div>
+        </div>
+      )}
       {undo && (
         <div className="pd-undo" key={undo.key} role="status" aria-live="polite">
           <span>{undo.text}</span>

@@ -7854,6 +7854,53 @@ p {
   border-radius: 8px;
 }
 
+/* 일정 추가 줄: 일정 줄과 같은 모양, 글자는 포인트 색 */
+.pd-add-event {
+  width: 100%;
+  flex-direction: row;
+  justify-content: flex-start;
+  color: var(--primary-text);
+  font-weight: var(--fw-title);
+  text-align: left;
+}
+
+.pd-add-event svg {
+  color: var(--primary-text);
+}
+
+/* 일정 추가 창: 앨범 선택 창과 같은 가운데 작은 창 */
+.pd-event-options {
+  display: flex;
+  flex-direction: column;
+}
+
+.pd-event-option {
+  min-height: 48px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  text-align: left;
+}
+
+.pd-event-option span {
+  flex: 1;
+}
+
+.pd-event-option time {
+  color: var(--text-mute);
+  font-size: var(--fs-label);
+}
+
+.pd-event-close {
+  width: 100%;
+  margin-top: 14px;
+}
+
 /* 기록을 뺀 직후 잠깐 뜨는 되돌리기 알림 (홈 토스트와 같은 반투명 검정) */
 .pd-undo {
   position: absolute;
