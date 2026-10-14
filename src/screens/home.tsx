@@ -31,6 +31,7 @@ import {
   eventsOn,
   type Photo,
   restoredOf,
+  titleOf,
   sameDay,
   shareOf,
   stays,
@@ -104,11 +105,7 @@ function TodayRow({
   const restored = restoredOf(payment, state)
   const category = categoryOf(payment, state)
   const Icon = category ? categoryIcon[category] : Receipt
-  const title = restored
-    ? `${restored.label}${restored.spot ? ` · ${restored.spot}` : ""}`
-    : payment.kind === "transfer"
-      ? `${payment.counterparty} 송금`
-      : payment.merchant
+  const title = titleOf(payment, state)
   // 아래 줄에는 시각만 둔다 (원래 가맹점명·분류는 쓰지 않는다)
   const sub = [showDate ? label(payment.date) : undefined, payment.time]
     .filter(Boolean)

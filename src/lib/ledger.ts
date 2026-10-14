@@ -246,6 +246,8 @@ export type LedgerState = {
   groupEdit?: Record<string, { removed: string[]; extras: number }>
   // 입금 내역을 바꿔 둔 그룹 결제 (UT 과제 시작 데이터 등)
   depositOverride?: Record<string, { from: string; amount: number; time: string }[]>
+  // 지출 내역 상세의 [수정]에서 사용자가 직접 바꾼 지출명 (캘린더·홈 카드에도 같은 이름으로 보인다)
+  names?: Record<string, string>
 }
 export const initialLedger: LedgerState = {
   sources: { location: true, calendar: true, photos: true },
@@ -484,6 +486,15 @@ export function restoredOf(payment: Payment, state: LedgerState): Restored | nul
       confirmed,
     }
   return null
+}
+
+// 카드·상세에 보일 지출명: 직접 바꾼 이름 → 복원 이름(· 지점) → 송금 상대 → 원래 가맹점명
+export function titleOf(payment: Payment, state: LedgerState) {
+  const custom = state.names?.[payment.id]
+  if (custom) return custom
+  const restored = restoredOf(payment, state)
+  if (restored) return `${restored.label}${restored.spot ? ` · ${restored.spot}` : ""}`
+  return payment.kind === "transfer" ? `${payment.counterparty} 송금` : payment.merchant
 }
 
 // 송금 → 정산 후보: 상대 이름과 맞는 일정·직전 체류·사진 내용을 근거로 "식비" 재분류를 제안한다.

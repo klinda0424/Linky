@@ -27,6 +27,7 @@ import {
   receivableOf,
   removedEvidenceOf,
   restoredOf,
+  titleOf,
   sameDay,
   splitReviewDays,
   weekday,
@@ -411,11 +412,7 @@ function PayCard({
   const photoIds = evidence.find((item) => item.kind === "photo")?.photoIds ?? []
   const share = people ? Math.round(payment.amount / headcountOf(payment, state)) : payment.amount
   const deposits = depositsOf(payment, state)
-  const title = restored
-    ? `${restored.label}${restored.spot ? ` · ${restored.spot}` : ""}`
-    : transfer
-      ? `${payment.counterparty} 송금`
-      : payment.merchant
+  const title = titleOf(payment, state)
   // 내 위치·일정·사진 근거 줄은 카드에 두지 않는다(수정을 누르면 근거 목록이 열린다).
   // 정산·이체처럼 상태를 알려야 하는 안내만 남긴다.
   const footText = pendingGroup

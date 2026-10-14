@@ -254,6 +254,14 @@ export function MainApp({
         ? value.photoUnlinked
         : [...value.photoUnlinked, id],
     }))
+  // 지출 내역 상세 [수정]: 지출명을 직접 바꾼다 (빈 칸이면 원래 이름으로)
+  const rename = (paymentId: string, name: string) =>
+    setLedger((value) => {
+      const names = { ...value.names }
+      if (name.trim()) names[paymentId] = name.trim()
+      else delete names[paymentId]
+      return { ...value, names }
+    })
   const relink = (paymentId: string, key: string) =>
     setLedger((value) => ({
       ...value,
@@ -621,6 +629,7 @@ export function MainApp({
             payment={detailPayment}
             relink={relink}
             relinkPhoto={relinkPhoto}
+            rename={rename}
             state={state}
             unlink={unlink}
             unlinkPhoto={unlinkPhoto}
