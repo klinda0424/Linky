@@ -8,7 +8,7 @@ export const addedPhotoText = "추가한 사진"
 
 // 앨범 목업: 최근 사진 6장을 간단한 그림으로 보여 준다. 샐러드·포케와 관련 없는 사진이 섞여 있어
 // 사용자가 결제에 맞는 사진을 직접 고른다. (어떤 사진을 골랐는지는 UT 기록에 남는다)
-type AlbumArt = "coffee" | "salad" | "laptop" | "poke" | "sky" | "saladFork"
+export type AlbumArt = "coffee" | "salad" | "laptop" | "poke" | "sky" | "saladFork" | "pasta" | "meal"
 const albumTiles: Array<{ art: AlbumArt; label: string; time: string }> = [
   { art: "coffee", label: "커피", time: "08:31" },
   { art: "salad", label: "샐러드", time: "12:44" },
@@ -18,11 +18,29 @@ const albumTiles: Array<{ art: AlbumArt; label: string; time: string }> = [
   { art: "saladFork", label: "샐러드", time: "12:51" },
 ]
 
-// 사진 대신 쓰는 단순한 그림 (색은 .album-art 안의 변수)
-function AlbumArtwork({ art }: { art: AlbumArt }) {
+// 사진 이름·내용에 맞는 그림 (지출 내역 상세의 큰 사진 자리에 쓴다). 맞는 그림이 없으면 undefined
+export const artOf = (text: string): AlbumArt | undefined =>
+  /파스타/.test(text)
+    ? "pasta"
+    : /샐러드/.test(text)
+      ? "salad"
+      : /포케/.test(text)
+        ? "poke"
+        : /커피|카페|음료|라떼/.test(text)
+          ? "coffee"
+          : /노트북/.test(text)
+            ? "laptop"
+            : /하늘|풍경|공원|산책/.test(text)
+              ? "sky"
+              : /브런치|점심|저녁|술자리|족발|갈비|한식|세팅|반찬/.test(text)
+                ? "meal"
+                : undefined
+
+// 사진 대신 쓰는 단순한 그림 (색은 .album-art 안의 변수). wide: 가로로 긴 칸에서 배경을 양옆까지 채운다
+export function AlbumArtwork({ art, wide }: { art: AlbumArt; wide?: boolean }) {
   return (
     <svg className={`album-art ${art}`} viewBox="0 0 100 100" aria-hidden="true">
-      <rect className="bg" width="100" height="100" />
+      <rect className="bg" x={wide ? -200 : 0} width={wide ? 500 : 100} height="100" />
       {art === "coffee" && (
         <>
           <rect className="cup" x="30" y="34" width="34" height="40" rx="6" />
@@ -64,6 +82,27 @@ function AlbumArtwork({ art }: { art: AlbumArt }) {
           <rect className="screen" x="24" y="28" width="52" height="34" rx="3" />
           <rect className="glow" x="28" y="32" width="44" height="26" rx="2" />
           <path className="base" d="M16 66h68l-6 6H22z" />
+        </>
+      )}
+      {art === "pasta" && (
+        <>
+          <circle className="plate" cx="50" cy="54" r="32" />
+          <circle className="plate-rim" cx="50" cy="54" r="24" />
+          <path className="noodle" d="M32 52c6-8 12 8 18 0s12 8 18 0M34 60c6-8 12 8 18 0s10 6 14 0M38 45c5-6 10 6 15 0s9 5 12 0" />
+          <circle className="tomato" cx="44" cy="50" r="4" />
+          <circle className="tomato" cx="58" cy="58" r="4" />
+          <circle className="leaf" cx="52" cy="46" r="3" />
+          <path className="fork" d="M84 16 L66 44 M80 14 L63 41" />
+        </>
+      )}
+      {art === "meal" && (
+        <>
+          <rect className="table" x="0" y="74" width="100" height="26" />
+          <circle className="plate" cx="34" cy="52" r="18" />
+          <circle className="plate" cx="68" cy="52" r="18" />
+          <circle className="dish" cx="34" cy="52" r="11" />
+          <circle className="dish2" cx="68" cy="52" r="11" />
+          <rect className="cup" x="46" y="18" width="8" height="14" rx="2" />
         </>
       )}
       {art === "sky" && (

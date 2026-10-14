@@ -1,18 +1,19 @@
-import { useState } from "react"
-import { CalendarDays, ImageIcon, ImagePlus, MapPin, Plus } from "lucide-react"
+import { useEffect, useState } from "react"
+import { ArrowLeft, ArrowUpRight, CalendarDays, CalendarPlus, ImageIcon, MapPin, Navigation, Pencil, Plus, X } from "lucide-react"
 import { Action, cx } from "@/components/common"
-import { MainHeader } from "@/components/layout"
+import { AlbumArtwork, artOf } from "@/screens/record"
 import {
   categoryOf,
-  eventsFor,
+  events,
+  eventsOn,
   evidenceOf,
   label,
   photos,
-  removedEvidenceOf,
   restoredOf,
   sameDay,
   shareOf,
   stays,
+  titleOf,
   weekday,
   won,
   type LedgerState,
@@ -24,8 +25,12 @@ const minutes = (time: string) => {
   return h * 60 + m
 }
 
-// ---------- 지출 내역 상세 (홈 오늘 지출에서 진입) ----------
-// 요약 카드(캘린더 결제 카드 모양 + 맞아요/수정, 일시·분류·함께·근거) → 결제 장소 카드 → 근거 카드
+// ---------- 지출 내역 상세 (홈 오늘 지출·캘린더 결제 카드에서 진입) ----------
+// 한 화면: 일시·분류 → 지출명(연필을 누르면 그 자리에서 입력) → 금액 → 원래 이름
+// → 이날의 기록(사진 크게 · 결제 당시 내 위치 지도 · 일정 줄 + 일정 추가). 사진·일정은 각자 X로 빼고,
+// 위치는 결제의 기본 기록이라 빼지 않는다.
+// 실수로 뺐을 때만 잠깐 뜨는 [되돌리기] 알림으로 되돌린다 (뺀 기록 목록은 두지 않는다)
+// 따로 켜는 편집 모드는 없다
 export function PaymentDetail({
   payment,
   state,
@@ -36,6 +41,8 @@ export function PaymentDetail({
   unlinkPhoto,
   relinkPhoto,
   openRecord,
+  linkEvent,
+  rename,
   revertTransfer,
 }: {
   payment: Payment
@@ -47,23 +54,53 @@ export function PaymentDetail({
   unlinkPhoto: (photoId: string) => void
   relinkPhoto: (photoId: string) => void
   openRecord: (paymentId: string) => void
+  // 일정 추가: 같은 날 일정을 근거로 직접 붙인다
+  linkEvent: (paymentId: string, eventId: string) => void
+  // 지출명 직접 바꾸기 (빈 칸이면 원래 이름으로)
+  rename: (paymentId: string, name: string) => void
   // 송금 수정 → 원래 이름으로 되돌리기 (맞아요 취소)
   revertTransfer?: (paymentId: string) => void
 }) {
-  // [수정]을 누르면 이 화면 안에서 근거를 해제·되돌린다
-  const [editing, setEditing] = useState(false)
-  const removed = removedEvidenceOf(payment, state)
+  // 지출명 연필 → 그 자리에서 입력 칸
+  const [renaming, setRenaming] = useState(false)
+  const [photoOpen, setPhotoOpen] = useState(false)
+  const [mapOpen, setMapOpen] = useState(false)
+  const [eventPicker, setEventPicker] = useState(false)
+  // X로 뺀 직후 4초 동안만 보이는 되돌리기 알림
+  const [undo, setUndo] = useState<{ key: number; text: string; run: () => void }>()
+  useEffect(() => {
+    if (!undo) return
+    const timer = window.setTimeout(() => setUndo(undefined), 4000)
+    return () => window.clearTimeout(timer)
+  }, [undo])
+  const removeRecord = (text: string, remove: () => void, restore: () => void) => {
+    remove()
+    setUndo({ key: Date.now(), text, run: restore })
+  }
+  const title = titleOf(payment, state)
+  const [draft, setDraft] = useState(title)
   const restored = restoredOf(payment, state)
   const evidence = evidenceOf(payment, state)
   const mine = shareOf(payment, state)
   const confirmed = Boolean(restored?.confirmed)
-  const category = categoryOf(payment, state)
+  const transfer = payment.kind === "transfer"
+  const category = categoryOf(payment, state) ?? (transfer ? "계좌 이체" : undefined)
   // 그룹 결제: 인원과 내 몫 (분할을 확정하기 전에는 "정산하면 내 몫")
   const people = payment.group?.length ?? 0
   const splitDone = state.splitConfirmed.includes(payment.id)
   const perPerson = people > 1 ? Math.round(payment.amount / people) : 0
-  const originalName =
-    payment.kind === "transfer" ? `${payment.counterparty} 송금` : payment.merchant
+  const originalName = transfer ? `${payment.counterparty}에게 송금` : payment.merchant
+  // 금액 아래 한 줄: 이름이 바뀌었으면 원래 이름, 그룹 결제면 인원과 몫
+  const subLine = [
+    title !== payment.merchant && title !== `${payment.counterparty} 송금` ? originalName : undefined,
+    people > 1
+      ? splitDone
+        ? `${people}명 · 결제 ${won(payment.amount)} 중 내 몫`
+        : `${people}명 · 정산하면 내 몫 ${won(perPerson)}`
+      : undefined,
+  ]
+    .filter(Boolean)
+    .join(" · ")
 
   // 결제 장소: 복원된 지점이 있으면 그 지점, 없으면 결제 당시 내 위치
   const spot = restored
@@ -73,10 +110,10 @@ export function PaymentDetail({
         ? (payment.place ?? payment.zone)
         : undefined
       : payment.transit
-      ? `${payment.transit.from} 인근`
-      : restored.spot
-        ? `${restored.spot} 인근`
-        : restored.label
+        ? `${payment.transit.from} 인근`
+        : restored.spot
+          ? `${restored.spot} 인근`
+          : restored.label
     : state.sources.location
       ? payment.place
       : undefined
@@ -91,201 +128,299 @@ export function PaymentDetail({
         .sort((a, b) => minutes(b.to) - minutes(a.to))[0]
     : undefined
 
-  // 연결된 기록 카드: 사진 · 일정 · 위치
+  // 이날의 기록: 사진(첫 장은 크게) · 위치 · 일정
   const photoItem = evidence.find((item) => item.kind === "photo")
   const photo = photoItem?.photoIds?.map((id) => photos.find((p) => p.id === id))[0]
-  const event = evidence.some((item) => item.kind === "calendar")
-    ? eventsFor(payment, state)[0]
-    : undefined
-  const hasLocation = evidence.some((item) => item.kind === "location")
-  // 앨범에서 직접 불러온 사진: 위 사진 근거와 따로 이 결제에 붙인 기록으로 보인다
+  // 앨범에서 직접 불러온 사진: 위 사진 근거와 따로 이 결제에 붙인 기록
   const addedPhotos = evidence.filter((item) => item.kind === "added")
+  const mainPhoto = photo
+    ? {
+        title: photo.title,
+        sub: photo.content,
+        time: photo.time,
+        art: artOf(`${photo.title} ${photo.content ?? ""}`),
+        remove: () =>
+          removeRecord("사진을 뺐어요", () => unlinkPhoto(photo.id), () => relinkPhoto(photo.id)),
+      }
+    : addedPhotos[0]
+      ? {
+          title: addedPhotos[0].text,
+          sub: undefined,
+          time: undefined,
+          art: artOf(addedPhotos[0].text),
+          remove: () =>
+            removeRecord(
+              "사진을 뺐어요",
+              () => unlink(payment.id, addedPhotos[0].key),
+              () => relink(payment.id, addedPhotos[0].key),
+            ),
+        }
+      : undefined
+  const morePhotos = photo ? addedPhotos : addedPhotos.slice(1)
+  // 일정: 근거로 붙은 일정 전부 (송금은 시각이 떨어진 같은 날 일정이 근거일 수 있다)
+  const linkedEvents = evidence
+    .filter((item) => item.kind === "calendar")
+    .map((item) => ({ key: item.key, event: events.find((event) => `cal:${event.id}` === item.key) }))
+    .filter((item) => item.event)
+  // 일정 추가 후보: 같은 날 내 캘린더 일정 중 아직 붙지 않은 것
+  const eventCandidates = eventsOn(payment.date, state).filter(
+    (event) => !linkedEvents.some((item) => item.key === `cal:${event.id}`),
+  )
+  const hasRecord = Boolean(
+    mainPhoto || linkedEvents.length > 0 || (spot && !(state.unlinked[payment.id] ?? []).includes("loc")),
+  )
+
+  const startRename = () => {
+    setDraft(title)
+    setRenaming(true)
+  }
+  // 위치를 뺐으면 지도 카드도 숨긴다
+  const locationRemoved = (state.unlinked[payment.id] ?? []).includes("loc")
 
   return (
     <div className="main-page sub-page">
-      <MainHeader back={back} title="지출 내역" />
+      <div className="main-subheader pd-head">
+        <Action className="main-back" onClick={back} label="뒤로 가기">
+          <ArrowLeft size={20} strokeWidth={1.6} />
+        </Action>
+        <p>지출 내역</p>
+        <span />
+      </div>
       <div className="pd-scroll">
-        {/* 요약 카드: 캘린더 결제 카드와 같은 모양 (원래 이름 · 장소 이름 · 금액 + 맞아요/수정) */}
-        <section className="pd-hero">
-          <span className="pd-orig">
-            {restored?.kind === "transfer" ? (
-              // 맞아요로 바뀐 송금: 원래 이름 취소선 → 새 이름(포인트 색)
-              <span className="tf-renamed-from">
-                <s>{originalName}</s> →
-              </span>
-            ) : restored ? (
-              originalName
-            ) : (
-              `${payment.time} · ${originalName}`
-            )}
-            {people > 1 && !splitDone && <em className="pd-chip">정산 대기</em>}
-          </span>
-          <p className={cx("pd-name", restored?.kind === "transfer" && "tf-renamed-to")}>
-            {restored ? restored.label : originalName}
-          </p>
-          <div className="pd-price">
-            <strong className="pd-won">{won(mine)}</strong>
-            {restored && (
-              <div className="hm-spend-actions">
-                {!confirmed && (
-                  <Action className="pill primary" onClick={() => confirmRestore(payment.id)}>
-                    맞아요
-                  </Action>
-                )}
-                <Action className="pill" onClick={() => setEditing(!editing)}>
-                  수정
-                </Action>
-              </div>
-            )}
+        <section className="pd-top">
+          <div className="pd-meta">
+            <span>
+              {label(payment.date)} ({weekday(payment.date)}) · {payment.time}
+            </span>
+            {category && <em className="pd-cat">{category}</em>}
           </div>
-          <dl className="pd-facts">
-            <div>
-              <dt>일시</dt>
-              <dd>
-                {label(payment.date)} ({weekday(payment.date)}) {payment.time}
-              </dd>
-            </div>
-            <div>
-              <dt>분류</dt>
-              <dd>{category ?? (payment.kind === "transfer" ? "계좌 이체" : "기록 없음")}</dd>
-            </div>
-            {people > 1 && (
-              <div>
-                <dt>함께</dt>
-                <dd>
-                  {splitDone
-                    ? `${people}명 · 결제 ${won(payment.amount)} 중 내 몫`
-                    : `${people}명 · 정산하면 내 몫 ${won(perPerson)}`}
-                </dd>
+          {renaming ? (
+            <form
+              className="pd-rename"
+              onSubmit={(event) => {
+                event.preventDefault()
+                rename(payment.id, draft)
+                setRenaming(false)
+              }}
+            >
+              <input
+                aria-label="지출명"
+                autoFocus
+                onChange={(event) => setDraft(event.target.value)}
+                placeholder={originalName}
+                value={draft}
+              />
+              <div className="pd-rename-actions">
+                {restored?.kind === "transfer" && revertTransfer ? (
+                  <Action
+                    className="pd-rename-reset"
+                    onClick={() => {
+                      revertTransfer(payment.id)
+                      rename(payment.id, "")
+                      setRenaming(false)
+                    }}
+                  >
+                    원래 이름으로
+                  </Action>
+                ) : (
+                  <span />
+                )}
+                <Action className="pill" onClick={() => setRenaming(false)}>
+                  취소
+                </Action>
+                <button className="pill primary" type="submit">
+                  저장
+                </button>
               </div>
-            )}
-          </dl>
+            </form>
+          ) : (
+            <Action className="pd-name" label={`지출명 수정: ${title}`} onClick={startRename}>
+              <span>{title}</span>
+              <Pencil size={15} strokeWidth={1.8} />
+              {people > 1 && !splitDone && <em className="pd-chip">정산 대기</em>}
+            </Action>
+          )}
+
+          <p className="pd-amount">
+            <b>{mine.toLocaleString("ko-KR")}</b>원
+          </p>
+          {subLine && <p className="pd-sub">{subLine}</p>}
+          {restored && !confirmed && (
+            <div className="pd-ask">
+              <span>내 기록을 보고 바꾼 이름이에요</span>
+              <Action className="pill primary" onClick={() => confirmRestore(payment.id)}>
+                맞아요
+              </Action>
+            </div>
+          )}
         </section>
 
-        {/* 결제 장소 */}
-        <h2 className="pd-title">결제 장소</h2>
-        {spot ? (
-          <section className="pd-place">
-            <div className="pd-map" aria-hidden="true">
-              <span className="pd-pin">
-                <MapPin size={22} strokeWidth={2} />
-              </span>
-              <i />
-            </div>
-            <div className="pd-place-text">
-              <strong>{spot}</strong>
-              <small>결제 당시 내 위치</small>
-            </div>
-          </section>
-        ) : (
-          <p className="pd-empty">기록 없음</p>
-        )}
-
-        {/* 연결된 기록 박스: 사진 · 일정 · 위치 (제목 없이 앨범 추가 버튼만 우측에) */}
-        <div className="pd-title-row pd-records-bar">
-          <Action className="pd-add" onClick={() => openRecord(payment.id)}>
-            <ImagePlus size={14} strokeWidth={1.8} /> 앨범 <Plus size={13} strokeWidth={2} />
+        <div className="pd-title-row">
+          <h2 className="pd-title">이날의 기록</h2>
+          <Action className="pd-add-link" onClick={() => openRecord(payment.id)}>
+            사진 추가 <Plus size={14} strokeWidth={2} />
           </Action>
         </div>
-        {photo || event || hasLocation || addedPhotos.length > 0 ? (
-          <div className="pd-records">
-            {photo && (
-              <div className="pd-record">
-                <ImageIcon size={16} strokeWidth={1.7} />
-                <small>사진</small>
-                <span>{photo.time} · {photo.title}</span>
-                <i className="photo-thumb t0" />
-              </div>
-            )}
-            {addedPhotos.map((item) => (
-              <div className="pd-record" key={item.key}>
-                <ImageIcon size={16} strokeWidth={1.7} />
-                <small>사진</small>
-                <span>{item.text}</span>
-                <i className="photo-thumb t0" />
-              </div>
-            ))}
-            {event && (
-              <div className="pd-record">
-                <CalendarDays size={16} strokeWidth={1.7} />
-                <small>일정</small>
-                <span>
-                  {event.title} · {event.start}
+
+        {!hasRecord && <p className="pd-empty">기록 없음</p>}
+
+        {mainPhoto && (
+          <div className={cx("pd-photo", !mainPhoto.art && "photo-thumb t0", photoOpen && "open")}>
+            <Action
+              className="pd-photo-view"
+              label={photoOpen ? "사진 작게 보기" : "사진 크게 보기"}
+              onClick={() => setPhotoOpen(!photoOpen)}
+            >
+              {mainPhoto.art ? (
+                <AlbumArtwork art={mainPhoto.art} wide />
+              ) : (
+                <span className="pd-photo-text">
+                  <ImageIcon size={20} strokeWidth={1.6} />
                 </span>
-              </div>
-            )}
-            {hasLocation && (
-              <div className="pd-record">
-                <MapPin size={16} strokeWidth={1.7} />
-                <small>위치</small>
-                <span>
-                  {lastStay
-                    ? `이동 중 · ${lastStay.name} ${lastStay.from}~${lastStay.to}`
-                    : payment.place}
-                </span>
-              </div>
-            )}
+              )}
+              <span className="pd-photo-cap">
+                {mainPhoto.time && <time>{mainPhoto.time}</time>}
+                {mainPhoto.title}
+              </span>
+            </Action>
+            <Action className="pd-remove on-photo" label="이 사진 빼기" onClick={mainPhoto.remove}>
+              <X size={14} strokeWidth={2} />
+            </Action>
           </div>
-        ) : (
-          <p className="pd-empty">기록 없음</p>
+        )}
+        {morePhotos.map((item) => (
+          <div className="pd-line" key={item.key}>
+            <ImageIcon size={16} strokeWidth={1.7} />
+            <span>{item.text}</span>
+            <Action className="pd-remove" label="이 사진 빼기" onClick={() =>
+                removeRecord(
+                  "사진을 뺐어요",
+                  () => unlink(payment.id, item.key),
+                  () => relink(payment.id, item.key),
+                )
+              }
+            >
+              <X size={14} strokeWidth={2} />
+            </Action>
+          </div>
+        ))}
+
+        {spot && !locationRemoved && (
+          <section className={cx("pd-mapcard", mapOpen && "open")}>
+            <div className="pd-map2" aria-hidden="true">
+              <i className="r1" />
+              <i className="r2" />
+              <i className="r3" />
+              <span className="pd-pin2">
+                <MapPin size={18} strokeWidth={2} />
+              </span>
+            </div>
+            <div className="pd-mapcard-text">
+              <div className="pd-mapcard-label">
+                <strong>{spot}</strong>
+                <small>결제 당시 내 위치</small>
+              </div>
+              <Action className="pd-map-more" onClick={() => setMapOpen(!mapOpen)}>
+                {mapOpen ? "접기" : "지도 확대"} <ArrowUpRight size={14} strokeWidth={1.8} />
+              </Action>
+            </div>
+            {mapOpen && (
+              <p className="pd-map-note">
+                결제할 때 기록된 내 위치예요. 실제로 결제한 가게 위치와 다를 수 있어요.
+              </p>
+            )}
+          </section>
         )}
 
-        {editing && (
-          <div className="pay-detail pd-editing">
-            {evidence.length === 0 && <p className="detail-note">연결된 근거가 없어요</p>}
-            {evidence.map((item) =>
-              item.kind === "photo" ? (
-                (item.photoIds ?? []).map((id) => {
-                  const found = photos.find((p) => p.id === id)
-                  return (
-                    <div className="detail-row" key={id}>
-                      <span>
-                        사진 · {found?.title} {found?.time}
-                      </span>
-                      <Action className="text-btn" onClick={() => unlinkPhoto(id)}>
-                        제외
-                      </Action>
-                    </div>
-                  )
-                })
-              ) : (
-                <div className="detail-row" key={item.key}>
-                  <span>{item.text}</span>
-                  <Action className="text-btn" onClick={() => unlink(payment.id, item.key)}>
-                    해제
-                  </Action>
-                </div>
-              ),
-            )}
-            {removed.map((item) => (
-              <div className="detail-row removed" key={item.key}>
-                <span>{item.text}</span>
-                <Action
-                  className="text-btn"
-                  onClick={() =>
-                    item.photoId ? relinkPhoto(item.photoId) : relink(payment.id, item.key)
-                  }
-                >
-                  되돌리기
-                </Action>
-              </div>
-            ))}
-            {restored?.kind === "transfer" && revertTransfer && (
-              <div className="detail-actions">
-                <Action
-                  className="pill"
-                  onClick={() => {
-                    revertTransfer(payment.id)
-                    setEditing(false)
-                  }}
-                >
-                  원래 이름으로 되돌리기
-                </Action>
-              </div>
-            )}
+        {lastStay && (
+          <div className="pd-line">
+            <Navigation size={16} strokeWidth={1.7} />
+            <span>이동 전 머문 곳 · {lastStay.name}</span>
+            <time>
+              {lastStay.from}~{lastStay.to}
+            </time>
           </div>
         )}
+        {linkedEvents.map(({ key, event }) => (
+          <div className="pd-line" key={key}>
+            <CalendarDays size={16} strokeWidth={1.7} />
+            <span>{event?.title}</span>
+            <time>{event?.start}</time>
+            <Action
+              className="pd-remove"
+              label="이 일정 빼기"
+              onClick={() =>
+                removeRecord(
+                  "일정을 뺐어요",
+                  () => unlink(payment.id, key),
+                  () => relink(payment.id, key),
+                )
+              }
+            >
+              <X size={14} strokeWidth={2} />
+            </Action>
+          </div>
+        ))}
+        <Action className="pd-line pd-add-event" onClick={() => setEventPicker(true)}>
+          <CalendarPlus size={16} strokeWidth={1.7} />
+          <span>일정 추가</span>
+          <Plus size={16} strokeWidth={2} />
+        </Action>
       </div>
+      {eventPicker && (
+        <div className="main-overlay center" onClick={() => setEventPicker(false)}>
+          <div
+            aria-label="일정 추가"
+            className="album-picker pd-event-picker"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+          >
+            <p className="sheet-title">일정 추가</p>
+            <p className="sheet-sub">
+              {label(payment.date)} ({weekday(payment.date)}) 내 캘린더
+            </p>
+            {eventCandidates.length > 0 ? (
+              <div className="pd-event-options">
+                {eventCandidates.map((event) => (
+                  <Action
+                    className="pd-event-option"
+                    key={event.id}
+                    onClick={() => {
+                      linkEvent(payment.id, event.id)
+                      setEventPicker(false)
+                    }}
+                  >
+                    <CalendarDays size={16} strokeWidth={1.7} />
+                    <span>{event.title}</span>
+                    <time>
+                      {event.start}~{event.end}
+                    </time>
+                  </Action>
+                ))}
+              </div>
+            ) : (
+              <p className="pd-empty">이날 붙일 수 있는 다른 일정이 없어요</p>
+            )}
+            <Action className="secondary-button pd-event-close" onClick={() => setEventPicker(false)}>
+              닫기
+            </Action>
+          </div>
+        </div>
+      )}
+      {undo && (
+        <div className="pd-undo" key={undo.key} role="status" aria-live="polite">
+          <span>{undo.text}</span>
+          <Action
+            className="pd-undo-btn"
+            onClick={() => {
+              undo.run()
+              setUndo(undefined)
+            }}
+          >
+            되돌리기
+          </Action>
+        </div>
+      )}
     </div>
   )
 }

@@ -246,6 +246,10 @@ export type LedgerState = {
   groupEdit?: Record<string, { removed: string[]; extras: number }>
   // 입금 내역을 바꿔 둔 그룹 결제 (UT 과제 시작 데이터 등)
   depositOverride?: Record<string, { from: string; amount: number; time: string }[]>
+  // 지출 내역 상세의 [수정]에서 사용자가 직접 바꾼 지출명 (캘린더·홈 카드에도 같은 이름으로 보인다)
+  names?: Record<string, string>
+  // 지출 내역 상세의 "일정 추가"로 사용자가 직접 붙인 같은 날 일정 (결제별 일정 id)
+  linkedEvents?: Record<string, string[]>
 }
 export const initialLedger: LedgerState = {
   sources: { location: true, calendar: true, photos: true },
@@ -360,8 +364,24 @@ export function evidenceOf(payment: Payment, state: LedgerState): Evidence[] {
         : "결제 당시 내 위치 · 이동 중",
     })
   }
+  // 사용자가 직접 붙인 일정: 시간대와 상관없이 근거로 둔다 (자동으로 붙은 일정과 겹치면 한 번만)
+  const userEvents = (state.linkedEvents?.[payment.id] ?? [])
+    .map((id) => events.find((event) => event.id === id))
+    .filter((event): event is CalEvent => Boolean(event) && state.sources.calendar)
+  const pushUserEvents = () => {
+    for (const event of userEvents)
+      if (!list.some((item) => item.key === `cal:${event.id}`))
+        list.push({
+          key: `cal:${event.id}`,
+          kind: "calendar",
+          text: `내 일정 · ${event.title} (${event.start}~${event.end})`,
+        })
+  }
   // 송금은 맥락을 확정하기 전까지 근거로 삼지 않는다 (제안은 transferGuess가 담당)
-  if (!matched) return list.filter((item) => !cut.includes(item.key))
+  if (!matched) {
+    pushUserEvents()
+    return list.filter((item) => !cut.includes(item.key))
+  }
   // 송금은 맥락으로 확정한 일정만 근거로 둔다 (시간대가 겹치는 다른 일정은 넣지 않는다)
   const linkedEvents =
     payment.kind === "transfer"
@@ -376,6 +396,7 @@ export function evidenceOf(payment: Payment, state: LedgerState): Evidence[] {
       kind: "calendar",
       text: `내 일정 · ${event.title} (${event.start}~${event.end})`,
     })
+  pushUserEvents()
   const near = photosFor(payment, state)
   if (near.length > 0)
     list.push({
@@ -484,6 +505,15 @@ export function restoredOf(payment: Payment, state: LedgerState): Restored | nul
       confirmed,
     }
   return null
+}
+
+// 카드·상세에 보일 지출명: 직접 바꾼 이름 → 복원 이름(· 지점) → 송금 상대 → 원래 가맹점명
+export function titleOf(payment: Payment, state: LedgerState) {
+  const custom = state.names?.[payment.id]
+  if (custom) return custom
+  const restored = restoredOf(payment, state)
+  if (restored) return `${restored.label}${restored.spot ? ` · ${restored.spot}` : ""}`
+  return payment.kind === "transfer" ? `${payment.counterparty} 송금` : payment.merchant
 }
 
 // 송금 → 정산 후보: 상대 이름과 맞는 일정·직전 체류·사진 내용을 근거로 "식비" 재분류를 제안한다.
