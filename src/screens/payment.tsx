@@ -178,7 +178,7 @@ export function PaymentDetail({
   const locationRemoved = (state.unlinked[payment.id] ?? []).includes("loc")
 
   return (
-    <div className="main-page sub-page">
+    <div className="main-page sub-page pd-page">
       <div className="main-subheader pd-head">
         <Action className="main-back" onClick={back} label="뒤로 가기">
           <ArrowLeft size={20} strokeWidth={1.6} />
