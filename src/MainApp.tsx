@@ -698,6 +698,20 @@ export function MainApp({
     }
   }
 
+  const bottomTabs = (
+    <BottomTabs
+      active={tab === "map" || tab === "album" ? backTab : tab}
+      change={(next) => {
+        setSheetDay(undefined)
+        setFocusPayment(undefined)
+        setReturnToMonth(undefined)
+        if (next !== "map") setMapDay(undefined)
+        setTab(next)
+        setView("tabs")
+      }}
+    />
+  )
+
   return (
     // 메인 앱 전체를 한 축척(0.85배)으로 줄여 모든 화면의 글자 위계를 홈 기준으로 맞춘다
     <div className="main-scale">
@@ -715,19 +729,14 @@ export function MainApp({
               </Action>
             )}
           </div>
-          <BottomTabs
-            active={tab === "map" || tab === "album" ? backTab : tab}
-            change={(next) => {
-              setSheetDay(undefined)
-              setFocusPayment(undefined)
-              setReturnToMonth(undefined)
-              if (next !== "map") setMapDay(undefined)
-              setTab(next)
-            }}
-          />
+          {bottomTabs}
         </>
       ) : (
-        fullScreen()
+        <>
+          {fullScreen()}
+          {/* 지출 내역 상세는 탭 화면에서 한 단계 들어간 화면이라 하단 탭을 그대로 둔다 */}
+          {view === "paymentDetail" && bottomTabs}
+        </>
       )}
       {mapSheetOpen && (
         <div
