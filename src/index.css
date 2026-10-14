@@ -8546,6 +8546,40 @@ p {
   justify-content: flex-end;
 }
 
+/* 앨범에서 불러온 사진: 링키 카드의 "기록 없음" 질문 자리에 들어간다 */
+.cl-photo {
+  width: 100%;
+  height: 120px;
+  margin-top: 12px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text-mute);
+}
+
+.cl-photo .album-art {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+}
+
+.cl-photo small {
+  position: absolute;
+  bottom: 6px;
+  left: 8px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--text);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+}
+
 .cl-avatar {
   width: 28px;
   height: 28px;
@@ -9192,6 +9226,11 @@ p {
 
 .cl-page .cl-plain {
   margin: 0;
+}
+
+/* 카드가 글로 시작할 때(그러면 이렇게 바꿔 둘게요): 카드 위쪽 여백 4px에 더해 좌우(14px)와 맞춘다 */
+.cl-page .cl-card > .cl-plain:first-child {
+  padding-top: 10px;
 }
 
 /* 정리 대화 카드 말풍선: 홈 "오늘 지출" 행 + 질문 + 근거 아이콘 줄 */

@@ -30,6 +30,7 @@ import {
   type Payment,
   type TransferGuess,
 } from "@/lib/ledger"
+import { AlbumArtwork, pickedArt } from "@/screens/record"
 import { transferQuestion } from "@/screens/transfer"
 import { type FoundGroup } from "@/screens/transferNotice"
 
@@ -82,6 +83,11 @@ export function CleanupCard({ count, open }: { count: number; open: () => void }
   )
 }
 
+// 정렬용 "2026-10-28 12:30"
+const pad = (value: number) => String(value).padStart(2, "0")
+const whenOf = (payment: Payment) =>
+  `${payment.date.y}-${pad(payment.date.m)}-${pad(payment.date.d)} ${payment.time.padStart(5, "0")}`
+
 type Turn =
   | { id: string; kind: "confirm" | "empty"; payment: Payment }
   | { id: string; kind: "transfer"; payment: Payment; guess: TransferGuess }
@@ -123,11 +129,14 @@ export function CleanupScreen({
   declineTransfer: (payment: Payment) => void
 }) {
   // 처리해서 목록에서 빠져도 대화에는 남도록 처음 열 때의 순서를 고정해 둔다
-  const [turns] = useState<Turn[]>(() => [
-    ...items.map((item) => ({ id: item.payment.id, ...item })),
-    ...transfers.map((item) => ({ id: item.payment.id, kind: "transfer" as const, ...item })),
-    ...groups.map((item) => ({ id: item.payment.id, kind: "group" as const, ...item })),
-  ])
+  // 종류와 상관없이 오래된 날짜·시각부터 묻는다 (10/28 → 10/30)
+  const [turns] = useState<Turn[]>(() =>
+    [
+      ...items.map((item) => ({ id: item.payment.id, ...item })),
+      ...transfers.map((item) => ({ id: item.payment.id, kind: "transfer" as const, ...item })),
+      ...groups.map((item) => ({ id: item.payment.id, kind: "group" as const, ...item })),
+    ].sort((a, b) => whenOf(a.payment).localeCompare(whenOf(b.payment))),
+  )
   const [step, setStep] = useState(0)
   const [replies, setReplies] = useState<string[]>([])
   const pendingReply = useRef("확인했어요")
@@ -332,6 +341,11 @@ function TurnView({
         : "이 결제를 설명할 기록이 아직 없어요."
   const evidence =
     turn.kind === "transfer" ? turn.guess.evidence : turn.kind === "confirm" ? (restored?.evidence ?? []) : []
+  // 앨범에서 불러온 사진: 이 결제에 마지막으로 붙인 기록
+  const added = reply === "앨범에서 불러왔어요" ? state.added[payment.id]?.at(-1) : undefined
+  const pickedPhoto = added
+    ? { art: pickedArt(added.text), time: added.text.match(/\d{2}:\d{2}/)?.[0] }
+    : undefined
   // 마무리: 맞아요면 바뀐 이름 카드, 그 밖에는 한 줄
   const renamed = reply === "맞아요" && restored ? restored.label : undefined
   const closing =
@@ -346,9 +360,21 @@ function TurnView({
     <>
       <Linky card>
         <PayRow name={original} payment={payment} state={state} />
-        <p className="cl-ask">{question}</p>
-        <EvidenceList items={evidence} />
-        {turn.kind === "empty" && <p className="cl-why">그때 찍은 사진이 있으면 붙여 둘 수 있어요.</p>}
+        {/* 앨범에서 불러왔으면 "기록 없음" 질문 자리에 고른 사진을 넣는다 */}
+        {pickedPhoto ? (
+          <div className="cl-photo">
+            {pickedPhoto.art ? <AlbumArtwork art={pickedPhoto.art} wide /> : <ImagePlus size={22} strokeWidth={1.6} />}
+            <small>
+              추가한 사진{pickedPhoto.time ? ` · ${pickedPhoto.time}` : ""}
+            </small>
+          </div>
+        ) : (
+          <>
+            <p className="cl-ask">{question}</p>
+            <EvidenceList items={evidence} />
+            {turn.kind === "empty" && <p className="cl-why">그때 찍은 사진이 있으면 붙여 둘 수 있어요.</p>}
+          </>
+        )}
       </Linky>
       {reply && (
         <div className="cl-row me">

@@ -36,6 +36,10 @@ export const artOf = (text: string): AlbumArt | undefined =>
                 ? "meal"
                 : undefined
 
+// 앨범에서 고른 사진의 그림: 붙인 기록 문구("추가한 사진 · 커피 08:31")에서 고른 칸을 찾는다
+export const pickedArt = (text: string): AlbumArt | undefined =>
+  albumTiles.find((tile) => text.includes(`${tile.label} ${tile.time}`))?.art ?? artOf(text)
+
 // 사진 대신 쓰는 단순한 그림 (색은 .album-art 안의 변수). wide: 가로로 긴 칸에서 배경을 양옆까지 채운다
 export function AlbumArtwork({ art, wide }: { art: AlbumArt; wide?: boolean }) {
   return (
