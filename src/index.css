@@ -118,6 +118,9 @@ p {
 .splash-i {
   position: relative;
   display: inline-block;
+  /* 자간(-0.04em)이 이 칸 폭을 줄여 점·아이콘이 왼쪽으로 치우치지 않게, 자간은 바깥 여백으로 뺀다 */
+  margin-right: -0.04em;
+  letter-spacing: 0;
 }
 
 .splash-dot,
