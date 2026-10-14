@@ -9228,6 +9228,11 @@ p {
   margin: 0;
 }
 
+/* 카드가 글로 시작할 때(그러면 이렇게 바꿔 둘게요): 카드 위쪽 여백 4px에 더해 좌우(14px)와 맞춘다 */
+.cl-page .cl-card > .cl-plain:first-child {
+  padding-top: 10px;
+}
+
 /* 정리 대화 카드 말풍선: 홈 "오늘 지출" 행 + 질문 + 근거 아이콘 줄 */
 .cl-page .cl-bubble.cl-card {
   width: 100%;
