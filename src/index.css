@@ -123,17 +123,18 @@ p {
   letter-spacing: 0;
 }
 
+/* 점 자리: Pretendard i의 실제 점 중심(기준선 위 0.674em = 이 칸 위에서 0.18em) */
 .splash-dot,
 .splash-mark {
   position: absolute;
-  top: -0.02em;
+  top: 0.18em;
   left: 50%;
   transform: translate(-50%, -50%);
 }
 
 .splash-dot {
-  width: 0.2em;
-  height: 0.2em;
+  width: 0.17em;
+  height: 0.17em;
   border-radius: 50%;
   background: var(--on-primary);
   animation: splash-dot 1.2s ease 0.45s both;
@@ -141,8 +142,8 @@ p {
 
 /* 로고: 점(o)이 링크 아이콘으로 통 튀어 올랐다가 다시 점(o)으로 줄어든다. 배경 없이 아이콘 선만 */
 .splash-mark {
-  width: 0.66em;
-  height: 0.66em;
+  width: 0.5em;
+  height: 0.5em;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -185,32 +186,32 @@ p {
 @keyframes splash-pop {
   0% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.3);
+    transform: translate(-50%, -50%) scale(0.35);
   }
   10% {
     opacity: 1;
   }
   28% {
-    transform: translate(-50%, -80%) scale(1.25);
+    transform: translate(-50%, -88%) scale(1.15);
   }
   42% {
-    transform: translate(-50%, -60%) scale(0.92);
+    transform: translate(-50%, -62%) scale(0.95);
   }
   54% {
-    transform: translate(-50%, -68%) scale(1.04);
+    transform: translate(-50%, -70%) scale(1.02);
   }
   64%,
   78% {
     opacity: 1;
-    transform: translate(-50%, -64%) scale(1);
+    transform: translate(-50%, -66%) scale(1);
   }
   92% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(0.3);
+    transform: translate(-50%, -50%) scale(0.35);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.3);
+    transform: translate(-50%, -50%) scale(0.35);
   }
 }
 
