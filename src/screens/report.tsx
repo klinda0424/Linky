@@ -188,7 +188,7 @@ export function ReportTab({
         </Action>
       </div>
       <div className="report-scroll">
-        <div className="report-zoom">
+        <div className={cx("report-zoom", view === "monthly" && "monthly")}>
           <ReportSwitch change={setView} value={view} />
 
           {view === "weekly" ? (
