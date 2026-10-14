@@ -8980,6 +8980,12 @@ p {
   color: var(--text-mute);
 }
 
+/* 그룹 지출 단계: 남는 높이만큼 라임 박스가 늘어나 버튼 위 빈 공간이 생기지 않게 (내용은 박스 가운데) */
+.tf-group-box {
+  flex: 1;
+  justify-content: center;
+}
+
 .tf-rename-old {
   color: var(--text-mute);
   font-size: var(--fs-body);
