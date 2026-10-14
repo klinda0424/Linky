@@ -7854,35 +7854,46 @@ p {
   border-radius: 8px;
 }
 
-/* 뺀 기록: 회색 취소선 + 되돌리기 */
-.pd-removed {
-  margin-top: 14px;
-  padding: 10px 14px;
-  border-radius: 12px;
-  background: var(--surface);
-}
-
-.pd-removed > p {
-  color: var(--text-mute);
-  font-size: var(--fs-caption);
-  line-height: var(--lh-caption);
-}
-
-.pd-removed-row {
-  min-height: 36px;
+/* 기록을 뺀 직후 잠깐 뜨는 되돌리기 알림 (홈 토스트와 같은 반투명 검정) */
+.pd-undo {
+  position: absolute;
+  right: var(--page-padding);
+  bottom: 28px;
+  left: var(--page-padding);
+  z-index: 80;
+  padding: 6px 8px 6px 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  font-size: var(--fs-label);
-  line-height: var(--lh-label);
+  gap: 12px;
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--toast) 88%, transparent);
+  color: var(--background);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: var(--fw-item-title);
+  animation: pd-undo 4s ease forwards;
 }
 
-.pd-removed-row span {
-  min-width: 0;
-  color: var(--disabled);
-  text-decoration: line-through;
-  word-break: keep-all;
+.pd-undo-btn {
+  padding: 6px 10px;
+  color: var(--primary);
+  font-weight: var(--fw-title);
+}
+
+@keyframes pd-undo {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  8%,
+  88% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 .pd-empty {

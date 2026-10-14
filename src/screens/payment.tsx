@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ArrowLeft, ArrowUpRight, CalendarDays, ImageIcon, MapPin, Navigation, Pencil, Plus, X } from "lucide-react"
 import { Action, cx } from "@/components/common"
 import { AlbumArtwork, artOf } from "@/screens/record"
@@ -9,7 +9,6 @@ import {
   evidenceOf,
   label,
   photos,
-  removedEvidenceOf,
   restoredOf,
   sameDay,
   shareOf,
@@ -28,7 +27,8 @@ const minutes = (time: string) => {
 
 // ---------- 지출 내역 상세 (홈 오늘 지출·캘린더 결제 카드에서 진입) ----------
 // 한 화면: 일시·분류 → 지출명(연필을 누르면 그 자리에서 입력) → 금액 → 원래 이름
-// → 이날의 기록(사진 크게 · 결제 당시 내 위치 지도 · 일정 한 줄). 기록은 각자 X로 빼고, 뺀 기록은 아래에서 되돌린다
+// → 이날의 기록(사진 크게 · 결제 당시 내 위치 지도 · 일정 한 줄). 기록은 각자 X로 빼고,
+// 실수로 뺐을 때만 잠깐 뜨는 [되돌리기] 알림으로 되돌린다 (뺀 기록 목록은 두지 않는다)
 // 따로 켜는 편집 모드는 없다
 export function PaymentDetail({
   payment,
@@ -61,26 +61,19 @@ export function PaymentDetail({
   const [renaming, setRenaming] = useState(false)
   const [photoOpen, setPhotoOpen] = useState(false)
   const [mapOpen, setMapOpen] = useState(false)
+  // X로 뺀 직후 4초 동안만 보이는 되돌리기 알림
+  const [undo, setUndo] = useState<{ key: number; text: string; run: () => void }>()
+  useEffect(() => {
+    if (!undo) return
+    const timer = window.setTimeout(() => setUndo(undefined), 4000)
+    return () => window.clearTimeout(timer)
+  }, [undo])
+  const removeRecord = (text: string, remove: () => void, restore: () => void) => {
+    remove()
+    setUndo({ key: Date.now(), text, run: restore })
+  }
   const title = titleOf(payment, state)
   const [draft, setDraft] = useState(title)
-  // 뺀 기록: 송금의 근거 사진은 결제 ±30분 밖일 수 있어 같은 날 뺀 사진도 함께 되돌릴 수 있게 둔다
-  const removed = [
-    ...removedEvidenceOf(payment, state),
-    ...(payment.kind === "transfer"
-      ? photos
-          .filter(
-            (item) =>
-              sameDay(item.date, payment.date) &&
-              state.photoUnlinked.includes(item.id) &&
-              !removedEvidenceOf(payment, state).some((removedItem) => removedItem.photoId === item.id),
-          )
-          .map((item) => ({
-            key: `photo:${item.id}`,
-            text: `사진 · ${item.title} ${item.time}`,
-            photoId: item.id as string | undefined,
-          }))
-      : []),
-  ]
   const restored = restoredOf(payment, state)
   const evidence = evidenceOf(payment, state)
   const mine = shareOf(payment, state)
@@ -141,7 +134,8 @@ export function PaymentDetail({
         sub: photo.content,
         time: photo.time,
         art: artOf(`${photo.title} ${photo.content ?? ""}`),
-        remove: () => unlinkPhoto(photo.id),
+        remove: () =>
+          removeRecord("사진을 뺐어요", () => unlinkPhoto(photo.id), () => relinkPhoto(photo.id)),
       }
     : addedPhotos[0]
       ? {
@@ -149,7 +143,12 @@ export function PaymentDetail({
           sub: undefined,
           time: undefined,
           art: artOf(addedPhotos[0].text),
-          remove: () => unlink(payment.id, addedPhotos[0].key),
+          remove: () =>
+            removeRecord(
+              "사진을 뺐어요",
+              () => unlink(payment.id, addedPhotos[0].key),
+              () => relink(payment.id, addedPhotos[0].key),
+            ),
         }
       : undefined
   const morePhotos = photo ? addedPhotos : addedPhotos.slice(1)
@@ -158,15 +157,17 @@ export function PaymentDetail({
   const event = eventKey
     ? (events.find((item) => `cal:${item.id}` === eventKey) ?? eventsFor(payment, state)[0])
     : undefined
-  const hasRecord = Boolean(mainPhoto || event || (spot && !removed.some((item) => item.key === "loc")))
+  const hasRecord = Boolean(
+    mainPhoto || event || (spot && !(state.unlinked[payment.id] ?? []).includes("loc")),
+  )
 
   const startRename = () => {
     setDraft(title)
     setRenaming(true)
   }
   const locationKey = evidence.find((item) => item.kind === "location")?.key
-  // 위치를 뺐으면 지도 카드도 숨긴다 (뺀 기록에서 되돌릴 수 있다)
-  const locationRemoved = removed.some((item) => item.key === "loc")
+  // 위치를 뺐으면 지도 카드도 숨긴다
+  const locationRemoved = (state.unlinked[payment.id] ?? []).includes("loc")
 
   return (
     <div className="main-page sub-page">
@@ -283,7 +284,14 @@ export function PaymentDetail({
           <div className="pd-line" key={item.key}>
             <ImageIcon size={16} strokeWidth={1.7} />
             <span>{item.text}</span>
-            <Action className="pd-remove" label="이 사진 빼기" onClick={() => unlink(payment.id, item.key)}>
+            <Action className="pd-remove" label="이 사진 빼기" onClick={() =>
+                removeRecord(
+                  "사진을 뺐어요",
+                  () => unlink(payment.id, item.key),
+                  () => relink(payment.id, item.key),
+                )
+              }
+            >
               <X size={14} strokeWidth={2} />
             </Action>
           </div>
@@ -308,7 +316,14 @@ export function PaymentDetail({
                 {mapOpen ? "접기" : "지도 확대"} <ArrowUpRight size={14} strokeWidth={1.8} />
               </Action>
               {locationKey && (
-                <Action className="pd-remove" label="이 위치 빼기" onClick={() => unlink(payment.id, locationKey)}>
+                <Action className="pd-remove" label="이 위치 빼기" onClick={() =>
+                    removeRecord(
+                      "위치를 뺐어요",
+                      () => unlink(payment.id, locationKey),
+                      () => relink(payment.id, locationKey),
+                    )
+                  }
+                >
                   <X size={14} strokeWidth={2} />
                 </Action>
               )}
@@ -336,33 +351,35 @@ export function PaymentDetail({
             <span>{event.title}</span>
             <time>{event.start}</time>
             {eventKey && (
-              <Action className="pd-remove" label="이 일정 빼기" onClick={() => unlink(payment.id, eventKey)}>
+              <Action className="pd-remove" label="이 일정 빼기" onClick={() =>
+                  removeRecord(
+                    "일정을 뺐어요",
+                    () => unlink(payment.id, eventKey),
+                    () => relink(payment.id, eventKey),
+                  )
+                }
+              >
                 <X size={14} strokeWidth={2} />
               </Action>
             )}
           </div>
         )}
 
-        {/* 뺀 기록: 각 줄에서 되돌린다 */}
-        {removed.length > 0 && (
-          <div className="pd-removed">
-            <p>뺀 기록</p>
-            {removed.map((item) => (
-              <div className="pd-removed-row" key={item.key}>
-                <span>{item.text}</span>
-                <Action
-                  className="text-btn"
-                  onClick={() =>
-                    item.photoId ? relinkPhoto(item.photoId) : relink(payment.id, item.key)
-                  }
-                >
-                  되돌리기
-                </Action>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
+      {undo && (
+        <div className="pd-undo" key={undo.key} role="status" aria-live="polite">
+          <span>{undo.text}</span>
+          <Action
+            className="pd-undo-btn"
+            onClick={() => {
+              undo.run()
+              setUndo(undefined)
+            }}
+          >
+            되돌리기
+          </Action>
+        </div>
+      )}
     </div>
   )
 }
