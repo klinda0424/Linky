@@ -8964,3 +8964,74 @@ p {
   border-radius: 10px;
   pointer-events: none;
 }
+
+/* 온보딩 2단계: 들어가는 것 / 나오는 것을 각각 다른 박스에 */
+.ob-flow {
+  padding: 0;
+  gap: 4px;
+  align-items: stretch;
+  background: transparent;
+}
+
+.ob-flow > svg {
+  align-self: center;
+  color: var(--text-mute);
+}
+
+.ob-flow .ob-box {
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  background: var(--background);
+}
+
+.ob-flow .ob-box.out {
+  border-color: var(--primary-border);
+  background: var(--primary-soft);
+}
+
+/* 온보딩 3단계: 토글로 동의 표시, 아이콘은 좌측 상단 고정, 무엇을·어디에·왜는 한 줄씩 */
+.notice-cards .list-card {
+  align-items: flex-start;
+}
+
+.notice-cards .icon-box {
+  align-self: flex-start;
+}
+
+.notice-cards .label-row {
+  width: 100%;
+  align-items: center;
+}
+
+.notice-cards .notice-toggle {
+  margin-left: auto;
+  display: inline-flex;
+}
+
+.notice-cards .perm-lines {
+  margin-top: 6px;
+  gap: 3px;
+}
+
+.notice-cards .perm-lines dt,
+.notice-cards .perm-lines dd {
+  font-size: 11px;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.notice-cards .perm-lines dt {
+  width: 38px;
+}
+
+.notice-cards .perm-lines dd {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notice-cards .list-card.off .icon-box,
+.notice-cards .list-card.off .label-row strong,
+.notice-cards .list-card.off .perm-lines {
+  opacity: 0.45;
+}
