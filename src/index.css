@@ -7249,10 +7249,10 @@ p {
 }
 
 .rpt-total > p {
-  margin-top: 8px;
-  color: var(--text-body);
-  font-size: var(--fs-item-title);
-  line-height: var(--lh-item-title);
+  margin-top: 4px;
+  color: var(--text-mute);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
   font-weight: var(--fw-body);
 }
 
@@ -7807,11 +7807,13 @@ p {
 
 .rp-hero span {
   color: var(--text-mute);
-  font-size: var(--fs-caption);
-  line-height: var(--lh-caption);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: var(--fw-body);
 }
 
 .rp-hero b {
+  margin-top: 3px;
   font-size: 22px;
   line-height: 28px;
   font-weight: var(--fw-headline);
@@ -7934,54 +7936,50 @@ p {
   font-weight: var(--fw-title);
 }
 
-/* 월간 보기는 정보와 글자 크기를 유지하고 세로 여백만 줄여 한 viewport에 모은다. */
+/* 월간 보기는 카드 두 개를 한 화면에 모으려고 세로 여백만 주간보다 조금 줄인다 (글자 크기는 주간과 같다) */
 .report-zoom.monthly {
-  padding-top: 8px;
+  padding-top: 10px;
 }
 
 .report-zoom.monthly .rpt-switch {
   height: 44px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .report-zoom.monthly .rp-card {
-  margin-bottom: 8px;
-  padding: 14px 18px;
+  margin-bottom: 10px;
+  padding: 16px 20px;
 }
 
 .report-zoom.monthly .rp-card-head {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .report-zoom.monthly .rp-split {
   height: 10px;
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .report-zoom.monthly .rp-split-stats {
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .report-zoom.monthly .rp-weekdays {
-  height: 76px;
-  margin-top: 10px;
-  padding-top: 8px;
+  height: 84px;
+  margin-top: 12px;
+  padding-top: 10px;
 }
 
 .report-zoom.monthly .rpt-metrics {
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .report-zoom.monthly .rpt-metrics > div {
-  min-height: 34px;
+  min-height: 36px;
 }
 
 .report-zoom.monthly .rpt-month-card .rpt-total {
-  margin-top: 12px;
-}
-
-.report-zoom.monthly .rpt-total > p {
-  margin-top: 4px;
+  margin-top: 14px;
 }
 
 /* 오늘 내 하루: 제목과 Linky 칩은 카드 밖, 카드 안은 본문만 */

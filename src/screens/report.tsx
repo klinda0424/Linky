@@ -302,7 +302,6 @@ export function ReportTab({
               <section className="rp-card rpt-pattern-card">
                 <div className="rp-card-head">
                   <strong>내 지출 패턴</strong>
-                  <span>{pattern ? `${pattern.month}월` : `${monthly.month}월`}</span>
                 </div>
                 {pattern ? (
                   <>
