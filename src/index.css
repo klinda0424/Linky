@@ -136,23 +136,21 @@ p {
   animation: splash-dot 1.2s ease 0.45s both;
 }
 
-/* 로고: 점 자리에서 통 튀어 올랐다가(커졌다 작아졌다) 다시 점 크기로 줄어든다 */
+/* 로고: 점(o)이 링크 아이콘으로 통 튀어 올랐다가 다시 점(o)으로 줄어든다. 배경 없이 아이콘 선만 */
 .splash-mark {
-  width: 0.62em;
-  height: 0.62em;
+  width: 0.66em;
+  height: 0.66em;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0.18em;
-  background: var(--on-primary);
-  color: var(--primary);
+  color: var(--on-primary);
   opacity: 0;
   animation: splash-pop 1.2s cubic-bezier(0.3, 0.9, 0.4, 1) 0.45s both;
 }
 
 .splash-mark svg {
-  width: 0.4em;
-  height: 0.4em;
+  width: 100%;
+  height: 100%;
 }
 
 @keyframes splash-in {

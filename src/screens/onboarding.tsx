@@ -658,7 +658,7 @@ export function ImportExpenses({
 // ---------- 5. 시작 (마지막 단계) ----------
 // 복원 결과는 온보딩에서 따로 보여 주지 않고, 시작하면 캘린더 월뷰에서 바로 보인다.
 // 앱을 처음 열 때 잠깐 보이는 시작 화면: 라임 단색 배경 + Linky 글자 로고.
-// i의 점 자리에서 링키 로고(링크 아이콘)가 "통" 튀어 올랐다가 다시 점으로 돌아간 뒤 스스로 사라진다
+// i의 점이 링크 아이콘으로 "통" 튀어 올랐다가 다시 점으로 돌아간 뒤 스스로 사라진다 (o → 링크 → o)
 export function Splash({ done }: { done: () => void }) {
   const [leaving, setLeaving] = useState(false)
   useEffect(() => {
@@ -676,7 +676,7 @@ export function Splash({ done }: { done: () => void }) {
         <span className="splash-i">
           ı<i className="splash-dot" />
           <span className="splash-mark">
-            <Link2 strokeWidth={2.6} />
+            <Link2 strokeWidth={3} />
           </span>
         </span>
         nky
