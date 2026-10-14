@@ -138,40 +138,43 @@ export function PrivacySettings({
         <div className="privacy-list">
           {permissionOptions.map((item) => (
             <div className="main-card privacy-card" key={item.key}>
+              {/* 온보딩 개인정보 고지와 같은 모양: 아이콘 좌측 상단, 토글, 무엇을·어디에·왜 한 줄씩 */}
               <div className="privacy-head">
                 <span className="icon-box neutral">{item.icon}</span>
-                <strong>{item.title}</strong>
-                {item.required ? (
-                  <Badge>필수 연결</Badge>
-                ) : (
-                  <>
-                    <Badge>선택</Badge>
-                    <Toggle
-                      on={values[item.key]}
-                      onClick={() => {
-                        if (values[item.key]) setPendingOff(item.key)
-                        else toggle(item.key)
-                      }}
-                    />
-                  </>
-                )}
-              </div>
-              <dl>
-                <div>
-                  <dt>수집 항목</dt>
-                  <dd>{item.collects}</dd>
-                </div>
-                <div>
-                  <dt>목적</dt>
-                  <dd>{item.purpose}</dd>
-                </div>
-                {item.scope && (
-                  <div>
-                    <dt>사용 범위</dt>
-                    <dd className="privacy-scope">{item.scope}</dd>
+                <div className="privacy-body">
+                  <div className="privacy-title">
+                    <strong>
+                      {item.title}
+                      {item.parenthetical && <small> ({item.parenthetical})</small>}
+                    </strong>
+                    <Badge>{item.required ? "필수" : "선택"}</Badge>
+                    <span className="privacy-toggle">
+                      <Toggle
+                        locked={item.required}
+                        on={values[item.key]}
+                        onClick={() => {
+                          if (values[item.key]) setPendingOff(item.key)
+                          else toggle(item.key)
+                        }}
+                      />
+                    </span>
                   </div>
-                )}
-              </dl>
+                  <dl className="perm-lines">
+                    <div>
+                      <dt>무엇을</dt>
+                      <dd>{item.brief.what}</dd>
+                    </div>
+                    <div>
+                      <dt>어디에</dt>
+                      <dd>{item.brief.where}</dd>
+                    </div>
+                    <div>
+                      <dt>왜</dt>
+                      <dd>{item.brief.why}</dd>
+                    </div>
+                  </dl>
+                </div>
+              </div>
               {item.required && (
                 <p className="privacy-off">
                   결제 기록을 날짜별로 보여주는 데 필요한 정보라 이 화면에서 해제할 수 없어요.

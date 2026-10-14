@@ -9035,3 +9035,67 @@ p {
 .notice-cards .list-card.off .perm-lines {
   opacity: 0.45;
 }
+
+/* 마이페이지 개인정보·권한: 온보딩 개인정보 고지와 같은 모양 */
+.privacy-head {
+  align-items: flex-start;
+}
+
+.privacy-head .icon-box {
+  align-self: flex-start;
+}
+
+.privacy-body {
+  min-width: 0;
+  flex: 1;
+}
+
+.privacy-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.privacy-title strong {
+  font-size: var(--fs-item-title);
+  line-height: var(--lh-item-title);
+  font-weight: var(--fw-item-title);
+}
+
+.privacy-title strong small {
+  color: var(--text-mute);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-caption);
+}
+
+.privacy-toggle {
+  margin-left: auto;
+  display: inline-flex;
+}
+
+.privacy-card .perm-lines {
+  margin-top: 6px;
+  gap: 3px;
+}
+
+.privacy-card .perm-lines > div {
+  display: flex;
+  gap: 8px;
+}
+
+.privacy-card .perm-lines dt,
+.privacy-card .perm-lines dd {
+  font-size: 11px;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.privacy-card .perm-lines dt {
+  width: 38px;
+  flex: none;
+}
+
+.privacy-card .perm-lines dd {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
