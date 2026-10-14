@@ -188,7 +188,7 @@ export function ReportTab({
         </Action>
       </div>
       <div className="report-scroll">
-        <div className={cx("report-zoom", view === "monthly" && "monthly")}>
+        <div className="report-zoom">
           <ReportSwitch change={setView} value={view} />
 
           {view === "weekly" ? (
@@ -302,7 +302,6 @@ export function ReportTab({
               <section className="rp-card rpt-pattern-card">
                 <div className="rp-card-head">
                   <strong>내 지출 패턴</strong>
-                  <span>{pattern ? `${pattern.month}월` : `${monthly.month}월`}</span>
                 </div>
                 {pattern ? (
                   <>
