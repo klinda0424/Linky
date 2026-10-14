@@ -99,13 +99,13 @@ export function CleanupScreen({
   addRecord,
   confirmTransfer,
   declineTransfer,
-  group,
+  groups = [],
   openGroup,
   markPersonal,
   finish,
 }: {
-  // 확인하지 않은 그룹 결제: 송금 다음에 이어 붙인다 (정산은 정산 시트에서)
-  group?: FoundGroup
+  // 확인하지 않은 그룹 결제(오늘 것과 지난 7일 것): 송금 다음에 이어 붙인다 (정산은 정산 시트에서)
+  groups?: FoundGroup[]
   openGroup: (payment: Payment) => void
   markPersonal: (paymentId: string) => void
   // 대화가 끝났을 때 한 번 알린다 ("정리 끝" 팝업)
@@ -126,7 +126,7 @@ export function CleanupScreen({
   const [turns] = useState<Turn[]>(() => [
     ...items.map((item) => ({ id: item.payment.id, ...item })),
     ...transfers.map((item) => ({ id: item.payment.id, kind: "transfer" as const, ...item })),
-    ...(group ? [{ id: group.payment.id, kind: "group" as const, ...group }] : []),
+    ...groups.map((item) => ({ id: item.payment.id, kind: "group" as const, ...item })),
   ])
   const [step, setStep] = useState(0)
   const [replies, setReplies] = useState<string[]>([])
@@ -142,12 +142,12 @@ export function CleanupScreen({
       current.kind === "transfer"
         ? transfers.some((item) => item.payment.id === current.id)
         : current.kind === "group"
-          ? Boolean(group)
+          ? groups.some((item) => item.payment.id === current.id)
           : items.some((item) => item.payment.id === current.id)
     if (stillOpen) return
     setReplies((value) => [...value, pendingReply.current])
     pendingReply.current = "확인했어요"
-  }, [current, items, transfers, group, waiting])
+  }, [current, items, transfers, groups, waiting])
 
   // 답장을 남긴 뒤 잠깐 있다가 링키가 다음 건을 묻는다
   useEffect(() => {

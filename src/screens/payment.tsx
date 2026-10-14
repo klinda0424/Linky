@@ -98,6 +98,8 @@ export function PaymentDetail({
     ? eventsFor(payment, state)[0]
     : undefined
   const hasLocation = evidence.some((item) => item.kind === "location")
+  // 앨범에서 직접 불러온 사진: 위 사진 근거와 따로 이 결제에 붙인 기록으로 보인다
+  const addedPhotos = evidence.filter((item) => item.kind === "added")
 
   return (
     <div className="main-page sub-page">
@@ -185,7 +187,7 @@ export function PaymentDetail({
             <ImagePlus size={14} strokeWidth={1.8} /> 앨범 <Plus size={13} strokeWidth={2} />
           </Action>
         </div>
-        {photo || event || hasLocation ? (
+        {photo || event || hasLocation || addedPhotos.length > 0 ? (
           <div className="pd-records">
             {photo && (
               <div className="pd-record">
@@ -195,6 +197,14 @@ export function PaymentDetail({
                 <i className="photo-thumb t0" />
               </div>
             )}
+            {addedPhotos.map((item) => (
+              <div className="pd-record" key={item.key}>
+                <ImageIcon size={16} strokeWidth={1.7} />
+                <small>사진</small>
+                <span>{item.text}</span>
+                <i className="photo-thumb t0" />
+              </div>
+            ))}
             {event && (
               <div className="pd-record">
                 <CalendarDays size={16} strokeWidth={1.7} />
