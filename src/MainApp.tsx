@@ -99,6 +99,8 @@ export function MainApp({
   const [cleanupDone, setCleanupDone] = useState(false)
   // 링키가 찾았어요: 확인 중인 송금
   const [transferId, setTransferId] = useState<string>()
+  // 송금 확인 화면을 연 곳: 정리 대화에서 열었으면 끝나고 그 대화로 돌아간다
+  const [transferFrom, setTransferFrom] = useState<"tabs" | "cleanup">("tabs")
   // 지출 내역 상세: 홈 오늘 지출에서 연 결제
   const [detailId, setDetailId] = useState<string>()
   const [photo, setPhoto] = useState<Photo>()
@@ -384,6 +386,7 @@ export function MainApp({
           // 알림을 누르면 첫 건(가장 최근)의 확인 화면으로. 다른 흐름으로 바꿀 때는 이 핸들러만 바꾼다
           openTransfer={(first) => {
             setTransferId(first.payment.id)
+            setTransferFrom("tabs")
             setView("transfer")
           }}
           pendingSettlement={
@@ -652,9 +655,19 @@ export function MainApp({
       case "transfer":
         return transferPayment ? (
           <TransferConfirm
-            back={toTabs}
-            confirm={() => confirmTransfer(transferPayment)}
-            decline={() => declineTransfer(transferPayment)}
+            back={() => (transferFrom === "cleanup" ? setView("cleanup") : toTabs())}
+            confirm={() => {
+              if (transferFrom === "cleanup") {
+                confirmTransfer(transferPayment, true)
+                setView("cleanup")
+              } else confirmTransfer(transferPayment)
+            }}
+            decline={() => {
+              if (transferFrom === "cleanup") {
+                declineTransfer(transferPayment, true)
+                setView("cleanup")
+              } else declineTransfer(transferPayment)
+            }}
             payment={transferPayment}
             state={state}
           />
@@ -667,6 +680,11 @@ export function MainApp({
             confirm={confirmRestore}
             confirmTransfer={(payment) => confirmTransfer(payment, true)}
             declineTransfer={(payment) => declineTransfer(payment, true)}
+            editTransfer={(payment) => {
+              setTransferId(payment.id)
+              setTransferFrom("cleanup")
+              setView("transfer")
+            }}
             edit={(payment) => openPayment(payment)}
             finish={() => setCleanupDone(true)}
             items={cleanup}
@@ -836,6 +854,7 @@ export function MainApp({
           edit={(item) => {
             setTransferPopupSeen(true)
             setTransferId(item.payment.id)
+            setTransferFrom("tabs")
             setView("transfer")
           }}
           group={todayGroup}

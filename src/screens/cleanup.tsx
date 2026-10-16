@@ -105,6 +105,7 @@ export function CleanupScreen({
   addRecord,
   confirmTransfer,
   declineTransfer,
+  editTransfer,
   groups = [],
   openGroup,
   markPersonal,
@@ -127,6 +128,8 @@ export function CleanupScreen({
   addRecord: (paymentId: string) => void
   confirmTransfer: (payment: Payment) => void
   declineTransfer: (payment: Payment) => void
+  // 송금 [수정]: 근거를 보고 고르는 확인 화면으로 (끝나면 이 대화로 돌아온다)
+  editTransfer: (payment: Payment) => void
 }) {
   // 처리해서 목록에서 빠져도 대화에는 남도록 처음 열 때의 순서를 고정해 둔다
   // 종류와 상관없이 오래된 날짜·시각부터 묻는다 (10/28 → 10/30)
@@ -217,6 +220,7 @@ export function CleanupScreen({
               confirmTransfer={confirmTransfer}
               declineTransfer={declineTransfer}
               edit={edit}
+              editTransfer={editTransfer}
               markPersonal={markPersonal}
               openGroup={openGroup}
               reply={reply}
@@ -405,10 +409,12 @@ function ChipsFor({
   addRecord,
   confirmTransfer,
   declineTransfer,
+  editTransfer,
   openGroup,
   markPersonal,
 }: {
   turn: Turn
+  editTransfer: (payment: Payment) => void
   openGroup: (payment: Payment) => void
   markPersonal: (paymentId: string) => void
   reply: (text: string, act: () => void) => void
@@ -470,6 +476,9 @@ function ChipsFor({
     )
   return (
     <>
+      <Action className="secondary-button" onClick={() => editTransfer(payment)}>
+        수정
+      </Action>
       <Action
         className="secondary-button"
         onClick={() => reply("아니에요", () => declineTransfer(payment))}

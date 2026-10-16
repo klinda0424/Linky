@@ -476,7 +476,14 @@ export function HomePage({
               </strong>
             </div>
             {isToday && pendingSettlement && (
-              <span className="hm-badge">정산 대기 {pendingSettlement.count}건</span>
+              // 누르면 정산 시트로: 팝업을 닫은 뒤에도 홈에서 정산을 시작할 수 있다
+              <Action
+                className="hm-badge hm-badge-link"
+                label={`정산 대기 ${pendingSettlement.count}건 열기`}
+                onClick={openSettlement}
+              >
+                정산 대기 {pendingSettlement.count}건 ›
+              </Action>
             )}
           </div>
           <div className="hm-today-list">

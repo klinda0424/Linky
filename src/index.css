@@ -9623,3 +9623,14 @@ p {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* 정리 대화 답장 칩: 버튼이 3개(수정·아니에요·맞아요)일 때는 3열로, 글자는 한 줄 */
+.cl-page .cl-chips:has(> :nth-child(3)) {
+  grid-template-columns: 1fr 1fr 1.3fr;
+}
+
+.cl-page .cl-chips > * {
+  min-width: 0;
+  padding-inline: 8px;
+  white-space: nowrap;
+}
